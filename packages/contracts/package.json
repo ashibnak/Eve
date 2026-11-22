@@ -9,6 +9,11 @@
       "eve-source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./platform/v1": {
+      "eve-source": "./src/platform/v1/index.ts",
+      "types": "./dist/platform/v1/index.d.ts",
+      "default": "./dist/platform/v1/index.js"
     }
   },
   "files": [
@@ -20,5 +25,8 @@
   },
   "devDependencies": {
     "typescript": "6.0.3"
+  },
+  "dependencies": {
+    "zod": "4.6.7"
   }
 }

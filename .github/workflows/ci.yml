@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        check: [lint, typecheck, test, boundaries, 'check:i18n']
+        check: [lint, typecheck, boundaries, 'check:i18n']
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: actions/setup-node@v7.1.0
@@ -31,8 +31,31 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm ${{ matrix.check }}
 
+  # Unit + integration tests and the schema drift check against real PostgreSQL.
+  test:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: pgvector/pgvector:0.8.1-pg17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 2s --health-timeout 3s --health-retries 30
+    env:
+      TEST_DATABASE_ADMIN_URL: postgresql://postgres:postgres@localhost:5432/postgres
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - run: corepack enable pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+      - run: pnpm db:check-drift
+
   e2e:
-    needs: verify
+    needs: [verify, test]
     runs-on: ubuntu-24.04
     container: mcr.microsoft.com/playwright:v1.65.1-noble
     steps:

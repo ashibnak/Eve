@@ -16,7 +16,11 @@
     "boundaries": "depcruise apps packages --config .dependency-cruiser.cjs",
     "check:i18n": "tsx tools/i18n/check-keys.ts",
     "e2e": "pnpm --filter @eve/web e2e",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test:unit": "vitest run --project '!@eve/api:int'",
+    "db:dev:up": "docker compose -f deploy/docker-compose.dev.yml up -d --wait",
+    "db:dev:down": "docker compose -f deploy/docker-compose.dev.yml down",
+    "db:check-drift": "tsx apps/api/scripts/check-schema-drift.ts"
   },
   "devDependencies": {
     "@types/node": "24.19.2",

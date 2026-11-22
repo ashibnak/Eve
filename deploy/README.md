@@ -16,7 +16,7 @@ On start the `api` container runs `prisma migrate deploy` as `eve_owner`, then s
 
 ## Database roles
 
-Created once by [postgres/init/01-roles.sh](postgres/init/01-roles.sh) on an empty data volume:
+Created once by [postgres/init/01-setup.sh](postgres/init/01-setup.sh) (using [postgres/sql/](postgres/sql/), shared with the test harness) on an empty data volume:
 
 | Role        | Used by     | Rights                                                                     |
 | ----------- | ----------- | -------------------------------------------------------------------------- |

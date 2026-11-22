@@ -74,7 +74,9 @@ module.exports = {
   ],
   options: {
     doNotFollow: { path: 'node_modules' },
-    exclude: { path: ['node_modules', '/dist/', 'src/generated/', '__fixtures__'] },
+    exclude: {
+      path: ['node_modules', '/dist/', 'src/generated/', '__fixtures__', 'vitest\\.[a-z.]+\\.mts$'],
+    },
     tsPreCompilationDeps: true,
     combinedDependencies: true,
     enhancedResolveOptions: {

@@ -1,0 +1,21 @@
+# Local development and integration-test database (not for production).
+#   pnpm db:dev:up   -> postgres on 127.0.0.1:15432 (user postgres / postgres)
+# Integration tests create and drop their own eve_test_* databases in it.
+name: eve-dev
+
+services:
+  postgres:
+    image: ${IMAGE_REGISTRY:-}pgvector/pgvector:0.8.1-pg17
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '127.0.0.1:15432:5432'
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 2s
+      timeout: 3s
+      retries: 30

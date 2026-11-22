@@ -32,8 +32,15 @@ typecheck:
 
 test:
   stage: verify
+  services:
+    - name: ${IMAGE_REGISTRY}pgvector/pgvector:0.8.1-pg17
+      alias: postgres
+  variables:
+    POSTGRES_PASSWORD: postgres
+    TEST_DATABASE_ADMIN_URL: postgresql://postgres:postgres@postgres:5432/postgres
   script:
     - pnpm test
+    - pnpm db:check-drift
 
 boundaries:
   stage: verify

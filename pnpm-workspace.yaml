@@ -1,0 +1,11 @@
+packages:
+  - apps/*
+  - packages/*
+  - packages/jurisdictions/*
+
+# Native/build scripts allowed to run on install (pnpm blocks all others).
+allowBuilds:
+  '@prisma/engines': true
+  '@swc/core': true
+  esbuild: true
+  prisma: true

@@ -1,0 +1,1344 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>HR Ops Model</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: a layered "blueprint" of the operating model — a stack you open part by part, then module by module */
+:root{
+  /* Identity: white page, black type, one yellow. Yellow fills mark phase 1 and the current view; dark amber carries yellow as text. */
+  --bg:#FFFFFF; --surface:#FFFFFF; --surface-2:#F4F3EF; --ink:#111111; --muted:#5F5B53; --line:#E4E1DA;
+  --y:#FFC20E; --y-ink:#111111; --y-soft:rgba(255,194,14,.22); --y-text:#8F6200;
+  --accent:var(--y); --p1:var(--y); --p1-soft:rgba(255,194,14,.16); --scrim:rgba(17,17,17,.5);
+  --c-arch:#111111; --c-pods:#111111; --c-talent:#111111; --c-ex:#111111; --c-plat:#111111;
+  --t-arch:#FAFAF7; --t-pods:#FAFAF7; --t-talent:#FAFAF7; --t-ex:#FAFAF7; --t-plat:#FAFAF7;
+  --shadow:0 1px 2px rgba(17,17,17,.06),0 10px 26px rgba(17,17,17,.09);
+  --f-body:"Vazirmatn",Tahoma,"Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --r:14px; color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.75;margin:0}
+body.present{scroll-snap-type:y proximity}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--surface)}
+#app{min-width:0}
+a{color:var(--y-text)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{text-wrap:balance;margin:0;line-height:1.35}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+
+/* top bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar .wrap{display:flex;align-items:center;gap:12px;padding-block:10px}
+.brand{font-weight:900;letter-spacing:-.02em;font-size:17px;white-space:nowrap}
+.brand span{color:var(--muted);font-weight:500;font-size:13px;margin-inline-start:6px}
+.nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+.nav::-webkit-scrollbar{display:none}
+.nav a{white-space:nowrap;text-decoration:none;color:var(--muted);font-size:13.5px;padding:6px 11px;border-radius:999px;transition:background .2s,color .2s}
+.nav a:hover{background:var(--surface-2);color:var(--ink)}
+.nav a.on{background:var(--y);color:var(--y-ink);font-weight:700}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 13px;font-size:13px;cursor:pointer;white-space:nowrap;transition:border-color .2s,background .2s}
+.btn:hover{border-color:var(--ink)}
+.btn[aria-pressed="true"]{background:var(--y);color:var(--y-ink);border-color:var(--y)}
+
+section{padding-block:56px;scroll-margin-top:64px}
+body.present section{min-height:calc(100vh - 60px);scroll-snap-align:start;display:flex;flex-direction:column;justify-content:center}
+.eyebrow{font-size:12.5px;letter-spacing:.06em;color:var(--muted);font-weight:700;margin-bottom:8px}
+.h2{font-size:clamp(24px,3.2vw,34px);font-weight:900;letter-spacing:-.02em}
+.lede{color:var(--muted);max-width:62ch;margin:10px 0 0}
+
+/* hero */
+.hero{padding-block:48px 24px}
+.hero h1{font-size:clamp(34px,6vw,64px);font-weight:900;letter-spacing:-.035em;line-height:1.15}
+.hero h1 em{font-style:normal;background:linear-gradient(transparent 58%,var(--y) 58%);padding-inline:4px}
+.hero p{font-size:17px;color:var(--muted);max-width:60ch;margin:16px 0 0}
+.facts{display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:26px}
+.fact b{display:block;font-size:30px;font-weight:900;letter-spacing:-.02em;line-height:1.1}
+.fact span{color:var(--muted);font-size:13px}
+.fact.p1 b{display:inline-block;background:var(--y);color:var(--y-ink);padding:0 8px;border-radius:6px}
+/* priority matrix */
+.crit{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:22px}
+.crit .f b{display:block;font-size:14.5px}
+.crit .f .r{font-size:12.5px;color:var(--muted);line-height:1.6;margin-top:4px}
+.pfil{margin-top:18px}
+.pwrap{margin-top:12px;overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);-webkit-overflow-scrolling:touch}
+.pmx{display:grid;grid-template-columns:88px repeat(9,minmax(104px,1fr));min-width:1030px}
+.pmx .hd{font-size:12px;font-weight:800;color:var(--muted);padding:8px;background:var(--surface-2);border-bottom:1px solid var(--line);text-align:center}
+.pmx .hd small{display:block;font-weight:500}
+.pmx .rh{font-size:12.5px;font-weight:800;padding:10px 8px;background:var(--surface-2);border-inline-end:1px solid var(--line);display:flex;flex-direction:column;justify-content:center}
+.pmx .rh small{font-weight:500;color:var(--muted)}
+.pmx .cl{padding:8px 6px;border-bottom:1px solid var(--line);border-inline-start:1px dashed var(--line);display:flex;flex-direction:column;gap:5px;align-items:stretch;min-height:64px}
+.pmx .cl.hot{background:var(--p1-soft)}
+.pc{border:1.3px solid var(--ink);background:var(--surface);border-radius:8px;padding:3px 7px;font-size:12px;line-height:1.5;text-align:start;cursor:pointer;transition:opacity .2s,transform .15s}
+.pc:hover{transform:translateY(-1px)}
+.pc .num{font-family:var(--f-mono);font-size:10.5px;color:var(--y-text);margin-inline-end:4px}
+.pc.p1{background:var(--y);border-color:var(--y)} .pc.p1 .num{color:var(--y-ink)}
+.pc.p3{border-style:dashed;border-color:var(--muted)}
+.pmx.hl .pc{opacity:.2} .pmx.hl .pc.on{opacity:1;box-shadow:0 0 0 2px var(--ink)}
+.lg.d3{background:#fff;border:1.5px dashed var(--muted)}
+.prec{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:20px}
+.prec .panel h3{display:flex;align-items:center;gap:8px}
+.prec .panel p{margin:0 0 10px;font-size:13.5px;color:var(--muted);line-height:1.65}
+.prec .note{grid-column:1/-1;border-inline-start:4px solid var(--y);padding:10px 14px;background:var(--surface-2);border-radius:0 12px 12px 0;font-size:14.5px;line-height:1.8}
+/* moat layers */
+.moat{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:20px;margin-top:26px;align-items:start}
+.mstack{display:grid;gap:6px}
+.ml{display:grid;grid-template-columns:30px minmax(0,1fr) auto;align-items:center;gap:10px;text-align:start;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 14px;cursor:pointer;transition:border-color .2s,background .2s,transform .15s;min-width:0}
+.ml:hover{border-color:var(--ink);transform:translateX(-2px)}
+.ml .no{font-family:var(--f-mono);font-size:13px;color:var(--y-text);font-weight:500}
+.ml b{display:block;font-size:15px;font-weight:800;line-height:1.45}
+.ml .en{display:block;font-family:var(--f-mono);font-size:11px;color:var(--muted);direction:ltr;text-align:right}
+.ml .cnt{font-size:12px;color:var(--muted);white-space:nowrap}
+.ml[aria-pressed="true"]{background:var(--y);border-color:var(--y)}
+.ml[aria-pressed="true"] .no,.ml[aria-pressed="true"] .en,.ml[aria-pressed="true"] .cnt{color:var(--y-ink)}
+.ml.agent{border-style:dashed;background:var(--surface-2)}
+.ml.agent .no{color:var(--muted)}
+.ml.agent[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.ml.agent[aria-pressed="true"] .en,.ml.agent[aria-pressed="true"] .cnt,.ml.agent[aria-pressed="true"] .no{color:#ddd}
+.msits{font-size:12px;color:var(--muted);text-align:center;display:flex;align-items:center;gap:8px;margin:2px 0}
+.msits::before,.msits::after{content:"";flex:1;border-top:1px dashed var(--line)}
+.mdetail{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;position:sticky;top:76px}
+.md-head{padding:14px 18px;background:var(--surface-2);border-bottom:1px solid var(--line);border-top:4px solid var(--y)}
+.md-head.agent{border-top-color:var(--ink)}
+.md-head h3{font-size:20px;font-weight:900}
+.md-head .en{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.md-body{padding:14px 18px 18px;display:grid;gap:12px}
+.md-body .f .v{line-height:1.7}
+.md-body .f.why{background:var(--surface);border:1.5px solid var(--ink)}
+.md-body .f.p1{background:var(--p1-soft)}
+/* decision graph */
+.gtools{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-top:22px}
+.seg2{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px}
+.seg2 button{border:0;background:transparent;border-radius:999px;padding:5px 13px;font-size:13px;cursor:pointer}
+.seg2 button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.glegend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--muted)}
+.glegend span{display:inline-flex;align-items:center;gap:6px}
+.lg{width:16px;height:11px;border-radius:3px;display:inline-block}
+.lg.d1{background:var(--y)} .lg.d2{background:#fff;border:1.5px solid var(--ink)}
+.ln{width:22px;height:0;display:inline-block;border-top:2.5px solid var(--ink)}
+.ln.out{border-color:var(--y)} .ln.man{border-top:2px dashed var(--muted)}
+.gwrap{margin-top:14px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow-x:auto;-webkit-overflow-scrolling:touch}
+#graph{display:block;width:100%;min-width:900px;height:auto}
+#graph text{font-family:var(--f-body);fill:var(--ink)}
+.gswipe{display:none;font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.g-edge{fill:none;stroke:#D3CFC5;stroke-width:1.2;transition:opacity .2s,stroke .2s}
+.g-edge.man{stroke-dasharray:5 4}
+#graph.focus .g-edge{opacity:.1}
+#graph.focus .g-edge.on{opacity:1}
+.g-edge.in.on{stroke:var(--ink);stroke-width:2}
+.g-edge.out.on{stroke:var(--y);stroke-width:2.6}
+.g-node{cursor:pointer;transition:opacity .2s}
+.g-node:focus{outline:none}
+.g-node:focus-visible rect{stroke:var(--y-text);stroke-width:2.5}
+#graph.focus .g-node{opacity:.28}
+#graph.focus .g-node.on{opacity:1}
+.g-node rect{fill:var(--surface);stroke:var(--line);stroke-width:1.2}
+.g-node.m.on rect{stroke:var(--ink);stroke-width:1.6}
+#graph .g-node.m.sel rect{fill:var(--ink)} #graph .g-node.m.sel text{fill:#fff} #graph .g-node.m.sel .no{fill:var(--y)}
+.g-node.x rect{stroke-dasharray:4 3;fill:var(--surface-2)}
+.g-node.d rect{stroke:var(--ink);stroke-width:1.5}
+.g-node.d.p1 rect{fill:var(--y);stroke:var(--y)}
+.g-node.d.sel rect{stroke:var(--ink);stroke-width:3}
+#graph .g-node .sub{font-size:10.5px;fill:var(--muted)}
+#graph .g-node.d.p1 .sub{fill:#5c4300}
+#graph .g-node .no{font-family:var(--f-mono);font-size:11px;fill:var(--y-text)}
+#graph .g-lbl{font-size:11px;fill:var(--ink);paint-order:stroke;stroke:#fff;stroke-width:4px;stroke-linejoin:round;pointer-events:none}
+#graph .g-col{font-size:11.5px;fill:var(--muted);font-weight:700}
+.gpanel{margin-top:16px;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.gp-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:14px 18px;background:var(--surface-2);border-bottom:1px solid var(--line)}
+.gp-head h3{font-size:20px;font-weight:900;margin-inline-end:auto}
+.gp-trig{padding:10px 18px 0;color:var(--muted);font-size:14px}
+.gp-trig b{color:var(--ink)}
+.gp-flow{display:grid;grid-template-columns:minmax(0,1.35fr) 26px minmax(0,1fr) 26px minmax(0,1fr);gap:8px;padding:12px 18px 16px;align-items:stretch}
+.gp-col{background:var(--surface-2);border-radius:12px;padding:12px 14px;min-width:0}
+.gp-col.eng{background:var(--surface);border:1.5px solid var(--ink)}
+.gp-col.out{border:1px solid color-mix(in srgb,var(--y) 55%,transparent);background:var(--surface)}
+.gp-col .k{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:8px}
+.gp-col ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.gp-col li{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+.gp-col li .d{font-size:13.5px;line-height:1.55}
+.gp-col .tag{margin-inline-start:4px}
+.gp-arrow{display:flex;align-items:center;justify-content:center}
+.gp-col p{margin:0 0 8px;font-size:14px;line-height:1.65}
+.gp-col p b{display:block;font-size:12px;color:var(--muted)}
+.gp-chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:0 18px 16px;font-size:13px;color:var(--muted)}
+.dchip{border:1.5px solid var(--ink);background:var(--surface);border-radius:8px;padding:3px 10px;font-size:13px;cursor:pointer;font-weight:700}
+.dchip.p1{background:var(--y);border-color:var(--y)}
+.dchip:hover{transform:translateY(-1px)}
+.mdec{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:6px}
+.mdec .k{font-size:12.5px;color:var(--muted);margin-inline-end:2px}
+.gp-mod{padding:12px 18px 16px;display:grid;gap:12px}
+.gp-mod h4{margin:0 0 6px;font-size:13px;color:var(--muted)}
+.gp-mod ul{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.gp-mod li{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:14px}
+.hint{display:inline-flex;align-items:center;gap:8px;margin-top:24px;font-size:13px;color:var(--muted)}
+.hint kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 5px;background:var(--surface)}
+
+/* overview: from three pillars to five parts */
+.evo{display:grid;gap:14px;margin-top:30px}
+.era-l{font-size:12.5px;color:var(--muted);font-weight:700;letter-spacing:.04em;margin-bottom:10px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.era-l b{color:var(--ink);font-size:15px;letter-spacing:0}
+.era-l b.y{color:var(--y)}
+.pillars{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.pillar{border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;background:var(--surface);min-width:0}
+.pillar h3{font-size:16px;font-weight:900}
+.pillar .en{font-family:var(--f-mono);font-size:11px;color:var(--muted);direction:ltr;text-align:right}
+.pillar p{margin:2px 0 0;color:var(--muted);font-size:13px;line-height:1.6}
+.doms{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.dom{border:1px solid var(--line);background:var(--surface-2);border-radius:999px;padding:4px 12px;font-size:13px;cursor:pointer;transition:border-color .2s,color .2s,opacity .2s}
+.dom:hover,.dom.hl{border-color:var(--y);color:var(--y)}
+.dom.dim{opacity:.32}
+.shift{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:13px}
+.shift::before,.shift::after{content:"";flex:1;height:1px;background:var(--line)}
+.shift span{display:inline-flex;align-items:center;gap:8px}
+.shift svg{color:var(--y)}
+.fives{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.five{text-align:start;border:1px solid var(--line);border-radius:var(--r);padding:14px;background:var(--surface);cursor:pointer;display:flex;flex-direction:column;gap:4px;min-width:0;transition:border-color .2s,transform .2s,opacity .2s,box-shadow .2s}
+.five .no{font-family:var(--f-mono);color:var(--y-text);font-size:12px;font-weight:500}
+.five .chips2{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.five .chips2 i{font-style:normal;font-size:12px;background:var(--surface-2);border-radius:6px;padding:1px 7px;color:var(--ink)}
+.five .cnt{margin-top:auto;padding-top:10px;font-size:12px;color:var(--muted)}
+.five .cnt b{color:var(--ink)}
+.five.has-p1{border-top:4px solid var(--y)}
+.five b{font-size:15.5px;font-weight:900;line-height:1.5}
+.five span{color:var(--muted);font-size:12.5px;line-height:1.6}
+.five:hover{border-color:var(--ink);transform:translateY(-3px);box-shadow:var(--shadow)}
+.five.dim{opacity:.35}
+.mapnote{margin-top:16px;min-height:54px;border-inline-start:3px solid var(--y);padding:8px 14px;font-size:14.5px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--surface);border-radius:0 10px 10px 0}
+.mapnote .muted{color:var(--muted)}
+.mapnote .btn{border-color:var(--y);color:var(--y)}
+
+/* data in / out */
+.io{display:grid;grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr);gap:8px;align-items:stretch}
+.io .col{background:var(--surface-2);border-radius:12px;padding:12px 14px;min-width:0}
+.io .col.out{border:1px solid color-mix(in srgb,var(--y) 45%,transparent)}
+.io .k{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:6px}
+.io ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.io li{font-size:14px;line-height:1.6;display:flex;gap:8px;align-items:flex-start}
+.io li::before{content:"";flex:0 0 6px;height:6px;border-radius:50%;background:var(--muted);margin-top:9px}
+.io .out li::before{background:var(--y)}
+.io .mid{display:flex;align-items:center;justify-content:center;color:var(--ink)}
+.ref{border:1px solid var(--line);background:var(--surface);color:var(--y-text);border-radius:6px;font-family:var(--f-body);font-size:11.5px;padding:0 6px;cursor:pointer;margin-inline:2px;vertical-align:1px}
+.ref:hover{border-color:var(--y)}
+
+/* knowledge the HR specialist brings */
+.kn{border:1.5px solid var(--ink);border-radius:12px;padding:12px 14px;background:var(--surface)}
+.kn .k{font-size:12px;font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.kn .k::before{content:"دانش";background:var(--ink);color:#fff;border-radius:5px;padding:0 7px;font-size:11px}
+.kn ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.kn li{font-size:14px;line-height:1.6;display:flex;gap:8px}
+.kn li::before{content:"";flex:0 0 12px;height:12px;border:1.5px solid var(--ink);border-radius:3px;margin-top:6px}
+.kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.kcard{border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:0}
+.kcard button{background:none;border:0;padding:0;font-weight:800;font-size:14px;cursor:pointer;text-align:start}
+.kcard button:hover{text-decoration:underline;text-decoration-color:var(--y);text-decoration-thickness:3px}
+.kcard ul{margin:6px 0 0;padding-inline-start:18px;display:grid;gap:2px;font-size:13px;color:var(--muted)}
+
+/* architecture stack */
+.stack{display:grid;gap:12px;margin-top:28px}
+.band{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.band.channels{background:var(--surface-2);border-style:dashed;font-size:14px;color:var(--muted)}
+.band.fd{cursor:pointer;transition:border-color .2s,transform .2s}
+.band.fd:hover{border-color:var(--y);transform:translateY(-1px)}
+.band .t{font-weight:800}
+.band .s{color:var(--muted);font-size:13px}
+.flow{display:flex;justify-content:center;color:var(--line);height:14px;margin:-6px 0}
+.flow svg{display:block}
+.trio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.part{--c:var(--c-plat);--t:var(--t-plat);position:relative;text-align:start;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:16px 16px 14px;cursor:pointer;transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s,border-color .25s;display:flex;flex-direction:column;gap:6px;min-width:0;overflow:hidden}
+.part::before{content:"";position:absolute;inset:0 0 auto;height:4px;background:var(--line)}
+.part.has-p1::before{background:var(--y)}
+.part:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--y)}
+.part.sel{border-color:var(--y);box-shadow:0 0 0 3px var(--y-soft)}
+.part .en{font-family:var(--f-mono);font-size:11px;color:var(--muted);letter-spacing:.02em;direction:ltr;text-align:right}
+.part h3{font-size:19px;font-weight:900}
+.part p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.65}
+.part .foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:8px;flex-wrap:wrap}
+.dots{display:flex;flex-wrap:wrap;gap:3px;max-width:100%}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--muted);opacity:.55}
+.dot.p1{background:var(--p1);opacity:1}
+.dot.p3{background:transparent;border:1.5px solid var(--muted)}
+.count{font-size:12.5px;color:var(--muted);white-space:nowrap}
+.count b{color:var(--ink);font-weight:800}
+.part.arch{--c:var(--c-arch);--t:var(--t-arch)} .part.pods{--c:var(--c-pods);--t:var(--t-pods)}
+.part.talent{--c:var(--c-talent);--t:var(--t-talent)} .part.ex{--c:var(--c-ex);--t:var(--t-ex)} .part.plat{--c:var(--c-plat);--t:var(--t-plat)}
+.part.wide{flex-direction:row;align-items:center;gap:20px;flex-wrap:wrap}
+.part.wide .body{flex:1 1 320px;min-width:0;display:flex;flex-direction:column;gap:4px}
+.base{display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:12px}
+.ext{border:1.5px dashed var(--line);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;justify-content:center;gap:2px;color:var(--muted);font-size:13px}
+.ext b{color:var(--ink);font-size:15px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:14px;font-size:12.5px;color:var(--muted);align-items:center}
+.legend i{display:inline-block;vertical-align:middle;margin-inline-end:6px}
+
+/* drill panel */
+.drill{margin-top:22px;border:1px solid var(--line);border-radius:calc(var(--r) + 4px);background:var(--surface);overflow:hidden;animation:rise .35s cubic-bezier(.2,.8,.2,1)}
+@keyframes rise{from{transform:translateY(10px);opacity:.4}to{transform:none;opacity:1}}
+.drill-head{--c:var(--c-plat);--t:var(--t-plat);background:var(--t);padding:18px 20px;display:flex;flex-wrap:wrap;gap:12px 20px;align-items:flex-end;justify-content:space-between;border-bottom:1px solid var(--line)}
+.crumb{font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.crumb button{background:none;border:0;padding:0;color:var(--muted);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.drill-head h3{font-size:24px;font-weight:900;color:var(--ink);margin-top:2px}
+.drill{border-top:3px solid var(--y)}
+.drill-head p{margin:4px 0 0;color:var(--muted);max-width:60ch;font-size:14px}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 11px;font-size:12.5px;cursor:pointer;transition:all .15s}
+.chip:hover{border-color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--y);color:var(--y-ink);border-color:var(--y);font-weight:700}
+.drill-tools{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;padding:18px 20px 22px}
+.tile{--c:var(--c-plat);text-align:start;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;display:flex;flex-direction:column;gap:8px;transition:transform .2s,border-color .2s,box-shadow .2s;min-width:0;animation:pop .3s both}
+@keyframes pop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+.tile:hover{transform:translateY(-2px);border-color:var(--y);box-shadow:var(--shadow)}
+.tile.p1{border-color:color-mix(in srgb,var(--p1) 55%,var(--line));background:linear-gradient(var(--surface),var(--surface)) padding-box}
+.tile .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.tile .n{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.tile .nm{font-weight:800;font-size:15px;line-height:1.5}
+.tile .meta{display:flex;flex-wrap:wrap;gap:5px}
+.tag{font-size:11.5px;border-radius:6px;padding:1px 7px;background:var(--surface-2);color:var(--muted);white-space:nowrap}
+.tag.p1{background:var(--p1);color:var(--y-ink);font-weight:700}
+.tag.new{background:transparent;border:1px solid var(--y);color:var(--y-text)}
+.empty{padding:24px 20px;color:var(--muted)}
+
+/* automation bars */
+.auto-rows{display:grid;gap:12px;margin-top:24px}
+.arow{display:grid;grid-template-columns:170px minmax(0,1fr) 44px;gap:14px;align-items:center}
+.arow .lbl{font-weight:800;font-size:14px}
+.bars{display:flex;height:30px;border-radius:8px;overflow:hidden;background:var(--surface-2)}
+.seg{border:0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;transition:filter .2s,flex-grow .6s cubic-bezier(.2,.8,.2,1);min-width:0;overflow:hidden;padding:0}
+.seg:hover{filter:brightness(1.12)}
+.seg.a1{background:var(--y);color:var(--y-ink)} .seg.a2{background:#FFE48F;color:var(--ink)} .seg.a3{background:#E2DFD8;color:var(--ink)}
+.arow .tot{color:var(--muted);font-size:13px;text-align:end}
+.akey{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:16px}
+.akey div{font-size:13px;color:var(--muted);max-width:34ch}
+.akey b{color:var(--ink);display:block;font-size:13.5px}
+.bench{margin-top:34px;padding-top:22px;border-top:1px solid var(--line)}
+.bench h3{margin:0 0 6px;font-size:16px}
+.bench p{margin:0;color:var(--muted);font-size:14px;max-width:70ch}
+.bars .seg.ro{cursor:default}
+.akey i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-inline-end:6px;vertical-align:-1px}
+
+/* phase 1 */
+.promise{font-size:clamp(18px,2.2vw,23px);font-weight:700;line-height:1.7;max-width:46ch;margin-top:14px;border-inline-start:4px solid var(--p1);padding-inline-start:16px}
+.cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:26px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;min-width:0}
+.panel h3{font-size:15px;font-weight:800;margin-bottom:10px}
+.panel ul{margin:0;padding-inline-start:18px;display:grid;gap:4px}
+.panel.in{border-color:color-mix(in srgb,var(--p1) 50%,var(--line))}
+.mchips{display:flex;flex-wrap:wrap;gap:6px}
+.mchip{border:1px solid color-mix(in srgb,var(--p1) 50%,var(--line));background:var(--p1-soft);color:var(--ink);border-radius:999px;padding:4px 11px;font-size:13px;cursor:pointer;transition:transform .15s}
+.mchip:hover{transform:translateY(-1px)}
+.mchip .num{font-size:11px;color:var(--y-text);margin-inline-end:4px}
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.checks li{display:flex;gap:10px;align-items:flex-start}
+.checks li::before{content:"";flex:0 0 16px;height:16px;border:1.5px solid var(--muted);border-radius:4px;margin-top:5px}
+.risk{margin-top:14px;color:var(--muted);font-size:14px;max-width:70ch}
+
+/* roadmap */
+.road{margin-top:26px;overflow-x:auto;padding-bottom:6px}
+.road-grid{display:grid;grid-template-columns:110px repeat(4,minmax(150px,1fr));gap:8px;min-width:720px;position:relative}
+.ph{padding:10px 12px;border-radius:10px;background:var(--surface-2)}
+.ph b{display:block;font-weight:800;font-size:14px}
+.ph span{font-size:12px;color:var(--muted)}
+.ph.on{background:var(--p1-soft)}
+.lane{font-weight:800;font-size:13.5px;display:flex;align-items:center;line-height:1.5}
+.cell{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.6;min-height:64px}
+.cell.hot{border:2px solid var(--p1);background:var(--p1-soft)}
+.cell.none{border-style:dashed;background:transparent;color:var(--muted);display:flex;align-items:center;justify-content:center}
+.gates{display:grid;grid-template-columns:110px repeat(4,minmax(150px,1fr));gap:8px;min-width:720px;margin-top:12px}
+.gate{grid-column:span 1;display:flex;justify-content:flex-end}
+.gate button{display:flex;align-items:center;gap:8px;background:none;border:0;cursor:pointer;font-size:12.5px;color:var(--ink);padding:4px;transform:translateX(-40%)}
+.gate .dia{width:14px;height:14px;background:var(--p1);transform:rotate(45deg);border-radius:2px;flex:0 0 auto}
+.foot-note{color:var(--muted);font-size:12.5px;margin-top:10px}
+
+/* agents & refs */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:24px}
+#refCards{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.card{text-align:start;border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:16px;cursor:pointer;display:flex;flex-direction:column;gap:6px;transition:transform .2s,box-shadow .2s,border-color .2s;min-width:0}
+.card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--y)}
+.card .k{font-size:12px;color:var(--muted)}
+.card h3{font-size:17px;font-weight:900}
+.card p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.65}
+.card .more{margin-top:auto;font-size:12.5px;color:var(--y-text);font-weight:700;padding-top:4px}
+.card.p1c{border-color:color-mix(in srgb,var(--p1) 55%,var(--line))}
+
+footer{padding-block:28px 48px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--line)}
+
+/* modal */
+.scrim{position:fixed;inset:0;background:var(--scrim);z-index:50;display:flex;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));opacity:0;transition:opacity .2s}
+.scrim.show{opacity:1}
+.modal{--c:var(--accent);--t:var(--surface-2);background:var(--surface);border-radius:18px;width:min(760px,100%);max-height:min(88vh,900px);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.35);transform:translateY(14px) scale(.98);transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+.scrim.show .modal{transform:none}
+.m-head{background:var(--t);border-top:4px solid var(--y);padding:18px 22px 16px;border-bottom:1px solid var(--line);position:relative}
+.m-head .crumb{margin-bottom:4px}
+.m-head h2{font-size:clamp(20px,3vw,26px);font-weight:900;letter-spacing:-.01em;padding-inline-end:44px}
+.m-head .meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.m-close{position:absolute;top:14px;left:14px;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-size:18px;line-height:1}
+.m-body{padding:18px 22px 22px;overflow-y:auto;display:grid;gap:18px}
+.facts4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.f{background:var(--surface-2);border-radius:12px;padding:12px 14px;min-width:0}
+.f .k{font-size:12px;color:var(--muted);font-weight:700}
+.f .v{font-size:14.5px;margin-top:2px}
+.f.wide{grid-column:1/-1}
+.src{border:1px dashed var(--y);border-radius:12px;padding:10px 14px;font-size:13.5px;color:var(--muted)}
+.src b{color:var(--y-text)}
+.steps-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.steps-h h3{font-size:16px;font-weight:900}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:0;counter-reset:s}
+.step{display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;position:relative;padding-bottom:14px}
+.step::before{counter-increment:s;content:counter(s,persian);width:28px;height:28px;border-radius:50%;background:var(--surface-2);border:1.5px solid var(--y);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--y-text);z-index:1}
+.step::after{content:"";position:absolute;top:30px;bottom:0;right:13px;width:1.5px;background:var(--line)}
+.step:last-child::after{display:none}
+.step .st{font-weight:800;font-size:14.5px;line-height:1.6;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.step .sw{color:var(--muted);font-size:13px}
+.step .sx{display:grid;gap:3px;margin-top:6px;font-size:13px}
+.step .sx span{display:flex;gap:6px}
+.step .sx i{font-style:normal;flex:0 0 auto;font-size:11.5px;font-weight:700;border-radius:5px;padding:0 6px;height:20px;display:inline-flex;align-items:center}
+.step .sx .ai{background:var(--y);color:var(--y-ink)}
+.step .sx .hu{background:var(--ink);color:#fff}
+.nosteps{color:var(--muted);font-size:13.5px;background:var(--surface-2);border-radius:12px;padding:12px 14px}
+.m-foot{display:flex;justify-content:space-between;gap:8px;padding:12px 22px;border-top:1px solid var(--line);background:var(--surface)}
+.m-foot .btn[disabled]{opacity:.4;cursor:default}
+.rel{display:flex;flex-wrap:wrap;gap:6px}
+.list{margin:0;padding-inline-start:18px;display:grid;gap:4px}
+
+@media (max-width:820px){
+  .crit{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .prec{grid-template-columns:1fr}
+  .moat{grid-template-columns:1fr}
+  .mdetail{position:static}
+  .gswipe{display:block}
+  .gp-flow{grid-template-columns:1fr}
+  .gp-arrow{transform:rotate(-90deg);height:22px}
+  .pillars{grid-template-columns:1fr}
+  .fives{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .io{grid-template-columns:1fr}
+  .io .mid{transform:rotate(-90deg);height:24px}
+  .trio{grid-template-columns:1fr}
+  .base{grid-template-columns:1fr}
+  .cols{grid-template-columns:1fr}
+  .arow{grid-template-columns:1fr;gap:6px}
+  .arow .tot{text-align:start}
+  .facts4{grid-template-columns:1fr}
+  .brand span{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+</style>
+
+<div id="app" dir="rtl" lang="fa">
+<header class="bar">
+  <div class="wrap">
+    <div class="brand">HR Ops<span>پلتفرم تصمیم HR</span></div>
+    <nav class="nav" id="nav" aria-label="بخش‌های ارائه">
+      <a href="#intro">تقسیم‌بندی HR</a>
+      <a href="#platform">زیرساخت</a>
+      <a href="#model">مدل</a>
+      <a href="#decisions">نقاط تصمیم</a>
+      <a href="#automation">خودکارسازی</a>
+      <a href="#priority">اولویت‌بندی</a>
+      <a href="#phase1">نسخهٔ اول</a>
+      <a href="#roadmap">نقشهٔ راه</a>
+      <a href="#agents">عامل‌ها</a>
+      <a href="#refs">مرجع‌ها</a>
+    </nav>
+    <button class="btn" id="presentBtn" aria-pressed="false" type="button">حالت ارائه</button>
+  </div>
+</header>
+
+<main>
+<section id="intro" class="hero">
+  <div class="wrap">
+    <div class="eyebrow">HR Ops | پلتفرم تصمیم‌گیری HR با هوش مصنوعی | آبان ۱۴۰۵</div>
+    <h1>HR را چطور <em>تقسیم</em> می‌کنیم؟</h1>
+    <p>مک‌کینزی در مدل عملیاتی HR برای دورهٔ عامل‌ها (۲۰۲۶) کارهای HR را در پنج بخش می‌چیند و این محصول روی همین پنج بخش ساخته می‌شود. هر کارت نشان می‌دهد کدام حوزه‌های آشنای HR در آن بخش‌اند؛ روی کارت بزنید تا ماژول‌هایش باز شود.</p>
+    <div class="evo">
+      <div class="fives" id="fives"></div>
+    </div>
+    <div class="facts" id="facts"></div>
+    <div class="hint">جابه‌جایی بین بخش‌ها: <kbd>←</kbd> <kbd>→</kbd> | بستن پنجره: <kbd>Esc</kbd></div>
+  </div>
+</section>
+
+<section id="platform">
+  <div class="wrap">
+    <div class="eyebrow">جایگاه محصول | مزیت ماندگار</div>
+    <h2 class="h2">پلتفرم تصمیم‌گیری HR با هوش مصنوعی، نه پلتفرم عامل</h2>
+    <p class="lede">عامل تا ۲ تا ۳ سال دیگر قابلیتی عمومی می‌شود و مزیت ماندگار نیست. مزیت ماندگار هفت لایهٔ زیر است؛ عامل هر نسلی که باشد روی آن‌ها می‌نشیند. روی هر لایه بزنید.</p>
+    <div class="moat">
+      <div class="mstack" id="mstack" role="group" aria-label="لایه‌های زیرساخت"></div>
+      <div class="mdetail" id="mdetail" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<section id="model">
+  <div class="wrap">
+    <div class="eyebrow">مدل | سطح ۱</div>
+    <h2 class="h2">پنج بخش روی یک پلتفرم؛ نسخهٔ اول از جبران خدمات با مرسر</h2>
+    <p class="lede">هر بخش یکی از اجزای مدل عملیاتی HR مک‌کینزی است. نقطه‌های پایین هر کارت ماژول‌های آن بخش‌اند؛ زرد یعنی فاز ۱. محاسبهٔ حقوق در ابزار فعلی مشتری می‌ماند.</p>
+    <div class="stack" id="stack"></div>
+    <div class="legend">
+      <span><i class="dot p1"></i>فاز ۱</span>
+      <span><i class="dot"></i>فاز ۲</span>
+      <span><i class="dot p3"></i>فاز ۳</span>
+    </div>
+    <div id="drill"></div>
+  </div>
+</section>
+
+<section id="decisions">
+  <div class="wrap">
+    <div class="eyebrow">زیرساخت | لایهٔ ۱: گراف تصمیم</div>
+    <h2 class="h2">هر تصمیم از کدام ماژول چه داده‌ای می‌گیرد</h2>
+    <p class="lede">راست: ماژولی که داده می‌دهد. وسط: نقطهٔ تصمیم و موتور محاسبه‌اش. چپ: جایی که نتیجه ثبت می‌شود. روی هر تصمیم یا ماژول بزنید.</p>
+    <div class="gtools">
+      <div class="seg2" role="group" aria-label="فیلتر فاز"><button type="button" data-gf="all" aria-pressed="true">همهٔ تصمیم‌ها</button><button type="button" data-gf="1" aria-pressed="false">فقط فاز ۱</button></div>
+      <div class="glegend"><span><i class="lg d1"></i>تصمیم فاز ۱</span><span><i class="lg d2"></i>تصمیم فازهای بعد</span><span><i class="ln in"></i>داده‌ای که می‌گیرد</span><span><i class="ln out"></i>نتیجه‌ای که ثبت می‌شود</span><span><i class="ln man"></i>آن ماژول هنوز ساخته نشده؛ دستی یا فایل</span></div>
+    </div>
+    <div class="gwrap"><svg id="graph" role="img" aria-label="گراف ماژول‌ها و نقاط تصمیم"></svg></div>
+    <p class="gswipe">گراف را افقی بکشید.</p>
+    <div class="gpanel" id="gpanel" aria-live="polite"></div>
+  </div>
+</section>
+
+<section id="automation">
+  <div class="wrap">
+    <div class="eyebrow">مدل | از زاویهٔ دیگر</div>
+    <h2 class="h2">سهم عامل در هر بخش</h2>
+    <p class="lede">دسته‌بندی سه‌گانهٔ مک‌کینزی روی ۵۵ ماژول. روی هر تکه بزنید تا همان ماژول‌ها باز شوند.</p>
+    <div class="auto-rows" id="autoRows"></div>
+    <div class="akey" id="akey"></div>
+    <div class="bench">
+      <h3>کنار مرجع</h3>
+      <p>مک‌کینزی در «مدل عملیاتی تازهٔ مدیریت مردم» (۲۰۲۵) ۴۲ فرایند HR را در همین سه سطح سنجیده است. ترکیب نقشهٔ ما نزدیک به آن است؛ بیشتر فاصله در عملیات پرسنلی است.</p>
+      <div class="auto-rows" id="benchRows"></div>
+    </div>
+  </div>
+</section>
+
+<section id="priority">
+  <div class="wrap">
+    <div class="eyebrow">نقشهٔ راه | اولویت‌بندی</div>
+    <h2 class="h2">پنج معیار اولویت روی ۵۵ ماژول</h2>
+    <p class="lede">ستون‌ها امتیاز چهار معیار ارزش (اثر سریع و گسترده، استفادهٔ روزمره، وابستگی کم به واحدهای غیر HR، سبک شدن کار تیم HR) را جمع می‌زنند؛ ردیف‌ها پیش‌نیازی را نشان می‌دهند. رنگ هر ماژول فاز فعلی آن است. روی هر ماژول بزنید.</p>
+    <div class="crit" id="crit"></div>
+    <div class="pfil seg2" role="group" aria-label="برجسته کردن"><button type="button" data-ph="all" aria-pressed="true">همه</button><button type="button" data-ph="base" aria-pressed="false">پایه</button><button type="button" data-ph="quick" aria-pressed="false">برد سریع بیرون از فاز ۱</button><button type="button" data-ph="low" aria-pressed="false">فاز ۱ با امتیاز پایین</button></div>
+    <div class="pwrap"><div class="pmx" id="pmx"></div></div>
+    <div class="glegend" style="margin-top:10px"><span><i class="lg d1"></i>فاز ۱ فعلی</span><span><i class="lg d2"></i>فاز ۲</span><span><i class="lg d3"></i>فاز ۳</span></div>
+    <div class="prec" id="prec"></div>
+  </div>
+</section>
+
+<section id="phase1">
+  <div class="wrap">
+    <div class="eyebrow">نسخهٔ اول | ماه ۳ تا ۶</div>
+    <h2 class="h2">یک وعده، ۱۲ ماژول</h2>
+    <div class="promise">هر تصمیم حقوقی گروه (استخدام، ارتقا، افزایش سالانه و پاداش) سریع، کنترل‌شده با مرسر و قابل دفاع آماده می‌شود؛ بدون عوض کردن نرم‌افزار حقوق.</div>
+    <div class="panel in" style="margin-top:22px">
+      <h3>ماژول‌های فاز ۱</h3>
+      <div class="mchips" id="p1chips"></div>
+    </div>
+    <div class="panel" style="margin-top:14px">
+      <h3>دانشی که تیم HR برای ساخت عامل‌های فاز ۱ باید آماده کند</h3>
+      <div class="kgrid" id="p1kn"></div>
+    </div>
+    <div class="cols">
+      <div class="panel">
+        <h3>معیار عبور از دروازهٔ فاز ۱ (پیشنهادی)</h3>
+        <ul class="checks" id="criteria"></ul>
+      </div>
+      <div class="panel">
+        <h3>بیرون از نسخهٔ اول</h3>
+        <ul class="list" id="outside"></ul>
+      </div>
+    </div>
+    <p class="risk"><b>ریسک اول اعتماد به عدد است:</b> امتیاز IPE، باند و همهٔ محاسبه‌ها با موتور قطعی انجام می‌شوند و مدل زبانی فقط نگاشت پیشنهادی، توضیح و پیش‌نویس را به عهده دارد. <b>ریسک دوم مجوز است:</b> استفاده از دادهٔ بازار مرسر برای مشتریان بیرون از فناپ باید با قرارداد مرسر روشن شود.</p>
+  </div>
+</section>
+
+<section id="roadmap">
+  <div class="wrap">
+    <div class="eyebrow">۲۴ ماه | چهار فاز</div>
+    <h2 class="h2">هر فاز فقط با عبور از دروازه شروع می‌شود</h2>
+    <p class="lede">زمان از راست به چپ. روی هر دروازه بزنید تا شرط عبورش را ببینید.</p>
+    <div class="road"><div class="road-grid" id="road"></div><div class="gates" id="gates"></div></div>
+    <p class="foot-note">عددهای دروازه پیشنهادی‌اند و به مقیاس زمانی رسم نشده‌اند.</p>
+  </div>
+</section>
+
+<section id="agents">
+  <div class="wrap">
+    <div class="eyebrow">لایهٔ قابل تعویض | پنج عامل پشت در ورود هوشمند</div>
+    <h2 class="h2">هر عامل با مجوز همان کاربر کار می‌کند</h2>
+    <p class="lede">هیچ عاملی چیزی را مستقیم در ابزار حقوق، سامانهٔ دولتی یا بانک ثبت نمی‌کند. مدل زبانی پشت عامل‌ها با هر نسل عوض می‌شود؛ قاعده، داده و تاریخچهٔ تصمیم می‌ماند.</p>
+    <div class="cards" id="agentCards"></div>
+  </div>
+</section>
+
+<section id="refs">
+  <div class="wrap">
+    <div class="eyebrow">بنچمارک</div>
+    <h2 class="h2">از مرجع‌ها چه برداشتیم</h2>
+    <p class="lede">هجده ماژول از این شش مرجع آمده یا با آن‌ها تقویت شده‌اند. روی هر کارت بزنید.</p>
+    <div class="cards" id="refCards"></div>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap">نقشهٔ محصول HR Ops | نسخهٔ آبان ۱۴۰۵ | جزئیات کامل در سند «نقشهٔ محصول HR Ops»</div></footer>
+
+<div class="scrim" id="scrim" hidden>
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle"></div>
+</div>
+</div>
+
+<script>
+const fa = s => String(s).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+const $ = (s, r = document) => r.querySelector(s);
+
+const PNUM = {arch:1,pods:2,talent:3,ex:4,plat:5};
+const PARTS = {
+  arch:   {name:'معماری نیروی کار', en:'Enterprise workforce architecture', desc:'شغل، رتبه، باند، مهارت و نیروی لازم را تعریف می‌کند؛ پایهٔ همهٔ تصمیم‌های دیگر.'},
+  pods:   {name:'میز کار کسب‌وکار', en:'Workforce pods', desc:'برای هر شرکت گروه یک دید یک‌جا از هزینه، ریسک و تصمیم‌ها، برای راهبر HR همان شرکت.'},
+  talent: {name:'محصولات استعداد', en:'Talent products', desc:'جذب، ورود، عملکرد، رشد و جابه‌جایی داخلی.'},
+  ex:     {name:'محصولات تجربه', en:'Employee experience products', desc:'جبران و پاداش، رفاه، قدردانی، شنیدن صدا و لحظه‌های مهم.'},
+  plat:   {name:'پلتفرم و هوش مردم', en:'People platform & intelligence', desc:'هفت لایهٔ زیرساخت تصمیم، به‌اضافهٔ در ورود هوشمند و عامل‌ها: پرونده، اتصال به ابزار حقوق، انطباق، داده و ممیزی.'}
+};
+const AUTO = {
+  1:{name:'خودکار کامل', desc:'عامل کار را بدون دخالت روزمرهٔ انسان تمام می‌کند.'},
+  2:{name:'خودکار در اجرا', desc:'عامل اجرا می‌کند؛ انسان صاحب سیاست، نتیجه و استثناست.'},
+  3:{name:'تقویت‌شده', desc:'انسان رهبری می‌کند؛ عامل آماده و تحلیل می‌کند.'}
+};
+
+// [n, part, name, agent work, output, human approval, automation, phase, source-if-new]
+const M = [
+[1,'arch','ساختار سازمانی و پست‌ها','نگهداری چارت، پست و خط گزارش؛ هشدار تناقض','چارت زنده','تغییر ساختار',2,1],
+[2,'arch','شغل و رتبهٔ IPE','نگاشت شغل به خانواده و کد مرسر؛ امتیاز IPE با موتور قطعی در نبود تطبیق','شناسنامه و رتبهٔ شغل','تأیید کمیته',3,1,'IBM HR 3.0، حوزهٔ ۴'],
+[3,'arch','باند حقوق','پیشنهاد باند از دادهٔ بازار مرسر و سیاست جایگاه گروه','جدول باند','تصویب',3,1,'IBM HR 3.0، حوزهٔ ۴'],
+[4,'arch','گراف مهارت','مهارت‌های هر شغل و هر نفر از سنجش، سوابق و یادگیری','گراف مهارت','تأیید مدل مهارت',2,2,'مک‌کینزی ۲۰۲۶، معماری نیروی کار'],
+[5,'arch','برنامه‌ریزی راهبردی نیرو','پیش‌بینی قابلیت و ظرفیت لازم بر اساس کار و مهارت، نه فقط تعداد','برنامهٔ نیرو و شکاف','تصویب',3,3,'HR Monitor 2026؛ IBM حوزهٔ ۱۰'],
+[6,'arch','شبیه‌سازی و طراحی شغل','سناریوی تغییر ساختار و خودکارسازی کارها؛ پیشنهاد بازطراحی شغل و جریان کار با سهم عامل‌ها','سناریو و هزینه','تصمیم',3,3,'مک‌کینزی ۲۰۲۶'],
+[7,'arch','مسیر شغلی و جانشینی','نقشهٔ مسیر از ساختار شغل و گراف مهارت؛ شناسایی جانشین پست‌های کلیدی','جدول جانشینی','تصمیم جانشین',3,3],
+[8,'pods','میز کار راهبر HR','برای هر شرکت گروه: هزینهٔ نیرو، نسبت مقایسه، گردش، حال‌وهوا، ریسک و تصمیم‌های منتظر','داشبورد و پیشنهاد اقدام','اقدام',3,2,'مک‌کینزی ۲۰۲۶؛ گارتنر'],
+[9,'pods','گزارش مدیرعامل','پاسخ به پرسش به زبان ساده، گزارش دوره‌ای هیئت‌مدیره','گزارش','',1,2,'مک‌کینزی ۲۰۲۶'],
+[10,'talent','درخواست استخدام','ثبت درخواست مدیر، کنترل با بودجه و چارت، پیش‌نویس شرح شغل و معیار','درخواست آمادهٔ تأیید','مدیر HR و مالی',2,3],
+[11,'talent','آگهی و جذب کاندیدا','انتشار آگهی، جست‌وجو در بانک رزومهٔ قبلی، معرفی کارکنان','فهرست کاندیدا','',1,3],
+[12,'talent','غربال رزومه','خواندن رزومهٔ فارسی، تطبیق با معیار شغل، دلیل هر امتیاز','فهرست کوتاه با دلیل','انتخاب فهرست نهایی',2,2],
+[13,'talent','مصاحبهٔ صوتی','مصاحبهٔ ساختاریافتهٔ تلفنی با روبریک یکسان، متن کامل و شواهد رفتاری','گزارش مصاحبه','تصمیم مرحلهٔ بعد',2,2],
+[14,'talent','زمان‌بندی مصاحبه','هماهنگی وقت، یادآوری، اطلاع وضعیت به همهٔ کاندیداها','تقویم مصاحبه','',1,2],
+[15,'talent','پیشنهاد شغلی و استعلام','پیش‌نویس پیشنهاد با حقوق از ماژول ۲۸، پیگیری مدارک و استعلام سوابق','پیشنهاد آمادهٔ ارسال','تأیید پیشنهاد',2,2],
+[16,'talent','پیش از روز اول','دریافت مدارک، قرارداد، سفارش تجهیزات و دسترسی، پیام خوشامد','چک‌لیست تکمیل‌شده','',1,2],
+[17,'talent','مسیر ورود ۹۰ روزه','معرفی واحدها، آموزش‌های لازم، پاسخ به پرسش‌ها، سنجش حال در روز ۷، ۳۰ و ۶۰','پیشرفت ورود','',2,2],
+[18,'talent','همراه و منتور','پیشنهاد همراه از تیم، یادآوری جلسه‌ها','جفت‌های فعال','تعیین همراه',3,3],
+[19,'talent','پایان دورهٔ آزمایشی','یادآوری به مدیر، فرم کوتاه، اثر روی قرارداد','تصمیم آماده','تصمیم ادامه',3,2],
+[20,'talent','عملکرد مداوم','هدف، بازخورد مداوم، گفت‌وگوی دوره‌ای و کالیبراسیون، به جای فقط ارزیابی سالانه','نتیجهٔ چرخه با شواهد','امتیاز و نتیجهٔ نهایی',3,3,'IBM HR 3.0، حوزهٔ ۱'],
+[21,'talent','سنجش مهارت','آزمون عملی نقش‌محور، از جمله آمادگی AI؛ تحلیل شکاف','پروفایل مهارت','',2,2],
+[22,'talent','مسیر یادگیری','پیشنهاد دوره از کتابخانهٔ سازمان یا EDGE، ثبت پیشرفت','مسیر فعال','هزینهٔ دوره',2,3],
+[23,'talent','برنامهٔ توسعهٔ فردی','پیش‌نویس از نتیجهٔ عملکرد و گراف مهارت، پیگیری اقدام‌ها','برنامه با اقدام و موعد','توافق مدیر و کارمند',3,3],
+[24,'talent','مربی هوشمند','مربی نقش‌محور: شکاف را از شاخص‌های همان نقش می‌بیند و پیشنهاد کوتاه در جریان کار می‌دهد؛ تمرین گفت‌وگوهای سخت؛ خلاصه برای مدیر تا مربی‌گری کند','پیشنهادهای رشد و جلسه‌های تمرین','',1,3,'مک‌کینزی ۲۰۲۵، مربی‌گری با AI'],
+[25,'talent','جابه‌جایی داخلی','پیشنهاد فرصت داخلی (پست، پروژه، مأموریت کوتاه) به افراد با مهارت مناسب، پیش از جذب بیرونی','تطبیق فرد و فرصت','مدیر فعلی و مقصد',3,3,'مک‌کینزی ۲۰۲۶؛ HR Monitor 2026'],
+[26,'talent','تغییر وضعیت','ثبت ارتقا، انتقال یا تغییر پست؛ حقوق از ماژول ۲۹','حکم و اطلاع‌رسانی','مدیر HR',2,2],
+[27,'talent','خروج و مصاحبهٔ خروج','چک‌لیست خروج، تسویه در ابزار حقوق، گواهی سابقه، مصاحبهٔ خروج بی‌نام','پروندهٔ بسته و دلایل خروج','تسویه',2,3],
+[28,'ex','حقوق فرد جدید','جایگاه در باند از سابقه و مهارت، کنترل برابری با هم‌رتبه‌ها، تبدیل به اقلام حکم','بستهٔ حقوق پیشنهادی','مدیر و کارشناس جبران',3,1,'IBM HR 3.0، حوزهٔ ۴'],
+[29,'ex','حقوق ارتقا و جابه‌جایی','حقوق تازه طبق قاعدهٔ ارتقای گروه، نسبت مقایسه بعد از تغییر، یکسان‌سازی بین شرکت‌ها','پیشنهاد و پیش‌نویس حکم','تأیید',3,1,'IBM HR 3.0، حوزهٔ ۴'],
+[30,'ex','افزایش سالانه','سناریوهای بودجه، جدول افزایش (Merit Matrix) بر اساس عملکرد و نسبت مقایسه، پیشنهاد هر نفر','احکام گروهی و فایل ابزار حقوق','تصویب و تعدیل مدیر',3,1,'IBM HR 3.0، حوزهٔ ۴'],
+[31,'ex','پاداش عملکرد','استخر پاداش، دروازهٔ اهداف گروهی، هدف هر رده، ضریب عملکرد، نشستن در بودجه','فهرست پاداش و فایل ابزار حقوق','تصویب سناریو',3,1,'IBM HR 3.0، حوزهٔ ۴'],
+[32,'ex','کنترل جبران با مرسر','نسبت مقایسه (Compa-Ratio)، بیرون از باند، برابری داخلی، مقایسهٔ شرکت‌ها، شکاف جنسیتی','گزارش حاکمیت جبران','تصمیم اصلاح',2,1,'IBM HR 3.0، حوزهٔ ۴'],
+[33,'ex','رفاه و وام','ثبت درخواست، کنترل سقف و صف، اقساط در ابزار حقوق','اقساط فعال','تأیید وام',2,3],
+[34,'ex','قدردانی','ثبت تشکر همکاران و مدیر، پیوند با ارزش‌ها','دیوار قدردانی','',1,3],
+[35,'ex','نظرسنجی دوره‌ای','پرسش کوتاه در بله، یادآوری، تجمیع بی‌نام','نتیجه به تفکیک تیم','',1,2],
+[36,'ex','تحلیل نظر و حال‌وهوا','دسته‌بندی نظرهای آزاد، روند رضایت و eNPS، هشدار تیم‌های در خطر','گزارش تجمیعی','اقدام اصلاحی',2,3],
+[37,'ex','ارزیابی فرهنگ','سنجش رفتارهای مرتبط با ارزش‌ها، فاصلهٔ فرهنگ موجود و مطلوب','نقشهٔ فرهنگ','',3,3],
+[38,'ex','لحظه‌های مهم','طراحی لحظه‌های کلیدی (روز اول، ارتقا، تولد فرزند، بازگشت از مرخصی، خروج): پیام، اقدام و یادآوری به مدیر','تقویم لحظه‌ها','',2,3,'IBM HR 3.0، حوزهٔ ۶؛ مک‌کینزی ۲۰۲۲'],
+[39,'ex','ارتباطات داخلی','ارسال اطلاعیه به گروه‌های هدف در بله، پاسخ به پرسش دربارهٔ آن','نرخ دریافت و خواندن','تأیید متن',2,2],
+[40,'ex','دستیار گفت‌وگوی مدیر','پیشنهاد موضوع جلسهٔ یک‌به‌یک، ثبت توافق‌ها','یادداشت جلسه','',3,3],
+[41,'plat','در ورود هوشمند','یک گفت‌وگو در بله و وب برای همهٔ درخواست‌ها؛ تشخیص نیت و ارسال به عامل یا ماژول درست','درخواست مسیریابی‌شده','',1,2,'گارتنر، عامل هوشمند به‌عنوان در ورود HR'],
+[42,'plat','پروندهٔ پرسنلی','ورود از اکسل یا ابزار حقوق، کنترل کسری مدارک و داده','پروندهٔ کامل با هشدار نقص','',1,1],
+[43,'plat','احکام کارگزینی','پیش‌نویس حکم از تغییر حقوق یا پست','حکم آمادهٔ امضا','امضای حکم',2,2],
+[44,'plat','نامه‌ها و گواهی‌ها','گواهی اشتغال، کسر از حقوق، معرفی‌نامه','نامهٔ آماده','فقط نامهٔ غیرعادی',1,2],
+[45,'plat','اتصال و کنترل ابزار حقوق','خواندن خروجی ماهانه، نگاشت به اقلام و بلوک‌های Comp، کنترل ناهنجاری، ساخت فایل ورودی برای حکم و پاداش','گزارش ناهنجاری و فایل ورودی','اصلاح در ابزار فعلی',2,1],
+[46,'plat','کنترل بیمه و مالیات','مقایسهٔ لیست بیمه و مالیات ابزار فعلی با حقوق و احکام پیش از ارسال','فهرست مغایرت','ارسال',2,2],
+[47,'plat','تقویم انطباق','یادآوری مهلت‌ها و کارهای عقب‌افتاده','فهرست کار هفته','',1,1],
+[48,'plat','حضور و غیاب','خواندن دستگاه، تشخیص تأخیر و غیبت، پرسش دربارهٔ کسری تردد','کارکرد ماه','اصلاح دستی',1,2],
+[49,'plat','شیفت و اضافه‌کار','برنامهٔ شیفت، کنترل سقف اضافه‌کار','برنامه و کارکرد','اضافه‌کار خارج از سقف',2,2],
+[50,'plat','مرخصی و مأموریت','ثبت درخواست، کنترل مانده و سیاست','درخواست تأییدشده','مدیر مستقیم',2,2],
+[51,'plat','قرارداد و تمدید','پیش‌نویس از الگو، هشدار پایان قرارداد','قرارداد آمادهٔ امضا','امضا',2,2],
+[52,'plat','دستیار قانون کار','پاسخ با ارجاع به ماده، بخشنامه و سیاست شرکت','پاسخ مستند','پرسش پرریسک به مشاور',3,1],
+[53,'plat','شکایت و حادثهٔ کار','ثبت، پیگیری مهلت‌ها، فهرست مدارک لازم','پروندهٔ کامل','همهٔ تصمیم‌ها',3,3],
+[54,'plat','مدیریت عامل‌ها','فهرست عامل‌ها و سطح اختیار، کیفیت پاسخ، خطا و هزینه','گزارش عملکرد عامل‌ها','تغییر اختیار',3,2,'مک‌کینزی ۲۰۲۶، مدیریت قابلیت عامل‌ها'],
+[55,'plat','تحلیل و گزارش','داشبوردهای استاندارد، گزارش رسمی، هشدار پیشگیرانه در سطح تیم','گزارش و هشدار','',1,2]
+].map(r => ({n:r[0],part:r[1],name:r[2],agent:r[3],out:r[4],human:r[5],auto:r[6],phase:r[7],src:r[8]||''}));
+const byN = Object.fromEntries(M.map(m => [m.n, m]));
+
+// steps: [title, what happens, smart work, human decision, phase]
+const S = {
+1:[['ساختار سازمانی','واحدها، رده‌ها و خط گزارش','ساخت نمودار از داده، هشدار تناقض (مدیر بدون زیرمجموعه، گزارش چرخشی)','تأیید ساختار',1],['پست و شغل','شناسنامهٔ شغل و پست‌های سازمانی','پیشنهاد شرح شغل، تطبیق با طبقه‌بندی مشاغل','تصویب',2]],
+2:[['دریافت دادهٔ شرکت‌ها','فایل الگوی گروه با بلوک‌های Comp1 تا Comp6','اعتبارسنجی: ستون ناقص، واحد ریال، مغایرت جمع‌ها، قلم در بلوک اشتباه','رفع مغایرت با شرکت',1],['طبقه‌بندی اقلام پرداختی','هر قلم حقوقی در بلوک درست','پیشنهاد بلوک برای هر قلم با دلیل','تأیید کارشناس جبران',1],['نگاشت شغل به مرسر','هر عنوان داخلی به خانواده و کد شغلی مرسر','پیشنهاد نگاشت از شرح شغل؛ در نبود تطبیق، امتیازدهی IPE','تأیید نگاشت',1],['رتبه‌بندی شغل','رتبهٔ هر پست','موتور امتیاز قطعی با ثبت دلیل امتیاز','تأیید کمیته',1]],
+3:[['ساخت باند حقوق','حداقل، میانه و حداکثر هر رتبه','پیشنهاد باند از دادهٔ بازار مرسر و سیاست جایگاه گروه در بازار','تصویب',1],['دادهٔ تازهٔ مرسر','با هر انتشار مرسر','بازسازی پیشنهادی باندها و گزارش تغییر نسبت مقایسه','کمیتهٔ جبران',1]],
+4:[['تعریف مدل مهارت','فهرست مهارت‌ها و سطوح','پیشنهاد مهارت‌های هر خانوادهٔ شغلی از شرح شغل و کتابخانهٔ مرسر','تأیید مدل',2],['مهارت هر شغل','مهارت‌های لازم با سطح','نگاشت به هر شغل و رتبه','تأیید',2],['مهارت هر نفر','از سنجش، سوابق، دوره‌ها و پروژه‌ها','استخراج و سطح‌بندی با ذکر منبع هر مهارت','',2],['تأیید فرد و مدیر','پروفایل دیده و اصلاح می‌شود','نمایش منبع هر سطح','تأیید فرد و مدیر',2],['به‌روزرسانی','با هر سنجش یا دوره','ثبت خودکار تغییر سطح','',2]],
+5:[['ورودی کسب‌وکار','برنامه و هدف هر شرکت','جمع‌آوری از مدیران و بودجه','',3],['تقاضای قابلیت','چه کاری و چه مهارتی لازم است','تبدیل برنامه به کار و مهارت، نه فقط تعداد','تأیید مدیر',3],['عرضهٔ موجود','نیرو و مهارت امروز','از گراف مهارت، گردش و بازنشستگی','',3],['شکاف و گزینه‌ها','خرید، ساختن، قرض یا خودکارسازی','مقایسهٔ هزینه و زمان هر گزینه','',3],['تصویب برنامه','','خلاصهٔ برنامه و بودجهٔ نیرو','تصویب',3],['پایش','','مقایسهٔ برنامه با واقعیت هر فصل','',3]],
+6:[['سؤال سناریو','«اگر این دو واحد ادغام شوند؟»','تعریف سناریو از پرسش به زبان ساده','',3],['تجزیهٔ کار','کارهای هر شغل','فهرست کارها و سهم زمانی از شرح شغل و گفت‌وگو با شاغل','تأیید',3],['سهم عامل','کدام کار خودکار می‌شود','دسته‌بندی هر کار در سه سطح خودکارسازی','',3],['اثر','هزینه، تعداد، رتبه و مهارت','محاسبهٔ اثر روی باند و بودجه','',3],['پیشنهاد بازطراحی','شغل و جریان کار تازه','پیش‌نویس شرح شغل و رتبهٔ تازه','تصمیم',3]],
+8:[['دید یک‌جا','برای هر شرکت گروه','هزینهٔ نیرو، نسبت مقایسه، گردش، حال‌وهوای تجمیعی، تصمیم‌های منتظر','',2],['هشدار','تغییر غیرعادی یا ریسک','هشدار با دلیل و دادهٔ پشتش','',2],['پیشنهاد اقدام','برای هر هشدار','پیشنهاد کار بعدی','اقدام',2]],
+9:[['گزارش ماهانه','جلسه با مدیرعامل شرکت','پیش‌نویس گزارش یک‌صفحه‌ای','',2],['پرسش مدیرعامل','به زبان ساده','پاسخ با داده و رعایت دسترسی','',2]],
+10:[['ثبت نیاز','مدیر نیاز را ثبت می‌کند','','',3],['تأیید درخواست','کنترل با بودجه و چارت','','تأیید',3],['شرح شغل و معیار','','پیش‌نویس شرح شغل و معیار ارزیابی','',3]],
+11:[['انتشار آگهی','کاریابی‌ها و کانال‌ها','','',3],['دریافت درخواست','رزومه‌ها جمع می‌شوند','','',2]],
+12:[['غربال اولیه','خواندن رزومهٔ فارسی و تطبیق با معیار','امتیاز با دلیل','',2],['بررسی نتیجه و فهرست کوتاه','نتیجهٔ غربال و مصاحبهٔ هوشمند','','انتخاب فهرست کوتاه',2]],
+13:[['مصاحبهٔ هوشمند','مصاحبهٔ تلفنی ساختاریافته با روبریک یکسان','متن کامل و شواهد رفتاری','',2],['دستیار مصاحبهٔ انسانی','کنار مصاحبه‌کنندهٔ انسانی','پیشنهاد پرسش و ثبت شواهد','مصاحبه و ارزیابی',2],['آزمون تخصصی','','','',3],['جمع‌بندی و تصمیم','','','تصمیم استخدام',2]],
+14:[['تنظیم زمان مصاحبهٔ هوشمند','','هماهنگی و یادآوری','',2],['تنظیم زمان مصاحبه‌های انسانی','','هماهنگی تقویم مصاحبه‌کننده‌ها','',2],['اطلاع به کاندیداهای دیگر','هیچ کاندیدایی بی‌خبر نمی‌ماند','پیام وضعیت به همه','',2]],
+15:[['استعلام و مدارک','','پیگیری مدارک و استعلام سوابق','',3],['تعیین حقوق پیشنهادی','از ماژول ۲۸','','',3],['تهیهٔ پیشنهاد شغلی','','پیش‌نویس پیشنهاد','',2],['تأیید پیشنهاد','','','تأیید',2],['ارسال و پیگیری','','ارسال و یادآوری','',2],['پذیرش و انتقال به ورود','','ساخت پرونده و شروع ورود','',2]],
+16:[['ساخت پرونده','از دادهٔ پیشنهاد پذیرفته‌شده','انتقال خودکار، بدون ورود دوباره','',2],['جمع مدارک','کارمند مدارک را می‌فرستد','فهرست در بله، کنترل خوانایی، یادآوری کسری','',2],['قرارداد کار','قرارداد امضا می‌شود','پیش‌نویس از الگو با شرایط پیشنهاد','امضای دو طرف',2],['حکم اولیه','ورود به دورهٔ حقوق','پیش‌نویس حکم و فایل ورودی ابزار حقوق','امضای حکم',2],['تجهیزات و دسترسی‌ها','رایانه، ایمیل، کارت تردد','ثبت درخواست برای IT و پیگیری تا روز اول','',2],['پیام خوشامد','کارمند و تیم باخبرند','برنامهٔ هفتهٔ اول و معرفی به تیم','',2],['روز اول','مدیر و همراه مسئول روز اول‌اند','چک‌لیست برای مدیر و یادآوری','',2]],
+17:[['آموزش‌های لازم','آیین‌نامه، ایمنی، ابزارها','مسیر کوتاه در بله با پرسش کوتاه برای اطمینان از فهم','',2],['پرسش‌وپاسخ همیشگی','کارمند جدید هر سؤالی می‌پرسد','پاسخ از آیین‌نامه، ارجاع به آدم درست','',2],['سنجش حال کارمند جدید','روز ۷، ۳۰ و ۶۰','پرسش کوتاه و هشدار پاسخ نگران‌کننده با رضایت کارمند','گفت‌وگو با کارمند',2],['جلسه‌های مدیر','یک‌به‌یک هفتگی ماه اول','یادآوری و پیشنهاد موضوع','',3],['گزارش ورود','کیفیت ورود','زمان تا آمادگی، تکمیل چک‌لیست‌ها، ریزش ۹۰ روزه','',3]],
+18:[['تعیین همراه','یک همکار مسئول راهنمایی','پیشنهاد همراه از تیم و یادآوری جلسه‌ها','تعیین همراه',3]],
+19:[['اهداف دورهٔ آزمایشی','انتظارات ثبت می‌شود','پیش‌نویس اهداف از شرح شغل','توافق مدیر و کارمند',3],['ارزیابی پایان دوره','تصمیم ادامهٔ همکاری','یادآوری پیش از موعد، فرم کوتاه، اثر روی قرارداد','تصمیم ادامه',2]],
+20:[['بازخورد در جریان کار','بعد از هر پروژه یا رویداد','درخواست و ثبت بازخورد کوتاه از همکاران و مدیر','',3],['یادداشت شواهد','دستاوردها و مسئله‌ها','جمع‌آوری از پروژه‌ها و یک‌به‌یک‌ها','',3],['گفت‌وگوی دوره‌ای','هر فصل','دستور گفت‌وگو از شواهد ثبت‌شده','گفت‌وگو',3],['کالیبراسیون','جلسهٔ هم‌ترازی امتیازها','توزیع امتیازها و هشدار سوگیری مدیر','تصمیم نهایی',3],['اتصال به پاداش و توسعه','','ارسال نتیجه به پاداش (۳۱) و برنامهٔ توسعه (۲۳)','',3]],
+25:[['ثبت فرصت','پست خالی، پروژه یا مأموریت کوتاه','دریافت از درخواست استخدام یا مدیر','',3],['اول داخل','پیش از آگهی بیرونی','تطبیق با گراف مهارت و علاقهٔ ثبت‌شده','',3],['پیشنهاد به فرد','','پیام محرمانه به افراد مناسب','',3],['ابراز علاقه','','ثبت بدون اطلاع مدیر فعلی تا مرحلهٔ گفت‌وگو','',3],['گفت‌وگو و تصمیم','','هماهنگی با مدیر فعلی و مقصد','تصمیم دو مدیر',3],['انتقال','','حقوق از ماژول ۲۹ و پیش‌نویس حکم','امضا',3]],
+26:[['درخواست تغییر','ارتقا، جابه‌جایی یا تغییر حقوق','مدیر در بله به زبان ساده می‌گوید؛ عامل فرم را پر می‌کند','',2],['کنترل با باند و بودجه','پیش از رفتن به تأیید','مقایسه با باند، بودجهٔ واحد و افراد هم‌رده','',2],['تأیید','مسیر تأیید طبق سیاست','ارسال به تأییدکنندهٔ درست با خلاصهٔ یک‌خطی','تأیید',2],['اطلاع‌رسانی','کارمند و واحدهای مرتبط','پیام، تغییر دسترسی‌ها و نمودار سازمانی','',2]],
+27:[['ثبت خروج','استعفا، پایان قرارداد، بازنشستگی یا فسخ','یادآوری مهلت‌های قانونی همان نوع','تأیید HR',2],['گفت‌وگوی ماندگاری','پیش از قطعی شدن استعفای افراد کلیدی','هشدار به مدیر و HR','پیشنهاد ماندن یا نه',3],['چک‌لیست تحویل','کار، اموال و دسترسی‌ها','ساخت چک‌لیست و پیگیری با واحدها','',2],['مصاحبهٔ خروج','چرا می‌رود؟','پرسش‌نامهٔ بی‌نام یا گفت‌وگوی هوشمند','',3],['تسویه‌حساب','در ابزار حقوق','کنترل و توضیح هر قلم','تأیید HR و مالی',2],['تحلیل دلایل خروج','','دسته‌بندی دلایل و روند به تفکیک واحد، با حداقل تعداد','',3]],
+28:[['شروع از پست','پست و رتبهٔ آن معلوم است','خواندن رتبه و باند پست','',1],['دادهٔ کاندیدا','سابقه، حقوق فعلی و انتظار','استخراج از رزومه و فرم','',1],['جایگاه در باند','کجای باند بنشیند','پیشنهاد بازه بر اساس سابقه و مهارت، طبق قاعدهٔ ورود گروه','',1],['کنترل برابری','مقایسه با هم‌رتبه‌های فعلی','هشدار اگر بالاتر از افراد فعلی هم‌سطح می‌نشیند','',1],['ساخت بسته','تبدیل رقم کل به اقلام','تقسیم به اقلام حکم و بلوک‌های Comp، برآورد هزینهٔ کل کارفرما','',1],['تأیید','','خلاصهٔ یک‌صفحه‌ای با دلیل و استثناها','تأیید مدیر و جبران',1],['خروجی','','پیش‌نویس پیشنهاد شغلی و حکم، و فایل ورودی ابزار حقوق','ثبت در ابزار حقوق',1],['استثنا','بیرون از باند','ثبت دلیل و تأییدکنندهٔ استثنا','تأیید سطح بالاتر',1]],
+29:[['ثبت تغییر','ارتقا به رتبهٔ بالاتر یا انتقال','دریافت از مدیر یا از نتیجهٔ چرخهٔ ارزیابی','',1],['محاسبهٔ حقوق جدید','طبق قاعدهٔ ارتقای گروه','رساندن به کف باند جدید، درصد افزایش ارتقا، کنترل سقف','',1],['نسبت مقایسه پس از تغییر','','محاسبه و مقایسه با هم‌رتبه‌های جدید','',1],['انتقال بین شرکت‌ها','الگوی پرداخت شرکت مقصد فرق دارد','یکسان‌سازی اقلام با الگوی مقصد، بدون کاهش ناخواسته','تأیید',1],['اثر بودجه','','هزینهٔ سالانه برای واحد','',1],['تأیید','','خلاصه با گزینه‌ها','تأیید',1],['حکم و ثبت','','پیش‌نویس حکم و فایل ورودی ابزار حقوق','امضا و ثبت',1]],
+30:[['بودجهٔ افزایش','درصد کل افزایش','شبیه‌سازی چند سناریو و هزینهٔ هر کدام','تصویب',1],['جدول افزایش','درصد بر اساس عملکرد و نسبت مقایسه','پیشنهاد جدولی که در بودجه بنشیند','تصویب',1],['پیشنهاد هر نفر','','محاسبه برای همه','تعدیل مدیر در بازهٔ مجاز',1],['کنترل نهایی','','جمع با بودجه، بیرون از باند، برابری','تأیید',1],['احکام گروهی','','پیش‌نویس احکام و فایل ورودی ابزار حقوق','امضا',1]],
+31:[['استخر پاداش','مبلغ کل','پیشنهاد از نتیجهٔ شرکت و گروه','تصویب',1],['دروازهٔ اهداف گروهی','اگر هدف جمعی نرسد','اعمال قاعدهٔ دروازه','',1],['هدف پاداش هر رده','درصد هدف برای رده‌های S، P، M و E','خواندن از سیاست','تصویب سیاست',1],['ضریب عملکرد','منحنی ضریب بر اساس نتیجهٔ ارزیابی','محاسبهٔ پاداش هر نفر','',1],['نشستن در بودجه','','شبیه‌ساز پاداش: نرمال‌سازی به بودجه، تمرکز هزینه','انتخاب سناریو',1],['توزیع مدیر','','پیشنهاد سهم هر نفر','تعدیل در بازهٔ مجاز',2],['تأیید و خروجی','','فهرست نهایی و فایل ورودی ابزار حقوق','تأیید',1],['توضیح به کارمند','','نامهٔ پاداش با دلیل','',2]],
+32:[['نسبت مقایسه','حقوق هر نفر نسبت به میانهٔ باند','محاسبه برای همه، به تفکیک شرکت، رتبه و خانوادهٔ شغلی','',1],['بیرون از باند','زیر حداقل یا بالای حداکثر','فهرست افراد با هزینهٔ رساندن به باند','تصمیم اصلاح',1],['برابری داخلی','هم‌رتبه‌های یک شغل با اختلاف زیاد','پیدا کردن اختلاف بی‌دلیل با در نظر گرفتن سابقه و عملکرد','بررسی',1],['مقایسهٔ شرکت‌ها','یک شغل در شرکت‌های مختلف گروه','جدول مقایسه و هشدار ناهمسانی','تصمیم سیاست',1],['شکاف جنسیتی','اختلاف پرداخت در کار هم‌ارز','تحلیل تعدیل‌شده، فقط تجمیعی','اقدام',2],['گزارش حاکمیت','ماهانه یا فصلی به معاونت','خلاصهٔ انحراف‌ها، استثناها و روند','',1]],
+38:[['تعریف لحظه‌ها','روز اول، ارتقا، تولد فرزند، بازگشت از مرخصی، سالگرد، خروج','پیشنهاد فهرست و اقدام هر لحظه','تأیید',3],['تشخیص','لحظه رسیده است','از رویدادهای پرونده و حکم','',3],['اقدام','پیام، هدیه یا یادآوری به مدیر','اجرای خودکار یا یادآوری','',3],['سنجش','اثر لحظه','پرسش کوتاه بعد از لحظه','',3]],
+41:[['دریافت پیام','در بله یا وب','تشخیص هویت و نیت','',2],['مسیریابی','','ارسال به عامل یا ماژول درست','',2],['پاسخ فوری','پرسش‌های ساده','پاسخ از آیین‌نامه و دادهٔ خود فرد','',2],['ارجاع به انسان','وقتی عامل جواب ندارد','ارجاع با خلاصهٔ گفت‌وگو','پاسخ کارشناس',2],['پیگیری','','اطلاع وضعیت تا بسته شدن درخواست','',2]],
+42:[['ورود اولیهٔ داده','انتقال از اکسل یا ابزار حقوق','نگاشت ستون‌ها، پیدا کردن رکورد تکراری و ناقص، گزارش کیفیت داده','تأیید نگاشت',1],['پروندهٔ پرسنلی','هویت، تحصیل، خانواده، بانک و بیمه','خواندن مدارک اسکن‌شده و پر کردن خودکار فیلدها','',1],['درخواست تغییر اطلاعات','نشانی، حساب، تأهل یا فرزند','دریافت در بله، خواندن مدرک، فایل تغییر برای ابزار حقوق','تأیید HR',1],['بایگانی و جست‌وجو','همهٔ اسناد هر کارمند یک‌جا','جست‌وجو به زبان طبیعی با رعایت سطح دسترسی','',2]],
+43:[['حکم کارگزینی','صدور و نسخه‌گذاری احکام','پیش‌نویس حکم از رویداد و کنترل با قانون','امضای حکم',2]],
+44:[['نامه‌ها و گواهی‌ها','گواهی اشتغال، کسر از حقوق، معرفی‌نامه','تولید فوری از الگو با دادهٔ پرونده','امضا',2]],
+45:[['دریافت خروجی ابزار حقوق','فایل ماهانه از نرم‌افزار فعلی','نگاشت ستون‌ها به اقلام استاندارد و بلوک‌های Comp مرسر','تأیید نگاشت در بار اول',1],['کنترل ناهنجاری ماه','مقایسه با ماه قبل و با احکام','جهش غیرعادی، قلم جاافتاده، خالص منفی، اختلاف با حکم','',1],['توضیح و ارجاع','هر ناهنجاری با دلیل','توضیح ساده و پیشنهاد اصلاح','اصلاح در ابزار فعلی',1],['پرسش کارمند دربارهٔ فیش','«چرا حقوقم این ماه کم شد؟»','پاسخ با دادهٔ همان فیش','ارجاع به HR اگر خطاست',2]],
+46:[['کنترل بیمه و مالیات','پیش از ارسال','مقایسهٔ لیست بیمه و مالیات با حقوق و احکام','ارسال از ابزار فعلی',2]],
+47:[['تقویم انطباق','مهلت‌های ماهانه و سالانه','یادآوری کارهای عقب‌افتاده','',1],['پایان قرارداد و دورهٔ آزمایشی','برای هر نفر','هشدار به مدیر و HR','',1],['مصوبهٔ تازهٔ دستمزد','ابتدای سال','اثر روی کف باندها، فهرست افراد زیر حداقل','مدیر HR',1]],
+52:[['بخشنامهٔ تازه','قانون یا بخشنامه تغییر می‌کند','پایش منبع‌های رسمی، خلاصهٔ تغییر، فهرست سیاست‌ها و قراردادهای اثرپذیر','تأیید به‌روزرسانی سیاست',2],['پرسش قانون کار','HR یا مدیر می‌پرسد','پاسخ با استناد به ماده و رأی؛ اعلام اینکه کجا وکیل لازم است','',1],['پرسش پرریسک','','ارجاع به مشاور حقوقی با خلاصهٔ پرونده','پاسخ مشاور',1]],
+54:[['فهرست عامل‌ها','','هر عامل، اختیار و داده‌ای که می‌بیند','',2],['کیفیت','','نمونه‌گیری از پاسخ‌ها و نرخ خطا','بازبینی',2],['هزینه','','هزینهٔ اجرا به تفکیک عامل','',2],['تغییر اختیار','','پیشنهاد افزایش یا کاهش اختیار با شواهد','تأیید مدیر HR',2],['ثبت ممیزی','','ثبت هر تغییر و دلیلش','',2]]
+};
+
+const AGENTS = [
+  {k:'کاندیدا', name:'عامل کاندیدا', user:'کاندیداهای بیرون از سازمان', sees:'آگهی، وضعیت درخواست خود کاندیدا', does:'پاسخ به پرسش، مصاحبهٔ صوتی، زمان‌بندی، اطلاع وضعیت', human:'هر تصمیم رد یا قبول', phase:2, mods:[13,14,15]},
+  {k:'کارمند', name:'عامل کارمند', user:'هر کارمند، از جمله کارمند جدید', sees:'فقط دادهٔ خودش', does:'فیش، مرخصی، درخواست، گواهی، مسیر ورود، نظرسنجی، یادگیری، فرصت داخلی', human:'هر درخواستی که پول یا استثنا دارد', phase:2, mods:[17,35,44,50,25]},
+  {k:'مدیر', name:'عامل مدیر', user:'مدیر مستقیم و راهبر HR کسب‌وکار', sees:'دادهٔ تیم یا شرکت خودش؛ حال‌وهوا فقط تجمیعی', does:'درخواست‌های منتظر، پیشنهاد افزایش و پاداش تیم، درخواست استخدام، کمک در یک‌به‌یک، گزارش', human:'تأییدها با خود مدیر؛ خارج از سیاست با مدیر HR', phase:2, mods:[8,30,31,10,40]},
+  {k:'کارشناس HR', name:'عامل کارشناس HR', user:'کارشناسان جبران، حقوق، جذب، یادگیری و مدیر HR', sees:'همهٔ دادهٔ پرسنلی؛ حال‌وهوا فقط تجمیعی', does:'نگاشت و رتبهٔ شغل، پیشنهاد حقوق و پاداش، کنترل خروجی حقوق، پیش‌نویس قرارداد و حکم، غربال، پاسخ قانون کار', human:'تصویب رتبه و باند، تأیید حقوق و پاداش، ثبت در ابزار حقوق، امضاها، تصمیم استخدام', phase:1, mods:[2,3,28,29,30,31,32,45,52]},
+  {k:'سیاست', name:'عامل سیاست', user:'پشت همهٔ عامل‌ها', sees:'آیین‌نامه‌ها، قاعده‌های جبران، سقف‌ها و سوابق', does:'بررسی هر درخواست با سیاست، مسیریابی تأیید، اعمال اصول بی‌نامی، ثبت دلیل', human:'تغییر خود سیاست فقط با مدیر HR', phase:2, mods:[41,54]}
+];
+
+const REFS = [
+  {k:'IBM و جوش برسین | ۲۰۲۰', name:'HR 3.0', short:'سه دورهٔ بلوغ HR و ده حوزهٔ اقدام.', body:['HR 1.0 انطباق و اداری است؛ HR 2.0 فرایند، خدمات مشترک، مراکز تخصصی و شریک تجاری؛ HR 3.0 تجربهٔ کارمند، شخصی‌سازی، شفافیت، ابزار هوشمند و HR چابک مشاوره‌ای.','نقشهٔ قبلی ما از نظر ساختار HR 2.0 بود. در «پرداخت منصفانه و شفاف بر اساس عملکرد و مهارت» حالا قوی هستیم.'], mods:[2,3,28,29,30,31,32,20,38,5], url:'https://www.cs.fsu.edu/~langley/CIS3250/2024-Fall/IBM-HR3.0.pdf'},
+  {k:'مک‌کینزی | ۲۰۲۲', name:'پنج الگوی عملیاتی HR', short:'Ulrich+، چابک، تجربه‌محور، مدیرمحور، ماشین‌محور.', body:['پنج الگو برای سازمان HR: نسخهٔ به‌روز اولریک، جریان‌های کاری چابک، تمرکز روی لحظه‌های مهم، سپردن مسئولیت به مدیر صف، و الگوریتم‌محور.','الگوی مدیرمحور و ماشین‌محور همان چیزی است که عامل‌های مدیر و کارمند ممکن می‌کنند.'], mods:[38], url:'https://www.mckinsey.com/capabilities/people-and-organization/our-insights/hrs-new-operating-model'},
+  {k:'گارتنر | ۲۰۲۵–۲۰۲۶', name:'مدل عملیاتی HR در دورهٔ هوش مصنوعی', short:'سه ستون: تحویل دیجیتال، تیم‌های راهبران استعداد، مراکز تخصصی به‌عنوان طراح محصول.', body:['عامل هوشمند به‌عنوان در ورود HR؛ تیم‌های کوچک راهبران راهبردی استعداد به جای شریک تجاری ثابت؛ مراکز تخصصی به‌عنوان طراح محصول HR روی جریان‌های افقی ارزش.','گارتنر هفت نقش تازه هم معرفی کرده، از جمله مدیر محصول HR.'], mods:[41,8], url:'https://www.gartner.com/en/articles/hr-operating-model'},
+  {k:'مک‌کینزی | مرداد ۱۴۰۵', name:'HR برای دورهٔ عامل‌ها', short:'پایهٔ مدل ما: سازمان «محصول و پلتفرم» به جای سه لایهٔ سنتی.', body:['اجزا: معماری نیروی کار، تیم‌های کوچک نیرو برای هر کسب‌وکار، محصولات استعداد، محصولات تجربه، و پلتفرم و هوش مردم.','کارها در سه سطح: خودکار کامل، خودکار در اجرا، تقویت‌شده. مک‌کینزی برآورد می‌کند تا ۲۰۳۰ حدود دو سوم کارهای HR کاملاً یا در اجرا خودکار شوند.'], mods:[4,6,8,9,25,54], url:'https://www.mckinsey.com/capabilities/people-and-organization/our-insights/escaping-the-pilot-trap-building-hr-for-the-agentic-era'},
+  {k:'مک‌کینزی | بهمن ۱۴۰۳', name:'مدل عملیاتی تازهٔ مدیریت مردم', short:'شخصی‌تر، فناورانه‌تر، انسانی‌تر؛ سه نقش تازه برای تیم HR.', body:['سه تغییر: تجربهٔ شخصی‌سازی‌شده با عامل شخصی برای هر کارمند، سازمان بی‌اصطکاک با بازار فرصت داخلی و برنامه‌ریزی نیروی لحظه‌ای، و آزاد شدن وقت مدیر برای مربی‌گری.','تیم HR آینده سه نقش دارد: راهبر مردم (کنار مدیران کسب‌وکار)، دانشمند مردم (متخصص عمیق که مداخله و محصول طراحی می‌کند) و فناور مردم (داده، زیرساخت و تأمین‌کننده). مراکز تخصصی به گروه‌های تمرین مجازی و تیم‌های پروژه‌ای تبدیل می‌شوند و خدمات مشترک صاحب موتور داده و هوش مردم می‌شود.','لایه‌های فناوری: یک ورودی شخصی برای کارمند، مدیر و HR؛ ابزارهای تخصصی که زیر آن وصل‌اند؛ و یک ستون فقرات دادهٔ واحد. این همان معماری ماست و ماندن محاسبهٔ حقوق در ابزار فعلی با آن جور است.','دو سوم فرایندهای HR تا حد زیادی خودکارشدنی است: ۲۶٪ خودکار کامل، ۴۰٪ خودکار در اجرا، ۳۴٪ تقویت‌شده. فقط حدود ۵٪ سازمان‌ها به مرحلهٔ «پیشرو» رسیده‌اند و ۷۰٪ هنوز در مرحلهٔ راهبرد و ساخت پایه‌اند.'], mods:[41,24,25,5,55,54], url:'https://www.mckinsey.com/capabilities/people-and-organization/our-insights/a-new-operating-model-for-people-management-more-personal-more-tech-more-human'},
+  {k:'مک‌کینزی | خرداد ۱۴۰۵', name:'HR Monitor 2026', short:'برنامه‌ریزی نیرو باید از ظرفیت به قابلیت برود.', body:['فقط ۱۱٪ سازمان‌ها نگاه بلندمدت به برنامه‌ریزی نیرو دارند. گزارش بازطراحی را حول «جریان نیرو به سمت کار» و یک ستون فقرات دادهٔ یکپارچه پیشنهاد می‌کند.'], mods:[5,25], url:'https://www.mckinsey.com/capabilities/people-and-organization/our-insights/hr-monitor'}
+];
+
+const ROAD = {
+  phases:[['فاز ۰: اعتبارسنجی','ماه ۱ تا ۲'],['فاز ۱: ورود','ماه ۳ تا ۶'],['فاز ۲: گسترش','ماه ۷ تا ۱۲'],['فاز ۳: پلتفرم','ماه ۱۳ تا ۲۴']],
+  lanes:[
+    ['معماری و جبران',['نگاشت دستی شغل‌های دو شرکت پایلوت','رتبه، باند و کنترل؛ حقوق جدید تا پاداش','گراف مهارت؛ میز کار کسب‌وکار','برنامه‌ریزی و شبیه‌سازی نیرو']],
+    ['استعداد و تجربه',['۱۰ مصاحبه با مدیر HR و کارشناس جبران','','جذب و ورود؛ نظرسنجی و ارتباطات','عملکرد مداوم، یادگیری، جابه‌جایی داخلی']],
+    ['پلتفرم و عامل‌ها',['انتخاب مدل فارسی و محل استقرار','اتصال به ابزار حقوق؛ دستیار قانون کار','در ورود هوشمند؛ عامل کارمند و مدیر','مدیریت عامل‌ها؛ تبدیل به Eve']]
+  ],
+  gates:[['دروازهٔ ۱','۳ پیش‌فروش یا نامهٔ تعهد'],['دروازهٔ ۲','۸ مشتری پولی و تمدید ماه سوم'],['دروازهٔ ۳','۲۰ مشتری، نیمی با دو بخش یا بیشتر']]
+};
+
+const CRITERIA = ['هر قاعدهٔ جبرانی گروه (رتبه، باند، ورود، ارتقا، افزایش و پاداش) در موتور قاعده نسخه‌دار باشد و با نمونه‌های آزمون بررسی شود؛ نه در کد یا پرامپت.','هر تصمیم فاز ۱ از تاریخچه قابل بازسازی باشد: داده و نسخه‌اش، قاعده، پیشنهاد، تغییر انسان و تأییدکننده.','تصمیم ارتقا یک‌بار کامل در محصول گرفته شود: از پرسش تا پیش‌نویس حکم، با منبع و دلیل برای هر عدد.','همهٔ پست‌های دو شرکت پایلوت نگاشت و رتبه‌بندی شده و کمیتهٔ جبران آن را تأیید کرده باشد.','یک چرخهٔ کامل افزایش سالانه یا پاداش در پایلوت با محصول بسته شود و جمع آن تا ریال با بودجهٔ مصوب بخواند.','زمان آماده‌کردن پیشنهاد حقوق فرد جدید یا ارتقا دست‌کم نصف شود.','فایل خروجی بدون ورود دستی در ابزار حقوق فعلی بنشیند.','از ۵۰ پرسش واقعی قانون کار، مشاور حقوقی دست‌کم ۴۵ پاسخ را درست و مستند بداند.','دست‌کم پنج مشتری برای ماه سوم پول بدهند.'];
+const OUTSIDE = ['گراف مهارت، برنامه‌ریزی و شبیه‌سازی نیرو','میز کار کسب‌وکار','در ورود هوشمند، عامل کارمند و عامل مدیر','اتصال زنده به ابزار حقوق (در فاز ۱ فقط فایل)','محاسبهٔ حقوق، لیست بیمه و مالیات؛ در ابزار فعلی می‌ماند','جذب، ورود، عملکرد و تجربه'];
+
+
+// data in / out per module; (n) = module number, rendered as a link
+const IO = {
+1:[['چارت و فهرست واحدها از اکسل یا ابزار حقوق','فهرست پست‌ها و متصدیان','احکام (43)'],['پست و واحد با خط گزارش','چارت زنده برای همهٔ ماژول‌ها']],
+2:[['شرح شغل و پست (1)','کتابخانهٔ شغل مرسر','فایل الگوی گروه با بلوک‌های Comp1 تا Comp6'],['شغل، کد مرسر و رتبهٔ IPE با دلیل امتیاز','اقلام پرداختی طبقه‌بندی‌شده']],
+3:[['رتبهٔ شغل (2)','دادهٔ بازار مرسر','سیاست جایگاه گروه در بازار','مصوبهٔ حداقل دستمزد'],['باند حقوق هر رتبه با تاریخ اعتبار']],
+4:[['شغل و شرح شغل (2)','نتیجهٔ سنجش مهارت (21)','سابقهٔ دوره‌ها (22)','شواهد عملکرد (20)'],['مهارت لازم هر شغل','پروفایل مهارت هر نفر با سطح و منبع']],
+5:[['برنامه و بودجهٔ هر شرکت','گراف مهارت (4)','گردش و خروج (55)','ساختار و پست‌ها (1)'],['برنامهٔ نیرو و شکاف قابلیت','گزینه‌های خرید، ساختن، قرض یا خودکارسازی']],
+6:[['شرح شغل و کارها (2)','باند و هزینه (3)','ساختار (1)','گراف مهارت (4)'],['سناریو با اثر هزینه و تعداد','شرح شغل و رتبهٔ پیشنهادی تازه']],
+7:[['ساختار شغل و رتبه (2)','گراف مهارت (4)','نتیجهٔ عملکرد (20)'],['نقشهٔ مسیر شغلی','جدول جانشین پست‌های کلیدی']],
+8:[['هزینهٔ نیرو از دادهٔ حقوق (45)','نسبت مقایسه (32)','گردش و غیبت (55)','حال‌وهوای تجمیعی (36)','درخواست‌های منتظر (41)'],['داشبورد هر شرکت','هشدار و پیشنهاد اقدام']],
+9:[['دادهٔ میز کار (8)','پرسش مدیرعامل به زبان ساده'],['پاسخ مستند','گزارش یک‌صفحه‌ای ماهانه']],
+10:[['نیاز مدیر','بودجهٔ نیرو','پست و رتبه (1، 2)'],['درخواست استخدام تأییدشده','شرح شغل و معیار ارزیابی']],
+11:[['درخواست تأییدشده (10)','بانک رزومهٔ قبلی','معرفی کارکنان'],['فهرست کاندیدا با رزومه']],
+12:[['رزومه‌ها (11)','معیار شغل (10)'],['امتیاز و دلیل هر کاندیدا','فهرست کوتاه']],
+13:[['فهرست کوتاه (12)','روبریک مصاحبه'],['متن کامل مصاحبه','امتیاز روبریک و شواهد رفتاری']],
+14:[['فهرست کاندیداها (12)','تقویم مصاحبه‌کننده‌ها'],['وقت مصاحبه','پیام وضعیت به هر کاندیدا']],
+15:[['تصمیم استخدام','حقوق پیشنهادی (28)','مدارک و استعلام سوابق'],['پیشنهاد شغلی امضاشده','دادهٔ کاندیدای پذیرفته برای ورود (16)']],
+16:[['کاندیدای پذیرفته (15)','الگوی قرارداد (51)'],['پروندهٔ کارمند (42)','قرارداد امضاشده','درخواست تجهیزات و دسترسی']],
+17:[['پرونده و پست کارمند جدید (42)','آموزش‌های لازم','آیین‌نامه‌ها'],['پیشرفت ورود','پاسخ‌های سنجش حال روز ۷، ۳۰ و ۶۰']],
+18:[['تیم و پست کارمند جدید (1)'],['جفت همراه','یادآوری جلسه‌ها']],
+19:[['اهداف دورهٔ آزمایشی','نظر مدیر','قرارداد (51)'],['تصمیم ادامهٔ همکاری','تغییر قرارداد']],
+20:[['اهداف واحد و فرد','بازخورد همکاران و مدیر','شواهد پروژه‌ها'],['نتیجهٔ عملکرد هر دوره، برای افزایش (30) و پاداش (31)']],
+21:[['مهارت لازم شغل (4)','پاسخ آزمون عملی'],['پروفایل مهارت و شکاف']],
+22:[['شکاف مهارت (21)','کتابخانهٔ دوره‌ها و EDGE'],['مسیر یادگیری فعال','سابقهٔ دوره برای گراف مهارت (4)']],
+23:[['نتیجهٔ عملکرد (20)','گراف مهارت (4)','مسیر شغلی (7)'],['برنامهٔ توسعه با اقدام و موعد']],
+24:[['برنامهٔ توسعه (23)','شاخص‌های عملکرد نقش (20)','موقعیت تمرینی'],['پیشنهاد رشد برای کارمند','خلاصهٔ شکاف تیم برای مدیر','جلسه‌های تمرین و بازخورد']],
+25:[['فرصت‌های داخلی','گراف مهارت (4)','علاقهٔ ثبت‌شدهٔ کارکنان'],['تطبیق فرد و فرصت','درخواست انتقال (26)']],
+26:[['درخواست مدیر','حقوق جدید (29)','بودجهٔ واحد'],['تغییر پست و حکم (43)','اطلاع‌رسانی و تغییر دسترسی']],
+27:[['درخواست یا رویداد خروج','اموال و دسترسی‌ها','دادهٔ تسویه از ابزار حقوق'],['پروندهٔ بسته','دلایل خروج بی‌نام','گواهی سابقه']],
+28:[['رتبه و باند پست (2، 3)','سابقه و انتظار کاندیدا','حقوق هم‌رتبه‌ها (45)','قاعدهٔ ورود گروه'],['بستهٔ حقوق با اقلام حکم و بلوک Comp','فایل ورودی ابزار حقوق']],
+29:[['رتبهٔ جدید و حقوق فعلی','باند جدید (3)','قاعدهٔ ارتقای گروه'],['حقوق جدید','پیش‌نویس حکم (43)','فایل ورودی ابزار حقوق']],
+30:[['بودجهٔ افزایش','نتیجهٔ عملکرد (20)','نسبت مقایسه (32)'],['جدول افزایش و درصد هر نفر','احکام گروهی و فایل ابزار حقوق']],
+31:[['استخر و اهداف گروهی','رده و حقوق هر نفر (45)','نتیجهٔ عملکرد (20)','سیاست پاداش'],['مبلغ پاداش هر نفر','فایل ابزار حقوق','نامهٔ پاداش']],
+32:[['دادهٔ حقوق ماهانه (45)','باند حقوق (3)','رتبهٔ شغل (2)'],['نسبت مقایسهٔ هر نفر','فهرست بیرون از باند','گزارش حاکمیت جبران']],
+33:[['درخواست وام','سیاست و سقف','اقساط فعال'],['وام تأییدشده','قسط ماهانه برای ابزار حقوق']],
+34:[['پیام تشکر','ارزش‌های سازمان'],['دیوار قدردانی','قدردانی به تفکیک تیم']],
+35:[['بانک پرسش','گروه‌ها از ساختار (1)'],['پاسخ‌های بی‌نام','نتیجهٔ تجمیعی هر تیم']],
+36:[['پاسخ‌های بی‌نام (35)','نظرهای آزاد'],['موضوعات و روند','eNPS','هشدار تیم در خطر']],
+37:[['ارزش‌های اعلام‌شده','پاسخ سنجش فرهنگ'],['نقشهٔ فاصلهٔ فرهنگ موجود و مطلوب']],
+38:[['رویدادهای پرونده و حکم (42، 43)','تقویم سالگردها'],['پیام و اقدام هر لحظه','یادآوری به مدیر']],
+39:[['متن اطلاعیه','گروه هدف از ساختار (1)'],['ارسال در بله','نرخ دریافت و خواندن']],
+40:[['موضوعات باز تیم','تعهدات جلسهٔ قبل'],['دستور جلسه','تعهدات ثبت‌شده']],
+41:[['پیام کاربر در بله و وب','هویت و نقش کاربر'],['درخواست مسیریابی‌شده به عامل یا ماژول','پاسخ فوری یا ارجاع']],
+42:[['اکسل یا خروجی ابزار حقوق','مدارک اسکن‌شده','درخواست تغییر اطلاعات'],['پروندهٔ کارمند','فایل تغییر برای ابزار حقوق']],
+43:[['رویداد استخدام، ارتقا یا افزایش','حقوق از ماژول‌های (28، 29، 30)'],['حکم با تاریخ اجرا','فایل ورودی ابزار حقوق']],
+44:[['پرونده و حکم فعلی (42، 43)','الگوی نامه'],['گواهی و نامهٔ آمادهٔ امضا']],
+45:[['خروجی ماهانهٔ ابزار حقوق','احکام (43)'],['دادهٔ حقوق ماهانه با بلوک Comp','گزارش ناهنجاری','فایل ورودی برای حکم و پاداش']],
+46:[['لیست بیمه و مالیات ابزار فعلی','دادهٔ حقوق ماهانه (45)','احکام (43)'],['فهرست مغایرت پیش از ارسال']],
+47:[['مهلت‌های قانونی','تاریخ قراردادها و دوره‌های آزمایشی (51، 19)','مصوبهٔ دستمزد'],['فهرست کار هفته','یادآوری در بله']],
+48:[['دادهٔ دستگاه حضور','تقویم و شیفت (49)'],['کارکرد ماه برای ابزار حقوق','کسری‌ها و پرسش از کارمند']],
+49:[['برنامهٔ کاری','سقف قانونی','بودجهٔ واحد'],['برنامهٔ شیفت','اضافه‌کار تأییدشده']],
+50:[['درخواست کارمند','مانده و سیاست'],['مرخصی و مأموریت تأییدشده برای کارکرد (48)']],
+51:[['الگوی قرارداد','شرایط پیشنهاد (15) یا تمدید','تاریخ پایان'],['قرارداد امضاشده','هشدار پایان قرارداد']],
+52:[['پرسش کاربر','قانون کار و بخشنامه‌ها','آیین‌نامهٔ شرکت'],['پاسخ با ارجاع به ماده','پرسش پرریسک برای مشاور']],
+53:[['گزارش شکایت یا حادثه','مدارک'],['پرونده با مهلت‌ها','گزارش به بیمه و بازرسی']],
+54:[['رویدادهای ممیزی همهٔ عامل‌ها','بازبینی نمونهٔ پاسخ‌ها','هزینهٔ اجرا'],['گزارش کیفیت و هزینهٔ عامل‌ها','سطح اختیار تازه']],
+55:[['دادهٔ همهٔ ماژول‌ها با رعایت دسترسی'],['داشبوردهای استاندارد','گزارش رسمی','هشدار در سطح تیم']]
+};
+
+// knowledge the HR specialist brings so the agent can be built: rules, criteria, templates, examples
+const KN = {
+1:['قواعد ساخت چارت: سطوح سازمانی و تعریف واحد','قاعدهٔ خط گزارش و حداکثر حوزهٔ نظارت','نام‌گذاری استاندارد پست‌ها'],
+2:['روش IPE مرسر و عوامل امتیاز آن','نمونه‌ای از شغل‌های نگاشت‌شده و تأییدشده برای آموزش و آزمون عامل','قاعدهٔ طبقه‌بندی اقلام پرداختی در بلوک‌های Comp','ترکیب و قواعد تصمیم کمیتهٔ رتبه‌بندی'],
+3:['سیاست جایگاه گروه در بازار (کدام صدک بازار)','پهنای باند و هم‌پوشانی رتبه‌ها','قاعدهٔ به‌روزرسانی باند با دادهٔ تازهٔ مرسر'],
+4:['چارچوب و کتابخانهٔ مهارت مرجع','تعریف سطح‌های هر مهارت با رفتار قابل مشاهده','منابع معتبر ثبت مهارت و وزن هر منبع'],
+5:['روش برنامه‌ریزی نیرو و افق زمانی','محرک‌های تقاضای نیرو در هر کسب‌وکار','مفروضات گردش، بازنشستگی و بهره‌وری','معیار انتخاب بین خرید، ساختن، قرض و خودکارسازی'],
+6:['روش تجزیهٔ شغل به کار','معیار خودکارسازی هر کار و سه سطح آن','اثر طراحی دوبارهٔ شغل بر رتبه و باند'],
+7:['تعریف پست کلیدی','معیار آمادگی جانشین و افق‌های آن','مسیرهای شغلی مجاز بین خانواده‌های شغلی'],
+8:['شاخص‌هایی که راهبر HR هر ماه پایش می‌کند','آستانهٔ هشدار هر شاخص','اقدام استاندارد برای هر نوع هشدار'],
+9:['پرسش‌های پرتکرار مدیرعامل و هیئت‌مدیره','تعریف دقیق هر شاخص (فرمول گردش، هزینهٔ نیرو و …)','سطح دسترسی هر نقش به داده'],
+10:['فرایند و مسیر تأیید درخواست استخدام','قاعدهٔ کنترل با بودجه و چارت','الگوی شرح شغل و معیار ارزیابی'],
+11:['کانال‌های مؤثر آگهی برای هر خانوادهٔ شغلی','لحن و الگوی آگهی و برند کارفرمایی','سیاست معرفی کارکنان'],
+12:['معیارهای غربال هر شغل و وزن هر معیار','نمونه رزومه‌های قبول و ردشده با دلیل','موارد منع تبعیض و آنچه در غربال نباید دیده شود'],
+13:['بانک پرسش رفتاری و فنی هر شغل','روبریک امتیازدهی با نمونهٔ پاسخ خوب و ضعیف','قاعدهٔ انصاف و بازبینی دوره‌ای ارزیابی'],
+14:['قواعد تقویم و ظرفیت مصاحبه‌کننده‌ها','الگوی پیام وضعیت در هر مرحله','حداکثر زمان پاسخ به کاندیدا'],
+15:['الگوی پیشنهاد شغلی','مدارک لازم و روش استعلام سوابق','حد اختیار مذاکرهٔ حقوق'],
+16:['چک‌لیست ورود هر نوع پست','فهرست مدارک استخدام','الگوی قرارداد و مسیر سفارش تجهیزات و دسترسی'],
+17:['برنامهٔ ۹۰ روزه و آموزش‌های اجباری هر نقش','پرسش‌های سنجش حال روز ۷، ۳۰ و ۶۰','نشانه‌های هشدار ریزش زودهنگام'],
+18:['معیار انتخاب همراه','وظایف و برنامهٔ همراه'],
+19:['معیارهای ارزیابی دورهٔ آزمایشی','الزامات قانون کار برای پایان دورهٔ آزمایشی','الگوی فرم و تصمیم'],
+20:['مدل عملکرد گروه: هدف، شایستگی و مقیاس امتیاز','قواعد کالیبراسیون و توزیع امتیاز','نمونهٔ بازخورد خوب و ضعیف'],
+21:['مهارت‌های هر نقش و سطح لازم','آزمون‌های عملی معتبر و روبریک آن‌ها'],
+22:['کاتالوگ دوره‌ها و نگاشت آن‌ها به مهارت','سیاست هزینه و تعهد خدمت'],
+23:['الگوی برنامهٔ توسعهٔ فردی','مدل یادگیری گروه (از کار، از همکار، از دوره)'],
+24:['شاخص‌های کلیدی هر نقش و رفتارهایی که آن‌ها را جابه‌جا می‌کند','سناریوهای رایج گفت‌وگوی سخت در سازمان','مدل رهبری و شایستگی‌های مدیریتی گروه'],
+25:['سیاست جابه‌جایی داخلی: حداقل ماندگاری و حق مدیر فعلی','قاعدهٔ محرمانگی ابراز علاقه','اولویت کاندیدای داخلی بر بیرونی'],
+26:['انواع تغییر وضعیت و الزامات هر کدام','مسیر تأیید و حد اختیار'],
+27:['چک‌لیست خروج و تسویه','الزامات قانونی هر نوع خروج','دسته‌بندی استاندارد دلایل خروج'],
+28:['قاعدهٔ ورود: جای فرد جدید در باند بر اساس سابقه و مهارت','حد اختیار و مسیر تأیید استثنا','ترکیب اقلام حقوق و نگاشت به بلوک‌های Comp','قاعدهٔ برابری با هم‌رتبه‌ها'],
+29:['قاعدهٔ افزایش هنگام ارتقا (حداقل و سقف)','قاعدهٔ انتقال بین شرکت‌ها و یکسان‌سازی اقلام','حد اختیار تأیید'],
+30:['سیاست و بودجهٔ افزایش سالانه','منطق جدول افزایش (Merit Matrix)','بازهٔ مجاز تعدیل مدیر'],
+31:['سیاست پاداش: استخر و دروازهٔ اهداف گروهی','درصد هدف پاداش هر رده (S، P، M، E)','منحنی ضریب عملکرد','قاعدهٔ نرمال‌سازی به بودجه'],
+32:['تعریف شاخص‌های حاکمیت جبران و آستانهٔ هشدار','قاعدهٔ برخورد با حقوق بیرون از باند','روش تحلیل تعدیل‌شدهٔ شکاف جنسیتی'],
+33:['آیین‌نامهٔ وام و رفاه','سقف‌ها، صف و شرایط دریافت'],
+34:['ارزش‌های سازمان با رفتار نمونه','قواعد قدردانی و انگیزش غیرمالی'],
+35:['بانک پرسش معتبر حال‌وهوا','حداقل تعداد پاسخ برای نمایش نتیجه','دورهٔ اجرای نظرسنجی'],
+36:['دسته‌بندی موضوعات نظرهای آزاد','آستانهٔ هشدار تیم در خطر','اصول بی‌نامی و حدود تحلیل'],
+37:['مدل فرهنگ و ارزش‌های گروه','رفتارهای قابل سنجش هر ارزش'],
+38:['فهرست لحظه‌های مهم و اقدام هر لحظه','سیاست هدیه و پیام'],
+39:['لحن و الگوی اطلاعیه‌ها','گروه‌های هدف و مسیر تأیید متن'],
+40:['الگوی جلسهٔ یک‌به‌یک','پرسش‌های پیشنهادی برای مدیران'],
+41:['فهرست درخواست‌ها و پرسش‌های پرتکرار کارکنان با پاسخ هر کدام','قاعدهٔ ارجاع به انسان','لحن گفت‌وگو'],
+42:['فیلدهای اجباری پرونده و منبع هر کدام','مدارک لازم و قاعدهٔ اعتبار آن‌ها','سطح دسترسی به هر فیلد'],
+43:['انواع حکم و اقلام هر کدام','قواعد قانونی صدور حکم','الگوی حکم'],
+44:['الگوی هر نامه و گواهی','اینکه کدام نامه تأیید انسانی می‌خواهد'],
+45:['ساختار خروجی ابزار حقوق فعلی','نگاشت اقلام حقوق به بلوک‌های Comp','قواعد ناهنجاری: چه تغییری غیرعادی است'],
+46:['اقلام مشمول بیمه و مالیات','مهلت‌ها و ساختار فایل‌های ارسالی'],
+47:['فهرست مهلت‌های قانونی و داخلی با تاریخ دقیق','مسئول هر مهلت'],
+48:['آیین‌نامهٔ حضور، تأخیر و غیبت','تقویم رسمی و شیفت‌ها'],
+49:['سقف قانونی اضافه‌کار','قواعد شیفت و نوبت‌کاری'],
+50:['آیین‌نامهٔ مرخصی و مأموریت','قواعد مانده و انتقال مرخصی'],
+51:['الگوهای قرارداد و بندهای اجباری','قاعدهٔ تمدید و مهلت اطلاع'],
+52:['متن قانون کار، آیین‌نامه‌ها و بخشنامه‌های معتبر','رأی‌های مرجع و تفسیرها','۵۰ پرسش واقعی با پاسخ تأییدشدهٔ مشاور','مرز پرسش پرریسک که باید به مشاور برود','فهرست منبع‌های رسمی که باید پایش شوند'],
+53:['فرایند رسیدگی به شکایت و قاعدهٔ محرمانگی','الزامات گزارش حادثهٔ کار'],
+54:['معیار کیفیت هر عامل','سطوح اختیار و شرط بالا رفتن اختیار','قاعدهٔ بازبینی انسانی'],
+55:['تعریف شاخص‌های استاندارد HR','گزارش‌های رسمی لازم و قالب آن‌ها','آستانهٔ هشدارها']
+};
+const linkify = t => t.replace(/\(([\d،\s]+)\)/g, (_, g) => g.split('،').map(x => x.trim()).filter(Boolean).map(x => `<button type="button" class="ref" data-mod="${x}" aria-label="ماژول ${fa(x)}">${fa(x)}</button>`).join(''));
+
+/* ---------- overview: the five parts and the HR domains inside each ---------- */
+const ORDER5 = ['arch','pods','talent','ex','plat'];
+const DOMS = {
+  arch:['طراحی سازمان و شغل','برنامه‌ریزی نیرو','رتبه و باند حقوق','مهارت','مسیر شغلی و جانشینی'],
+  pods:['مشاورهٔ مدیران','گزارش برای تصمیم'],
+  talent:['جذب و استخدام','ورود','عملکرد','یادگیری و توسعه','جابه‌جایی داخلی','خروج'],
+  ex:['جبران و پاداش','رفاه','تجربه و فرهنگ','لحظه‌های مهم','ارتباطات داخلی'],
+  plat:['پاسخ به کارکنان','پرسنلی و احکام','کنترل حقوق و بیمه','حضور و غیاب','روابط کار','داده و گزارش']
+};
+$('#fives').innerHTML = ORDER5.map(k => { const n = M.filter(m => m.part === k).length, p = M.filter(m => m.part === k && m.phase === 1).length;
+  return `<button type="button" class="five ${p?'has-p1':''}" data-go="${k}"><span class="no">0${PNUM[k]}</span><b>${PARTS[k].name}</b><span>${PARTS[k].desc}</span><div class="chips2">${DOMS[k].map(d => `<i>${d}</i>`).join('')}</div><div class="cnt"><b>${fa(n)}</b> ماژول${p?` | <b>${fa(p)}</b> در فاز ۱`:''}</div></button>`; }).join('');
+
+/* ---------- facts ---------- */
+const p1 = M.filter(m => m.phase === 1);
+$('#facts').innerHTML = [
+  [5,'بخش، مدل مک‌کینزی'],[55,'ماژول'],[5,'عامل'],[p1.length,'ماژول در فاز ۱','p1'],[M.filter(m=>m.src).length,'ماژول برگرفته از بنچمارک']
+].map(([v,l,c]) => `<div class="fact ${c||''}"><b>${fa(v)}</b><span>${l}</span></div>`).join('');
+
+/* ---------- stack ---------- */
+const dotsFor = k => M.filter(m => m.part === k).map(m => `<i class="dot ${m.phase===1?'p1':m.phase===3?'p3':''}" title="${fa(m.n)}. ${m.name}"></i>`).join('');
+const countFor = k => { const a = M.filter(m => m.part === k); const c = a.filter(m => m.phase===1).length; return `<span class="count"><b>${fa(a.length)}</b> ماژول${c?` | <b style="color:var(--p1)">${fa(c)}</b> در فاز ۱`:''}</span>`; };
+const partCard = (k, wide) => `<button type="button" class="part ${k} ${wide?'wide':''} ${M.some(m=>m.part===k&&m.phase===1)?'has-p1':''}" data-part="${k}" aria-label="باز کردن ${PARTS[k].name}">
+  ${wide ? `<div class="body"><div class="en">0${PNUM[k]} | ${PARTS[k].en}</div><h3>${PARTS[k].name}</h3><p>${PARTS[k].desc}</p></div><div class="foot" style="flex-direction:column;align-items:flex-start;gap:6px;flex:0 1 260px;min-width:0"><div class="dots">${dotsFor(k)}</div>${countFor(k)}</div>`
+         : `<div class="en">0${PNUM[k]} | ${PARTS[k].en}</div><h3>${PARTS[k].name}</h3><p>${PARTS[k].desc}</p><div class="foot"><div class="dots">${dotsFor(k)}</div>${countFor(k)}</div>`}
+</button>`;
+const arrow = `<div class="flow" aria-hidden="true"><svg width="12" height="14" viewBox="0 0 12 14"><path d="M6 0V12M1 8l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></div>`;
+$('#stack').innerHTML = `
+  <div class="band channels"><span>کانال‌ها: بله، وب و تلفن؛ برای کارمند، مدیر، کاندیدا و تیم HR</span></div>
+  ${arrow}
+  <div class="band fd" role="button" tabindex="0" data-mod="41"><div><div class="t">در ورود هوشمند و پنج عامل</div><div class="s">هر درخواست به عامل یا ماژول درست می‌رود | از مدل گارتنر</div></div><span class="tag">ماژول ${fa(41)} | فاز ۲</span></div>
+  ${arrow}
+  <div class="trio">${partCard('pods')}${partCard('talent')}${partCard('ex')}</div>
+  ${partCard('arch', true)}
+  <div class="base">${partCard('plat', true)}<div class="ext"><b>ابزار حقوق فعلی</b>محاسبهٔ حقوق، بیمه و مالیات همان‌جا می‌ماند؛ محصول خروجی را می‌خواند و فایل ورودی می‌سازد.</div></div>`;
+
+/* ---------- drill ---------- */
+let state = {part:null, phase:0, auto:0};
+function openPart(k, opts = {}) {
+  state = {part:k, phase:opts.phase||0, auto:opts.auto||0};
+  document.querySelectorAll('.part').forEach(el => el.classList.toggle('sel', el.dataset.part === k));
+  renderDrill();
+  if (!opts.noScroll) setTimeout(() => $('#drill').scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block:'start'}), 30);
+}
+function filtered() {
+  return M.filter(m => (!state.part || m.part === state.part) && (!state.phase || m.phase === state.phase) && (!state.auto || m.auto === state.auto));
+}
+function renderDrill() {
+  const k = state.part; if (!k) { $('#drill').innerHTML = ''; return; }
+  const P = PARTS[k];
+  const chips = (key, opts) => opts.map(([v,l]) => `<button type="button" class="chip" data-f="${key}" data-v="${v}" aria-pressed="${state[key]===v}">${l}</button>`).join('');
+  const list = filtered();
+  $('#drill').innerHTML = `<div class="drill">
+    <div class="drill-head" style="--c:var(--c-${k});--t:var(--t-${k})">
+      <div style="min-width:0">
+        <div class="crumb"><button type="button" data-act="close-drill">مدل</button><span>›</span><span>${P.name}</span></div>
+        <h3>${P.name}</h3><p>${P.desc}</p>
+      </div>
+      <div class="drill-tools">
+        <div class="filters" role="group" aria-label="فاز">${chips('phase',[[0,'همهٔ فازها'],[1,'فاز ۱'],[2,'فاز ۲'],[3,'فاز ۳']])}</div>
+        <div class="filters" role="group" aria-label="سطح خودکارسازی">${chips('auto',[[0,'همهٔ سطوح'],[1,AUTO[1].name],[2,AUTO[2].name],[3,AUTO[3].name]])}</div>
+      </div>
+    </div>
+    ${list.length ? `<div class="grid">${list.map((m,i) => tile(m,i)).join('')}</div>` : `<div class="empty">در این بخش ماژولی با این فیلتر نیست.</div>`}
+  </div>`;
+}
+const tile = (m, i) => `<button type="button" class="tile ${m.phase===1?'p1':''}" style="--c:var(--c-${m.part});animation-delay:${Math.min(i,14)*25}ms" data-mod="${m.n}">
+  <div class="top"><span class="n">${fa(String(m.n).padStart(2,'0'))}</span>${m.phase===1?'<span class="tag p1">فاز ۱</span>':`<span class="tag">فاز ${fa(m.phase)}</span>`}</div>
+  <div class="nm">${m.name}</div>
+  <div class="meta"><span class="tag">${AUTO[m.auto].name}</span>${m.src?'<span class="tag new">تازه</span>':''}${S[m.n]?`<span class="tag">${fa(S[m.n].length)} قدم</span>`:''}</div>
+</button>`;
+
+/* ---------- modal ---------- */
+const scrim = $('#scrim'), modal = $('#modal');
+let lastFocus = null, navList = [];
+function showModal(html, partKey) {
+  modal.style.setProperty('--c', partKey ? `var(--c-${partKey})` : 'var(--accent)');
+  modal.style.setProperty('--t', partKey ? `var(--t-${partKey})` : 'var(--surface-2)');
+  modal.innerHTML = html;
+  if (scrim.hidden) { lastFocus = document.activeElement; scrim.hidden = false; requestAnimationFrame(() => scrim.classList.add('show')); document.body.style.overflow = 'hidden'; }
+  modal.querySelector('.m-close').focus();
+  modal.querySelector('.m-body').scrollTop = 0;
+}
+function closeModal() {
+  if (scrim.hidden) return;
+  scrim.classList.remove('show');
+  setTimeout(() => { scrim.hidden = true; modal.innerHTML = ''; }, 200);
+  document.body.style.overflow = '';
+  if (location.hash.startsWith('#module-')) { try { history.replaceState(null, '', '#model'); } catch (_) {} }
+  if (lastFocus) lastFocus.focus();
+}
+function decHtml(n) {
+  const eng = DEC.filter(d => d.eng === n), feeds = DEC.filter(d => d.ins.some(i => i[0] === n)), gets = DEC.filter(d => d.outs.some(o => o[0] === n));
+  if (!eng.length && !feeds.length && !gets.length) return '';
+  const g = (h, a) => a.length ? `<div class="mdec"><span class="k">${h}</span>${a.map(dChip).join('')}</div>` : '';
+  return `<div class="f"><div class="k">در نقاط تصمیم</div>${g('موتور:', eng)}${g('داده می‌دهد به:', feeds)}${g('نتیجه می‌گیرد از:', gets)}</div>`;
+}
+function openModule(n, list) {
+  const m = byN[n]; if (!m) return;
+  if (list) navList = list; else if (!navList.includes(n)) navList = M.map(x => x.n);
+  const i = navList.indexOf(n), prev = navList[i-1], next = navList[i+1];
+  const steps = S[n];
+  const stepHtml = steps ? `<div><div class="steps-h"><h3>قدم‌ها</h3><span class="tag">${fa(steps.length)} قدم</span></div><ol class="steps" style="margin-top:12px">${steps.map(s => `<li class="step"><div><div class="st">${s[0]}${s[4]===1?'<span class="tag p1">فاز ۱</span>':`<span class="tag">فاز ${fa(s[4])}</span>`}</div>${s[1]?`<div class="sw">${s[1]}</div>`:''}${(s[2]||s[3])?`<div class="sx">${s[2]?`<span><i class="ai">هوشمند</i>${s[2]}</span>`:''}${s[3]?`<span><i class="hu">انسان</i>${s[3]}</span>`:''}</div>`:''}</div></li>`).join('')}</ol></div>`
+    : `<div class="nosteps">قدم‌به‌قدم این ماژول در زبانهٔ «HR Ops قدم‌به‌قدم» سند آمده است.</div>`;
+  showModal(`
+    <div class="m-head">
+      <button type="button" class="m-close" data-act="close" aria-label="بستن">×</button>
+      <div class="crumb"><span>مدل</span><span>›</span><button type="button" data-act="part" data-part="${m.part}">${PARTS[m.part].name}</button><span>›</span><span>ماژول ${fa(m.n)}</span></div>
+      <h2 id="mTitle">${m.name}</h2>
+      <div class="meta">${m.phase===1?'<span class="tag p1">فاز ۱</span>':`<span class="tag">فاز ${fa(m.phase)}</span>`}<span class="tag">${AUTO[m.auto].name}</span>${m.src?'<span class="tag new">تازه از بنچمارک</span>':''}</div>
+    </div>
+    <div class="m-body">
+      <div class="f"><div class="k">کار عامل</div><div class="v">${m.agent}</div></div>
+      <div class="io">
+        <div class="col"><div class="k">دادهٔ ورودی | از کجا می‌آید</div><ul>${(IO[n]||[[],[]])[0].map(x => `<li><span>${linkify(x)}</span></li>`).join('')}</ul></div>
+        <div class="mid" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 22 22"><path d="M18 11H4M9 5l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div class="col out"><div class="k">دادهٔ خروجی | به کجا می‌رود</div><ul>${(IO[n]||[[],[]])[1].map(x => `<li><span>${linkify(x)}</span></li>`).join('')}</ul></div>
+      </div>
+      ${decHtml(n)}
+      <div class="kn"><div class="k">دانش لازم برای ساخت عامل | آنچه متخصص HR باید بیاورد</div><ul>${(KN[n]||[]).map(x => `<li>${x}</li>`).join('')}</ul></div>
+      <div class="facts4">
+        <div class="f"><div class="k">تحویل اصلی</div><div class="v">${m.out}</div></div>
+        <div class="f"><div class="k">تأیید انسانی</div><div class="v">${m.human || 'لازم نیست؛ عامل کار را کامل می‌کند'}</div></div>
+        <div class="f wide"><div class="k">امتیاز اولویت</div><div class="v">پیش‌نیازی ${fa(PRIO[n][0])} | اثر سریع و گسترده ${fa(PRIO[n][1])} | روزمره ${fa(PRIO[n][2])} | وابستگی کم ${fa(PRIO[n][3])} | سبک شدن کار HR ${fa(PRIO[n][5])}${PRIO[n][4]?` (وابسته به ${PRIO[n][4]})`:''}</div></div>
+        <div class="f wide"><div class="k">سطح خودکارسازی: ${AUTO[m.auto].name}</div><div class="v">${AUTO[m.auto].desc}</div></div>
+      </div>
+      ${m.src?`<div class="src"><b>چرا اضافه شد:</b> ${m.src}</div>`:''}
+      ${stepHtml}
+    </div>
+    <div class="m-foot">
+      <button type="button" class="btn" data-act="nav" data-n="${prev||''}" ${prev?'':'disabled'}>→ ${prev?byN[prev].name:'قبلی'}</button>
+      <button type="button" class="btn" data-act="nav" data-n="${next||''}" ${next?'':'disabled'}>${next?byN[next].name:'بعدی'} ←</button>
+    </div>`, m.part);
+  if (location.hash !== '#module-' + n) { try { history.replaceState(null, '', '#module-' + n); } catch (_) {} }
+}
+function openAgent(i) {
+  const a = AGENTS[i];
+  showModal(`<div class="m-head"><button type="button" class="m-close" data-act="close" aria-label="بستن">×</button>
+    <div class="crumb"><span>عامل‌ها</span></div><h2 id="mTitle">${a.name}</h2>
+    <div class="meta">${a.phase===1?'<span class="tag p1">از فاز ۱</span>':`<span class="tag">از فاز ${fa(a.phase)}</span>`}</div></div>
+    <div class="m-body"><div class="facts4">
+      <div class="f"><div class="k">کاربر</div><div class="v">${a.user}</div></div>
+      <div class="f"><div class="k">چه می‌بیند</div><div class="v">${a.sees}</div></div>
+      <div class="f wide"><div class="k">چه انجام می‌دهد</div><div class="v">${a.does}</div></div>
+      <div class="f wide"><div class="k">چه چیزی تأیید انسان می‌خواهد</div><div class="v">${a.human}</div></div></div>
+      <div><div class="steps-h"><h3>ماژول‌هایی که با آن‌ها کار می‌کند</h3></div><div class="rel" style="margin-top:10px">${a.mods.map(n => modChip(n)).join('')}</div></div>
+    </div><div class="m-foot"><span></span><button type="button" class="btn" data-act="close">بستن</button></div>`);
+}
+function openRef(i) {
+  const r = REFS[i];
+  showModal(`<div class="m-head"><button type="button" class="m-close" data-act="close" aria-label="بستن">×</button>
+    <div class="crumb"><span>${r.k}</span></div><h2 id="mTitle">${r.name}</h2></div>
+    <div class="m-body">${r.body.map(p => `<p style="margin:0">${p}</p>`).join('')}
+      <div><div class="steps-h"><h3>در نقشهٔ ما</h3></div><div class="rel" style="margin-top:10px">${r.mods.map(n => modChip(n)).join('')}</div></div>
+      <a href="${r.url}" target="_blank" rel="noopener">خواندن منبع ↗</a>
+    </div><div class="m-foot"><span></span><button type="button" class="btn" data-act="close">بستن</button></div>`);
+}
+function openGate(i) {
+  const g = ROAD.gates[i];
+  showModal(`<div class="m-head"><button type="button" class="m-close" data-act="close" aria-label="بستن">×</button>
+    <div class="crumb"><span>نقشهٔ راه</span></div><h2 id="mTitle">${g[0]}</h2></div>
+    <div class="m-body"><div class="f"><div class="k">شرط عبور (پیشنهادی)</div><div class="v" style="font-size:18px;font-weight:800">${g[1]}</div></div>
+    <p style="margin:0;color:var(--muted)">اگر دروازه رد شود، فاز بعد شروع نمی‌شود و تیم به اصلاح محصول برمی‌گردد.</p>
+    ${i===0?`<div><div class="steps-h"><h3>فاز بعد: نسخهٔ اول</h3></div><div class="rel" style="margin-top:10px">${p1.map(m => modChip(m.n)).join('')}</div></div>`:''}
+    </div><div class="m-foot"><span></span><button type="button" class="btn" data-act="close">بستن</button></div>`);
+}
+const modChip = n => `<button type="button" class="mchip" data-mod="${n}"><span class="num">${fa(n)}</span>${byN[n].name}</button>`;
+
+/* ---------- automation ---------- */
+const order = ['arch','pods','talent','ex','plat'];
+$('#autoRows').innerHTML = order.map(k => {
+  const a = M.filter(m => m.part === k);
+  const segs = [1,2,3].map(v => { const c = a.filter(m => m.auto === v).length; return c ? `<button type="button" class="seg a${v}" style="flex-grow:${c}" data-part="${k}" data-auto="${v}" title="${AUTO[v].name}: ${fa(c)}">${fa(c)}</button>` : ''; }).join('');
+  return `<div class="arow"><div class="lbl" style="color:var(--c-${k})">${PARTS[k].name}</div><div class="bars">${segs}</div><div class="tot">${fa(a.length)}</div></div>`;
+}).join('');
+const sw = v => `background:${v===1?'var(--y)':v===2?'#FFE48F':'#E2DFD8'}`;
+$('#akey').innerHTML = [1,2,3].map(v => `<div><b><i style="${sw(v)}"></i>${AUTO[v].name} | ${fa(M.filter(m=>m.auto===v).length)} ماژول</b>${AUTO[v].desc}</div>`).join('');
+
+{
+  const pct = a => { const t = a[0]+a[1]+a[2]; return a.map(x => Math.round(x*100/t)); };
+  const ours = [1,2,3].map(v => M.filter(m => m.auto === v).length);
+  const rows = [['نقشهٔ ما', pct(ours), fa(M.length)+' ماژول'], ['مک‌کینزی ۲۰۲۵', [26,40,34], '۴۲ فرایند']];
+  $('#benchRows').innerHTML = rows.map(([l, p, t]) => `<div class="arow"><div class="lbl">${l}</div><div class="bars">${p.map((x,i) => `<span class="seg ro a${i+1}" style="flex-grow:${x}" title="${AUTO[i+1].name}">${fa(x)}٪</span>`).join('')}</div><div class="tot">${t}</div></div>`).join('');
+}
+
+/* ---------- priority ---------- */
+// [پیش‌نیازی, اثر سریع و گسترده, استفادهٔ روزمره, وابستگی کم به غیر HR, به چه واحدی وابسته است, سبک شدن کار تیم HR]
+const PRIO = {"1": [3, 1, 1, 2, "تصویب ساختار با مدیریت", 2], "2": [3, 1, 1, 2, "کمیته و دادهٔ مرسر", 3], "3": [3, 1, 1, 1, "مالی، مدیرعامل و مجوز مرسر", 2], "4": [3, 1, 1, 2, "مدیران برای تأیید مهارت", 1], "5": [2, 1, 1, 1, "واحدهای کسب‌وکار و مالی", 1], "6": [1, 1, 1, 1, "مدیرعامل و واحدهای کسب‌وکار", 1], "7": [1, 1, 1, 2, "مدیرعامل", 1], "8": [2, 2, 2, 2, "دادهٔ بودجه از مالی", 2], "9": [1, 2, 2, 3, "", 3], "10": [2, 2, 2, 1, "تأیید بودجه با مالی", 2], "11": [1, 1, 2, 3, "", 2], "12": [2, 2, 3, 3, "", 3], "13": [1, 2, 3, 3, "", 3], "14": [1, 2, 3, 3, "", 3], "15": [1, 1, 2, 2, "استعلام از مراجع بیرونی", 2], "16": [1, 2, 2, 1, "فناوری اطلاعات و پشتیبانی", 2], "17": [1, 2, 2, 2, "واحدهای میزبان", 2], "18": [1, 1, 1, 3, "", 1], "19": [1, 1, 2, 3, "", 1], "20": [3, 3, 2, 2, "مدیران صف و سامانهٔ عملکرد", 2], "21": [2, 2, 1, 3, "", 1], "22": [1, 3, 2, 3, "", 2], "23": [2, 2, 1, 3, "", 1], "24": [1, 2, 2, 3, "", 1], "25": [1, 2, 1, 2, "مدیر مقصد", 1], "26": [1, 1, 2, 3, "", 2], "27": [1, 1, 2, 2, "تسویه با مالی و فناوری اطلاعات", 2], "28": [1, 1, 2, 2, "مدیر استخدام‌کننده", 3], "29": [1, 1, 2, 2, "مدیر", 3], "30": [1, 2, 1, 1, "بودجه با مالی و مدیرعامل", 3], "31": [1, 2, 1, 1, "استخر با مالی و مدیرعامل", 3], "32": [3, 1, 2, 3, "", 3], "33": [1, 2, 2, 2, "مالی", 2], "34": [1, 3, 3, 3, "", 1], "35": [1, 3, 2, 3, "", 2], "36": [1, 2, 2, 3, "", 2], "37": [1, 1, 1, 3, "", 1], "38": [1, 2, 2, 3, "", 1], "39": [1, 3, 3, 2, "روابط عمومی", 2], "40": [1, 2, 2, 3, "", 1], "41": [2, 3, 3, 2, "فناوری اطلاعات برای اتصال بله و ورود یکپارچه", 3], "42": [3, 1, 2, 3, "", 3], "43": [3, 1, 2, 3, "", 3], "44": [1, 3, 3, 3, "", 3], "45": [3, 1, 2, 1, "فناوری اطلاعات، تأمین‌کنندهٔ ابزار حقوق و مالی", 3], "46": [1, 1, 2, 2, "مالی", 3], "47": [1, 1, 3, 3, "", 2], "48": [2, 3, 3, 1, "فناوری اطلاعات، تأمین‌کنندهٔ دستگاه و اداری", 3], "49": [1, 2, 3, 2, "واحدهای عملیاتی", 2], "50": [1, 3, 3, 3, "", 3], "51": [2, 1, 2, 2, "حقوقی", 2], "52": [1, 2, 3, 3, "", 3], "53": [1, 1, 1, 1, "حقوقی و ایمنی", 2], "54": [1, 1, 2, 2, "فناوری اطلاعات", 1], "55": [2, 2, 2, 3, "", 3]};
+const CRIT = [
+ ['پیش‌نیازی','چند ماژول و تصمیم دیگر به دادهٔ آن نیاز دارند (از گراف تصمیم و ورودی‌های ماژول‌ها شمرده شده).','۳: هفت یا بیشتر | ۲: سه تا شش | ۱: کمتر'],
+ ['اثر سریع با مخاطب گسترده','چند نفر و چقدر زود اثرش را می‌بینند.','۳: همهٔ کارکنان | ۲: مدیران یا یک گروه بزرگ | ۱: فقط تیم HR'],
+ ['استفادهٔ روزمره','هر چند وقت یک بار به کار می‌آید.','۳: روزانه یا هفتگی | ۲: ماهانه یا با هر رویداد | ۱: فصلی یا سالانه'],
+ ['وابستگی کم به واحدهای غیر HR','آیا HR بدون مالی، فناوری اطلاعات، حقوقی یا مدیریت می‌تواند راهش بیندازد.','۳: HR به‌تنهایی | ۲: یک واحد دیگر | ۱: چند واحد یا تأمین‌کنندهٔ بیرونی'],
+ ['سبک شدن کار تیم HR','چقدر کار دستی و تکراری تیم HR را برمی‌دارد.','۳: کار تکراری سنگین (ساعت‌ها در هفته یا یک فصل پرفشار) | ۲: متوسط | ۱: کم؛ بیشتر قابلیت تازه است']
+];
+const pv = n => PRIO[n][1] + PRIO[n][2] + PRIO[n][3] + PRIO[n][5];
+const PSETS = {
+  base: M.filter(m => PRIO[m.n][0] === 3).map(m => m.n),
+  quick: M.filter(m => pv(m.n) >= 11 && PRIO[m.n][3] === 3 && m.phase !== 1).map(m => m.n),
+  low: M.filter(m => m.phase === 1 && PRIO[m.n][0] < 3 && pv(m.n) <= 7).map(m => m.n)
+};
+let pHl = 'all';
+function renderPrio() {
+  $('#crit').innerHTML = CRIT.map(([t,d,r],i) => `<div class="f"><div class="k">معیار ${fa(i+1)}</div><b>${t}</b><div class="r">${d}</div><div class="r">${r}</div></div>`).join('');
+  const cols = [12,11,10,9,8,7,6,5,4];
+  let h = `<div class="hd">پیش‌نیازی</div>` + cols.map(c => `<div class="hd">${fa(c)}<small>${c===12?'بیشترین ارزش':c===4?'کمترین':''}</small></div>`).join('');
+  [3,2,1].forEach(r => {
+    h += `<div class="rh">${r===3?'بالا':r===2?'متوسط':'کم'}<small>امتیاز ${fa(r)}</small></div>`;
+    cols.forEach(c => {
+      const ms = M.filter(m => PRIO[m.n][0] === r && pv(m.n) === c);
+      h += `<div class="cl">${ms.map(m => `<button type="button" class="pc ${m.phase===1?'p1':m.phase===3?'p3':''} ${pHl!=='all'&&PSETS[pHl].includes(m.n)?'on':''}" data-mod="${m.n}" title="${PRIO[m.n][4]?'وابسته به '+PRIO[m.n][4]:'HR به‌تنهایی'}"><span class="num">${fa(m.n)}</span>${m.name}</button>`).join('')}</div>`;
+    });
+  });
+  const mx = $('#pmx'); mx.innerHTML = h; mx.classList.toggle('hl', pHl !== 'all');
+  const chips = a => `<div class="rel">${a.map(n => modChip(n)).join('')}</div>`;
+  $('#prec').innerHTML = `
+    <div class="panel"><h3>پایه: دادهٔ آن‌ها از اول لازم است</h3><p>پیش‌نیازی بالا دارند، حتی اگر کم دیده شوند. در فاز ۱ دست‌کم نسخهٔ داده‌ای‌شان (ورود و نگاشت) لازم است.</p>${chips(PSETS.base)}</div>
+    <div class="panel"><h3>برد سریع بیرون از فاز ۱</h3><p>امتیاز ارزش ۱۱ یا ۱۲ و بدون وابستگی به واحد دیگر: روزمره‌اند، کار HR را سبک می‌کنند و کاربر و داده را زود وارد محصول می‌کنند.</p>${chips(PSETS.quick)}</div>
+    <div class="panel"><h3>در فاز ۱ ولی امتیاز پایین</h3><p>سالانه‌اند و به بودجهٔ مالی و تصویب مدیرعامل وابسته‌اند؛ فقط در فصل چرخه کار HR را سبک می‌کنند.</p>${chips(PSETS.low)}</div>
+    <div class="note"><b>پیشنهاد برای فاز ۱ (منتظر تأیید):</b> پایه‌ها بمانند؛ «احکام کارگزینی» (۴۳) و ورود فایل نتیجهٔ «عملکرد مداوم» (۲۰) هم به پایه اضافه شوند. «نامه‌ها و گواهی‌ها» (۴۴) و «مرخصی و مأموریت» (۵۰) با یک نسخهٔ سادهٔ «در ورود هوشمند» (۴۱) در بله به فاز ۱ بیایند تا همهٔ کارکنان از روز اول از محصول استفاده کنند. «حقوق فرد جدید» و «حقوق ارتقا» بمانند: نمونهٔ اصلی پلتفرم تصمیم‌اند و با معیار پنجم بالا آمدند، چون هر پیشنهاد حقوق امروز کار دستی کارشناس جبران است. ماژول‌های جذب (۱۲ تا ۱۴) اولین کار فاز ۲ باشند. «افزایش سالانه» و «پاداش» به زمان چرخه‌شان منتقل شوند، مگر چرخهٔ افزایش سال نو داخل بازهٔ فاز ۱ باشد.</div>`;
+}
+renderPrio();
+document.querySelectorAll('[data-ph]').forEach(b => b.addEventListener('click', () => { pHl = b.dataset.ph; document.querySelectorAll('[data-ph]').forEach(x => x.setAttribute('aria-pressed', x === b)); renderPrio(); }));
+
+/* ---------- moat layers ---------- */
+const MOAT = [
+ {n:0, fa:'عامل‌ها و مدل زبانی', en:'Agents & LLMs', agent:true,
+  what:'گفت‌وگو با کاربر، فهم پرسش، جمع کردن داده از لایه‌های زیر و نوشتن توضیح و پیش‌نویس.',
+  why:'تا ۲ تا ۳ سال دیگر قابلیتی عمومی می‌شود و هر رقیبی آن را دارد. پس مزیت نیست؛ لایه‌ای است که با هر نسل مدل عوض می‌شود.',
+  p1:'عامل کارشناس HR، روی هفت لایهٔ زیر. چهار عامل دیگر با در ورود هوشمند در فاز ۲.', mods:[41,54]},
+ {n:1, fa:'گراف تصمیم HR', en:'HR decision graph',
+  what:'نقشهٔ تصمیم‌های HR: هر تصمیم از کدام ماژول چه داده‌ای می‌گیرد، موتورش کدام است، چه کسی تصمیم می‌گیرد و نتیجه کجا ثبت می‌شود.',
+  why:'با هر مشتری کامل‌تر می‌شود. رقیب باید همین تصمیم‌ها و وابستگی‌هایشان را یکی‌یکی از صفر کشف کند.',
+  p1:'هشت تصمیم جبرانی و حقوقی با ورودی و خروجی مشخص.', mods:[], link:'decisions'},
+ {n:2, fa:'موتور سیاست و قاعده', en:'Policy / rule engine',
+  what:'قاعده‌های هر سازمان (امتیاز IPE، باند، قاعدهٔ ورود و ارتقا، جدول افزایش، فرمول پاداش، سقف وام و اضافه‌کار) به شکل قاعدهٔ نسخه‌دار و آزمون‌پذیر، بیرون از کد و پرامپت.',
+  why:'هر عدد از موتور قطعی می‌آید، نه از مدل زبانی. مشتری قاعده‌اش را خودش تغییر می‌دهد و هر نسخه قابل بازسازی است. قاعده‌های ثبت‌شدهٔ مشتری هزینهٔ رفتنش را بالا می‌برد.',
+  p1:'قاعده‌های رتبه، باند، حقوق ورود، ارتقا، افزایش سالانه و پاداش گروه.', mods:[2,3,28,29,30,31,32,33,49,50]},
+ {n:3, fa:'زمینهٔ سازمانی', en:'Organizational context',
+  what:'ساختار، پست، شغل و رتبه، باند، مهارت و پروندهٔ هر نفر، همه با تاریخچه.',
+  why:'پیشنهاد بدون زمینه عمومی است؛ با زمینه، دربارهٔ همین سازمان است. ساختن این زمینه برای هر مشتری ماه‌ها کار است و بعد از آن جابه‌جایی سخت می‌شود.',
+  p1:'ساختار، شغل و رتبه، باند و پروندهٔ پایه.', mods:[1,2,3,4,7,42]},
+ {n:4, fa:'لایهٔ اتصال', en:'Integration layer',
+  what:'اتصال به ابزار حقوق فعلی، دستگاه حضور، سامانهٔ عملکرد (مثل EDGE)، پیام‌رسان بله، دادهٔ مرسر و فهرست‌های بیمه و مالیات.',
+  why:'در ایران هر ابزار حقوق و هر دستگاه حضور قالب خودش را دارد. کتابخانهٔ این اتصال‌ها را رقیب خارجی ندارد و رقیب داخلی باید یکی‌یکی بسازد.',
+  p1:'نگاشت خروجی ابزار حقوق فعلی، ساخت فایل ورودی آن و ورود دادهٔ مرسر.', mods:[45,46,48,41,22]},
+ {n:5, fa:'تاریخچهٔ تصمیم و ممیزی', en:'Decision history + auditability',
+  what:'برای هر تصمیم: پرسش، داده‌ها و نسخه‌شان، قاعدهٔ اعمال‌شده، پیشنهاد سیستم، تغییر انسان و دلیلش، و تأییدکننده‌ها.',
+  why:'هر تصمیم در بازرسی، شکایت یا کمیته قابل دفاع است. همین تاریخچه به مرور دادهٔ یادگیری می‌شود: پیشنهاد سیستم با تصمیم نهایی و نتیجهٔ بعدی‌اش مقایسه می‌شود.',
+  p1:'ثبت کامل برای هر هشت تصمیم فاز ۱.', mods:[54,55,43]},
+ {n:6, fa:'گردش کار تأیید انسانی', en:'Human approval workflows',
+  what:'مسیر تأیید از روی جدول اختیارات سازمان و نوع استثنا ساخته می‌شود. هر تأییدکننده همان داده و توضیح را می‌بیند و تغییر عدد فقط با ثبت دلیل ممکن است.',
+  why:'تصمیم HR بدون تأیید انسانی پذیرفته نمی‌شود. جدول اختیارات هر سازمان پیچیده است و بعد از پیاده‌سازی بخشی از روال روزمرهٔ آن می‌شود.',
+  p1:'جدول اختیارات تصمیم‌های جبرانی گروه.', mods:[43,26,15,50]},
+ {n:7, fa:'دانش HR بومی', en:'Localized HR knowledge',
+  what:'قانون کار و بخشنامه‌ها، بیمه و مالیات، عرف پرداخت بازار ایران و دانشی که متخصص HR برای هر ماژول می‌آورد.',
+  why:'مدل‌های عمومی این دانش را ندارند یا کهنه دارند. به‌روز نگه داشتنش کار مداوم است، نه یک‌باره.',
+  p1:'دستیار قانون کار، تقویم انطباق و دانش جبران فاز ۱.', mods:[52,46,47,53]}
+];
+let mSel = 1;
+function renderMoat() {
+  const btn = L => `<button type="button" class="ml ${L.agent?'agent':''}" data-ml="${L.n}" aria-pressed="${L.n===mSel}"><span class="no">${L.agent?'∗':fa(L.n)}</span><span><b>${L.fa}</b><span class="en">${L.en}</span></span><span class="cnt">${L.agent?'قابل تعویض':(L.link?'۱۸ تصمیم':fa(L.mods.length)+' ماژول')}</span></button>`;
+  $('#mstack').innerHTML = btn(MOAT[0]) + `<div class="msits">روی این لایه‌ها می‌نشیند</div>` + MOAT.slice(1).map(btn).join('');
+  const L = MOAT[mSel];
+  $('#mdetail').innerHTML = `<div class="md-head ${L.agent?'agent':''}"><h3>${L.fa}</h3><span class="en">${L.en}</span></div>
+    <div class="md-body">
+      <div class="f"><div class="k">چیست</div><div class="v">${L.what}</div></div>
+      <div class="f why"><div class="k">${L.agent?'چرا مزیت ماندگار نیست':'چرا مزیت ماندگار است'}</div><div class="v">${L.why}</div></div>
+      <div class="f p1"><div class="k">در فاز ۱ چه ساخته می‌شود</div><div class="v">${L.p1}</div></div>
+      ${L.mods.length?`<div><div class="k" style="font-size:12px;color:var(--muted);font-weight:700;margin-bottom:6px">در مدل ما</div><div class="rel">${L.mods.map(n => modChip(n)).join('')}</div></div>`:''}
+      ${L.link?`<div><button type="button" class="btn" data-go2="${L.link}">گراف تصمیم را ببینید ←</button></div>`:''}
+    </div>`;
+}
+renderMoat();
+$('#mstack').addEventListener('click', e => { const b = e.target.closest('[data-ml]'); if (b) { mSel = +b.dataset.ml; renderMoat(); } });
+$('#mdetail').addEventListener('click', e => { const b = e.target.closest('[data-go2]'); if (b) { e.stopPropagation(); $('#' + b.dataset.go2).scrollIntoView({behavior:'smooth', block:'start'}); } });
+
+/* ---------- decision graph ---------- */
+const XS = {"x1": "دادهٔ بازار مرسر", "x2": "قانون کار و بخشنامه‌ها", "x3": "کتابخانهٔ شغل مرسر"};
+const DEC = [{"id": "D17", "name": "تغییر ساختار", "eng": 6, "trig": "پرسش «اگر این دو واحد ادغام شوند؟» یا برنامهٔ تازهٔ کسب‌وکار", "who": "مدیرعامل", "calc": "سناریوی ساختار، هزینهٔ نیرو و اثر بر نقش‌ها", "exc": "حذف پست‌های اشغال‌شده", "ins": [[1, "ساختار و پست‌های فعلی"], [5, "نیاز نیروی آینده"], [4, "مهارت‌های موجود"], [45, "هزینهٔ فعلی نیرو"], [2, "رتبهٔ شغل‌ها"]], "outs": [[1, "ساختار تازه"], [2, "شغل‌های بازطراحی‌شده"], [26, "جابه‌جایی‌ها"]]}, {"id": "D1", "name": "رتبه‌بندی شغل", "eng": 2, "trig": "پست تازه یا تغییر شرح شغل", "who": "کمیتهٔ جبران", "calc": "نگاشت به خانواده و سطح مرسر؛ در نبود تطبیق، امتیاز IPE با موتور قطعی", "exc": "اختلاف رتبه با شغل مشابه در شرکت دیگر گروه", "ins": [[1, "پست، خط گزارش و اندازهٔ واحد"], ["x3", "خانواده و سطح شغل مرسر"], [10, "شرح شغل پیشنهادی مدیر"], [4, "مهارت‌های کلیدی شغل"]], "outs": [[3, "رتبهٔ مصوب برای باند"], [1, "رتبهٔ پست در چارت"]]}, {"id": "D2", "name": "تصویب باند حقوق", "eng": 3, "trig": "دادهٔ تازهٔ مرسر یا بازبینی سالانه", "who": "مدیرعامل گروه با پیشنهاد کمیتهٔ جبران", "calc": "حداقل، میانه و حداکثر هر رتبه از صدک بازار و سیاست جایگاه گروه؛ هزینهٔ رساندن افراد به حداقل باند", "exc": "هزینهٔ اصلاح بیش از سقف بودجه", "ins": [[2, "رتبه‌ها و خانوادهٔ شغلی"], ["x1", "صدک‌های بازار هر رتبه"], [45, "حقوق پرداختی فعلی"], [32, "نسبت مقایسه و بیرون از باند فعلی"]], "outs": [[32, "باند مبنای کنترل و محاسبه"]]}, {"id": "D7", "name": "اصلاح حقوق بیرون از باند", "eng": 32, "trig": "گزارش ماهانهٔ کنترل", "who": "مدیر HR شرکت", "calc": "فهرست زیر حداقل و بالای حداکثر باند؛ هزینه و زمان‌بندی اصلاح", "exc": "شکاف جنسیتی یا بین‌شرکتی بیش از آستانه", "ins": [[45, "حقوق پرداختی ماه"], [3, "باند هر رتبه"], [2, "رتبهٔ هر نفر"], [20, "نتیجهٔ عملکرد"]], "outs": [[30, "اولویت در افزایش بعدی"], [43, "حکم اصلاح فوری"]]}, {"id": "D5", "name": "افزایش سالانه", "eng": 30, "trig": "تقویم بودجهٔ سال", "who": "مدیرعامل هر شرکت و کمیتهٔ جبران", "calc": "جدول افزایش (Merit Matrix) از عملکرد و نسبت مقایسه؛ نشاندن جمع در بودجه", "exc": "افزایش بیش از سقف خانهٔ جدول", "ins": [[20, "امتیاز عملکرد"], [32, "نسبت مقایسهٔ هر نفر"], [3, "باند"], [45, "حقوق فعلی"], [8, "بودجهٔ افزایش هر شرکت"], ["x1", "حرکت بازار"]], "outs": [[43, "احکام گروهی"], [45, "فایل افزایش برای ابزار حقوق"]]}, {"id": "D6", "name": "پاداش عملکرد", "eng": 31, "trig": "پایان دورهٔ عملکرد", "who": "کمیتهٔ جبران", "calc": "استخر پاداش، دروازهٔ اهداف شرکت، هدف هر رده و ضریب عملکرد", "exc": "ضریب فرد بیش از سقف", "ins": [[20, "امتیاز عملکرد فرد"], [8, "دستیابی اهداف شرکت و استخر"], [2, "رده برای درصد هدف"], [45, "حقوق پایهٔ مبنا"]], "outs": [[45, "فایل پاداش برای ابزار حقوق"]]}, {"id": "D11", "name": "کالیبراسیون عملکرد", "eng": 20, "trig": "پایان چرخهٔ عملکرد", "who": "کمیتهٔ کالیبراسیون", "calc": "توزیع امتیازها، مقایسهٔ تیم‌ها و شواهد هر امتیاز", "exc": "توزیع غیرعادی یک تیم", "ins": [[21, "سطح مهارت سنجیده"], [34, "قدردانی‌های ثبت‌شده"], [8, "توزیع امتیاز تیم‌ها"], [23, "پیشرفت برنامهٔ توسعه"]], "outs": [[30, "امتیاز برای افزایش"], [31, "امتیاز برای پاداش"], [23, "برنامهٔ توسعهٔ دورهٔ بعد"]]}, {"id": "D4", "name": "حقوق ارتقا و جابه‌جایی", "eng": 29, "trig": "مدیر ارتقا یا جابه‌جایی را پیشنهاد می‌دهد", "who": "مدیر و کارشناس جبران؛ با استثنا، مدیر HR", "calc": "حقوق تازه طبق قاعدهٔ ارتقای گروه؛ نسبت مقایسه و برابری داخلی بعد از تغییر", "exc": "بیرون از باند، شکاف با هم‌رتبه‌ها، فاصلهٔ کم از ارتقای قبلی", "ins": [[1, "پست مقصد"], [2, "رتبهٔ مقصد"], [3, "باند مقصد"], [45, "حقوق فعلی و سابقهٔ تغییر"], [20, "نتیجهٔ عملکرد"], [32, "حقوق هم‌رتبه‌های مقصد"], [7, "جانشین تأییدشده"]], "outs": [[26, "ثبت تغییر وضعیت"], [43, "پیش‌نویس حکم"], [45, "ردیف فایل ابزار حقوق"]]}, {"id": "D12", "name": "انتخاب جانشین", "eng": 7, "trig": "پست کلیدی خالی یا در خطر خروج", "who": "مدیرعامل و کمیتهٔ استعداد", "calc": "آمادگی هر نامزد برای پست کلیدی", "exc": "پست کلیدی بدون جانشین آماده", "ins": [[4, "مهارت‌های نامزد"], [20, "سابقهٔ عملکرد"], [21, "نتیجهٔ سنجش"], [23, "پیشرفت توسعه"]], "outs": [[23, "برنامهٔ آماده‌سازی"], [29, "ورودی حقوق هنگام ارتقا"]]}, {"id": "D13", "name": "جابه‌جایی داخلی", "eng": 25, "trig": "فرصت تازه یا ابراز علاقهٔ کارمند", "who": "مدیر فعلی و مدیر مقصد", "calc": "تطبیق مهارت فرد با فرصت", "exc": "مخالفت مدیر فعلی", "ins": [[4, "مهارت فرد"], [20, "عملکرد"], [1, "پست مقصد"], [10, "درخواست استخدام باز"]], "outs": [[26, "ثبت انتقال"], [29, "ورودی حقوق در پست تازه"]]}, {"id": "D8", "name": "تأیید درخواست استخدام", "eng": 10, "trig": "مدیر نیاز تازه ثبت می‌کند", "who": "مدیر HR و مالی", "calc": "مطابقت با چارت، برنامهٔ نیرو و بودجه؛ اول جست‌وجوی داخل", "exc": "پست بیرون از چارت یا بودجه", "ins": [[1, "پست خالی در چارت"], [5, "برنامهٔ نیرو"], [8, "بودجه و هزینهٔ نیرو"], [25, "کاندیدای داخلی"], [2, "رتبهٔ پست"]], "outs": [[11, "آگهی"], [25, "فرصت داخلی"]]}, {"id": "D9", "name": "تصمیم استخدام", "eng": 12, "trig": "پایان مصاحبه‌ها", "who": "مدیر استخدام‌کننده", "calc": "مقایسهٔ کاندیداها با معیار یکسان و شواهد", "exc": "کاندیدای بیرون از معیار", "ins": [[12, "امتیاز غربال با دلیل"], [13, "شواهد رفتاری مصاحبه"], [21, "نتیجهٔ آزمون مهارت"], [10, "معیار شغل"]], "outs": [[15, "پیشنهاد شغلی"], [28, "ورودی حقوق فرد جدید"]]}, {"id": "D3", "name": "حقوق فرد جدید", "eng": 28, "trig": "کاندیدا پذیرفته شد", "who": "مدیر استخدام‌کننده و کارشناس جبران", "calc": "جایگاه در باند از سابقه و مهارت؛ برابری با هم‌رتبه‌ها؛ تبدیل به اقلام حکم", "exc": "بالاتر از میانهٔ هم‌رتبه‌ها یا بیرون از باند", "ins": [[2, "رتبهٔ پست"], [3, "باند رتبه"], [32, "حقوق هم‌رتبه‌های فعلی"], [12, "سابقهٔ کار مرتبط"], [13, "شواهد مصاحبه"], [21, "سطح مهارت سنجیده"], [10, "بودجهٔ پست"]], "outs": [[15, "رقم پیشنهاد شغلی"], [43, "حکم اولیه"], [45, "ردیف ورود به ابزار حقوق"]]}, {"id": "D10", "name": "ادامه پس از دورهٔ آزمایشی", "eng": 19, "trig": "۱۵ روز مانده به پایان دوره", "who": "مدیر مستقیم", "calc": "مقایسه با اهداف دورهٔ آزمایشی", "exc": "نتیجهٔ مرزی", "ins": [[17, "پیشرفت مسیر ورود"], [20, "بازخوردها"], [48, "حضور و تأخیر"], [18, "نظر همراه"]], "outs": [[51, "قرارداد"], [26, "تغییر وضعیت"]]}, {"id": "D15", "name": "تمدید قرارداد", "eng": 51, "trig": "۶۰ روز مانده به پایان قرارداد", "who": "مدیر و HR", "calc": "سابقهٔ عملکرد و حضور و نیاز پست", "exc": "عدم تمدید", "ins": [[20, "عملکرد"], [48, "حضور"], [42, "پرونده"], [5, "نیاز پست"]], "outs": [[43, "حکم سال تازه"], [52, "بررسی حقوقی عدم تمدید"]]}, {"id": "D16", "name": "تأیید وام", "eng": 33, "trig": "درخواست کارمند", "who": "کمیتهٔ رفاه", "calc": "سقف، صف و توان بازپرداخت", "exc": "بیرون از سقف", "ins": [[42, "نوع قرارداد و سابقه"], [45, "حقوق و کسور فعلی"], [51, "تاریخ پایان قرارداد"]], "outs": [[45, "اقساط در ابزار حقوق"]]}, {"id": "D18", "name": "پرسش پرریسک حقوقی", "eng": 52, "trig": "پرسش مدیر یا HR", "who": "مشاور حقوقی", "calc": "پاسخ با ارجاع به ماده و تشخیص پرسش پرریسک", "exc": "همهٔ پرسش‌های پرریسک", "ins": [["x2", "قانون و بخشنامه‌ها"], [42, "پروندهٔ کارمند"], [51, "قرارداد"], [53, "پروندهٔ شکایت"]], "outs": [[53, "اقدام در پرونده"]]}, {"id": "D14", "name": "اقدام برای تیم در خطر", "eng": 8, "trig": "هشدار حال‌وهوا یا گردش", "who": "راهبر HR و مدیر تیم", "calc": "علت‌های محتمل و اقدام‌های پیشنهادی", "exc": "خطر خروج نیروی کلیدی", "ins": [[36, "روند حال‌وهوا"], [35, "نتیجهٔ نظرسنجی"], [55, "گردش و غیبت"], [27, "دلایل خروج"], [32, "عقب‌ماندگی حقوق تیم"]], "outs": [[40, "موضوع گفت‌وگوی یک‌به‌یک"], [30, "اولویت افزایش"], [39, "پیام به تیم"]]}];
+const decById = Object.fromEntries(DEC.map(d => [d.id, d]));
+DEC.forEach(d => d.phase = byN[d.eng].phase);
+const isX = k => typeof k !== 'number';
+const mPh = k => isX(k) ? 1 : byN[k].phase;
+const mNm = k => isX(k) ? XS[k] : byN[k].name;
+const phTag = ph => ph===1 ? '<span class="tag p1">فاز ۱</span>' : `<span class="tag">فاز ${fa(ph)}</span>`;
+const manTag = (k, ph) => mPh(k) > ph ? `<span class="tag">تا فاز ${fa(mPh(k))} دستی یا فایل</span>` : '';
+const srcChip = k => isX(k) ? `<span class="tag">منبع بیرونی</span> <b style="font-size:13px">${XS[k]}</b>` : modChip(k);
+const dChip = d => `<button type="button" class="dchip ${d.phase===1?'p1':''}" data-dec="${d.id}">${d.name}</button>`;
+let gF = 'all', gSel = {t:'d', id:'D4'}, gL = null;
+const avg = a => a.length ? a.reduce((x,y) => x+y, 0) / a.length : 0;
+const SVGNS = 'http://www.w3.org/2000/svg';
+function gLayout() {
+  let D = DEC.filter(d => gF === 'all' || d.phase === 1);
+  const S = [...new Set(D.flatMap(d => d.ins.map(i => i[0])))];
+  const T = [...new Set(D.flatMap(d => d.outs.map(o => o[0])))];
+  for (let it = 0; it < 6; it++) {
+    const di = new Map(D.map((d,i) => [d.id, i]));
+    const mS = k => avg(D.filter(d => d.ins.some(i => i[0] === k)).map(d => di.get(d.id)));
+    const mT = k => avg(D.filter(d => d.outs.some(o => o[0] === k)).map(d => di.get(d.id)));
+    S.sort((a,b) => mS(a) - mS(b)); T.sort((a,b) => mT(a) - mT(b));
+    if (it === 5) break;
+    const si = new Map(S.map((k,i) => [k, i / Math.max(1, S.length - 1) * (D.length - 1)]));
+    const ti = new Map(T.map((k,i) => [k, i / Math.max(1, T.length - 1) * (D.length - 1)]));
+    D.sort((a,b) => avg([...a.ins.map(i => si.get(i[0])), ...a.outs.map(o => ti.get(o[0]))]) - avg([...b.ins.map(i => si.get(i[0])), ...b.outs.map(o => ti.get(o[0]))]));
+  }
+  return {D, S, T};
+}
+function renderGraph() {
+  const {D, S, T} = gLayout();
+  const W = 1060, top = 34, H = top + Math.max(S.length * 29, D.length * 48, T.length * 36) + 12;
+  const SX = 856, SW = 204, DX = 418, DW = 236, TW = 204;
+  const yAt = (n, i) => top + (H - top - 12) * (i + .5) / n;
+  const yS = new Map(S.map((k,i) => [k, yAt(S.length, i)])), yD = new Map(D.map((d,i) => [d.id, yAt(D.length, i)])), yT = new Map(T.map((k,i) => [k, yAt(T.length, i)]));
+  let e = '', n = '';
+  D.forEach(d => {
+    const y2 = yD.get(d.id);
+    d.ins.forEach(([k]) => { const y1 = yS.get(k); e += `<path class="g-edge in ${mPh(k) > d.phase ? 'man' : ''}" data-d="${d.id}" data-m="${k}" d="M${SX},${y1} C${SX-120},${y1} ${DX+DW+120},${y2} ${DX+DW},${y2}"/>`; });
+    d.outs.forEach(([k]) => { const y1 = yT.get(k); e += `<path class="g-edge out ${mPh(k) > d.phase ? 'man' : ''}" data-d="${d.id}" data-m="${k}" d="M${DX},${y2} C${DX-120},${y2} ${TW+120},${y1} ${TW},${y1}"/>`; });
+  });
+  const mNode = (k, x, y) => `<g class="g-node m ${isX(k)?'x':''}" data-gm="${k}" tabindex="0" role="button" aria-label="${mNm(k)}"><rect x="${x}" y="${y-11}" width="${SW}" height="22" rx="11"/>${isX(k) ? `<text x="${x+SW-12}" y="${y+4}" font-size="12" direction="rtl" text-anchor="start">${mNm(k)}</text>` : `<text x="${x+SW-11}" y="${y+4}" font-size="12" direction="rtl" text-anchor="start"><tspan class="no">${fa(k)}</tspan>  ${mNm(k)}</text>`}</g>`;
+  S.forEach(k => n += mNode(k, SX, yS.get(k)));
+  T.forEach(k => n += mNode(k, 0, yT.get(k)));
+  D.forEach(d => { const y = yD.get(d.id); n += `<g class="g-node d ${d.phase===1?'p1':''}" data-dec="${d.id}" tabindex="0" role="button" aria-label="${d.name}"><rect x="${DX}" y="${y-19}" width="${DW}" height="38" rx="9"/><text x="${DX+DW-12}" y="${y-2}" font-size="13.5" font-weight="800" direction="rtl" text-anchor="start">${d.name}</text><text class="sub" x="${DX+DW-12}" y="${y+13}" direction="rtl" text-anchor="start">فاز ${fa(d.phase)} | موتور: ${fa(d.eng)} ${byN[d.eng].name}</text></g>`; });
+  const cols = `<text class="g-col" x="${SX+SW}" y="18" direction="rtl" text-anchor="start">ماژولی که داده می‌دهد</text><text class="g-col" x="${DX+DW/2}" y="18" text-anchor="middle">نقطهٔ تصمیم</text><text class="g-col" x="${TW}" y="18" direction="rtl" text-anchor="start">جایی که نتیجه ثبت می‌شود</text>`;
+  const svg = $('#graph');
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.innerHTML = cols + `<g id="gEdges">${e}</g><g id="gNodes">${n}</g><g id="gLbls"></g>`;
+  gL = {D, S, T, yS, yD, yT, SX, SW, DX, DW, TW};
+  if (gSel.t === 'd' && !D.some(d => d.id === gSel.id)) gSel = {t:'d', id:D[0].id};
+  gHighlight(gSel); renderGPanel();
+}
+function gHighlight(sel) {
+  const svg = $('#graph'), L = gL; if (!L) return;
+  svg.classList.add('focus');
+  svg.querySelectorAll('.on,.sel').forEach(x => x.classList.remove('on','sel'));
+  const lbl = [];
+  const keyOf = v => isX(v) ? v : String(v);
+  const nodeM = k => svg.querySelectorAll(`.g-node.m[data-gm="${keyOf(k)}"]`);
+  if (sel.t === 'd') {
+    const d = decById[sel.id];
+    svg.querySelectorAll(`.g-edge[data-d="${d.id}"]`).forEach(x => x.classList.add('on'));
+    const dn = svg.querySelector(`.g-node.d[data-dec="${d.id}"]`); if (dn) dn.classList.add('on','sel');
+    d.ins.forEach(([k, t]) => { svg.querySelectorAll(`.g-node.m[data-gm="${keyOf(k)}"]`).forEach(g => { if (+g.querySelector('rect').getAttribute('x') === L.SX) g.classList.add('on'); }); lbl.push([L.SX - 8, L.yS.get(k) - 7, t, 'start']); });
+    d.outs.forEach(([k, t]) => { svg.querySelectorAll(`.g-node.m[data-gm="${keyOf(k)}"]`).forEach(g => { if (+g.querySelector('rect').getAttribute('x') === 0) g.classList.add('on'); }); lbl.push([L.TW + 8, L.yT.get(k) - 7, t, 'end']); });
+  } else {
+    const k = sel.id;
+    nodeM(k).forEach(g => g.classList.add('on','sel'));
+    L.D.forEach(d => {
+      const i = d.ins.find(x => x[0] === k), o = d.outs.find(x => x[0] === k);
+      if (!i && !o && d.eng !== k) return;
+      svg.querySelector(`.g-node.d[data-dec="${d.id}"]`).classList.add('on');
+      if (i) { svg.querySelector(`.g-edge.in[data-d="${d.id}"][data-m="${keyOf(k)}"]`).classList.add('on'); lbl.push([L.DX + L.DW + 8, L.yD.get(d.id) - 8, i[1], 'end']); }
+      if (o) { svg.querySelector(`.g-edge.out[data-d="${d.id}"][data-m="${keyOf(k)}"]`).classList.add('on'); lbl.push([L.DX - 8, L.yD.get(d.id) - 8, o[1], 'start']); }
+    });
+  }
+  $('#gLbls').innerHTML = lbl.map(([x,y,t,a]) => `<text class="g-lbl" x="${x}" y="${y}" direction="rtl" text-anchor="${a}">${t}</text>`).join('');
+}
+function renderGPanel() {
+  const p = $('#gpanel');
+  if (gSel.t === 'd') {
+    const d = decById[gSel.id];
+    const prev = DEC.filter(o => o.id !== d.id && (d.ins.some(i => i[0] === o.eng) || o.outs.some(x => x[0] === d.eng)));
+    const next = DEC.filter(o => o.id !== d.id && (d.outs.some(x => x[0] === o.eng) || o.ins.some(i => i[0] === d.eng)));
+    const man = d.ins.filter(([k]) => mPh(k) > d.phase).length;
+    const arrow = `<div class="gp-arrow" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 22 22"><path d="M18 11H4M9 5l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>`;
+    p.innerHTML = `<div class="gp-head"><h3>${d.name}</h3>${phTag(d.phase)}<span class="tag">${fa(d.ins.length)} ورودی</span>${man?`<span class="tag">${fa(man)} ورودی دستی در این فاز</span>`:''}</div>
+      <div class="gp-trig"><b>ماشه:</b> ${d.trig}</div>
+      <div class="gp-flow">
+        <div class="gp-col"><div class="k">از کدام ماژول، چه داده‌ای</div><ul>${d.ins.map(([k,t]) => `<li><span>${srcChip(k)}${manTag(k, d.phase)}</span><span class="d">${t}</span></li>`).join('')}</ul></div>
+        ${arrow}
+        <div class="gp-col eng"><div class="k">محاسبه و تصمیم</div><p><b>موتور</b>${modChip(d.eng)}</p><p><b>چه محاسبه می‌شود</b>${d.calc}</p><p><b>چه کسی تصمیم می‌گیرد</b>${d.who}</p><p style="margin:0"><b>استثنا که بالا می‌رود</b>${d.exc}</p></div>
+        ${arrow}
+        <div class="gp-col out"><div class="k">نتیجه کجا ثبت می‌شود</div><ul>${d.outs.map(([k,t]) => `<li><span>${modChip(k)}${manTag(k, d.phase)}</span><span class="d">${t}</span></li>`).join('')}</ul></div>
+      </div>
+      ${(prev.length||next.length)?`<div class="gp-chain">${prev.length?`<span>از این تصمیم‌ها تغذیه می‌شود:</span>${prev.map(dChip).join('')}`:''}${next.length?`<span style="margin-inline-start:${prev.length?'10px':'0'}">به این تصمیم‌ها می‌رود:</span>${next.map(dChip).join('')}`:''}</div>`:''}`;
+  } else {
+    const k = gSel.id;
+    const feeds = DEC.filter(d => d.ins.some(i => i[0] === k)), gets = DEC.filter(d => d.outs.some(o => o[0] === k)), eng = DEC.filter(d => d.eng === k);
+    const row = (d, t) => `<li>${dChip(d)}<span>${t}</span></li>`;
+    p.innerHTML = `<div class="gp-head"><h3>${mNm(k)}</h3>${isX(k)?'<span class="tag">منبع بیرونی</span>':phTag(byN[k].phase)}${isX(k)?'':`<button type="button" class="btn" data-mod="${k}">جزئیات ماژول</button>`}</div>
+      <div class="gp-mod">
+        ${eng.length?`<div><h4>موتور این تصمیم‌هاست</h4><ul>${eng.map(d => row(d, d.calc)).join('')}</ul></div>`:''}
+        ${feeds.length?`<div><h4>به این تصمیم‌ها داده می‌دهد</h4><ul>${feeds.map(d => row(d, d.ins.find(i => i[0] === k)[1])).join('')}</ul></div>`:''}
+        ${gets.length?`<div><h4>نتیجهٔ این تصمیم‌ها در آن ثبت می‌شود</h4><ul>${gets.map(d => row(d, d.outs.find(o => o[0] === k)[1])).join('')}</ul></div>`:''}
+      </div>`;
+  }
+}
+function gSelect(sel, scroll) {
+  gSel = sel;
+  if (sel.t === 'd' && gF === '1' && decById[sel.id].phase !== 1) { gF = 'all'; document.querySelectorAll('[data-gf]').forEach(b => b.setAttribute('aria-pressed', b.dataset.gf === 'all')); renderGraph(); }
+  gHighlight(gSel); renderGPanel();
+  if (scroll) $('#decisions').scrollIntoView({behavior:'smooth', block:'start'});
+}
+renderGraph();
+{
+  const svg = $('#graph');
+  const pick = t => { const g = t.closest('.g-node'); if (!g) return null; return g.dataset.dec ? {t:'d', id:g.dataset.dec} : {t:'m', id: /^\d+$/.test(g.dataset.gm) ? +g.dataset.gm : g.dataset.gm}; };
+  svg.addEventListener('mouseover', e => { const s = pick(e.target); if (s) gHighlight(s); });
+  svg.addEventListener('mouseleave', () => gHighlight(gSel));
+  svg.addEventListener('click', e => { const s = pick(e.target); if (s) { e.stopPropagation(); gSelect(s); } });
+  svg.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { const s = pick(e.target); if (s) { e.preventDefault(); gSelect(s); } } });
+  document.querySelectorAll('[data-gf]').forEach(b => b.addEventListener('click', () => { gF = b.dataset.gf; document.querySelectorAll('[data-gf]').forEach(x => x.setAttribute('aria-pressed', x === b)); renderGraph(); }));
+}
+
+/* ---------- phase 1 ---------- */
+$('#p1chips').innerHTML = p1.map(m => modChip(m.n)).join('');
+$('#p1kn').innerHTML = p1.map(m => `<div class="kcard"><button type="button" data-mod="${m.n}">${fa(m.n)}. ${m.name}</button><ul>${(KN[m.n]||[]).map(x => `<li>${x}</li>`).join('')}</ul></div>`).join('');
+$('#criteria').innerHTML = CRITERIA.map(c => `<li>${c}</li>`).join('');
+$('#outside').innerHTML = OUTSIDE.map(c => `<li>${c}</li>`).join('');
+
+/* ---------- roadmap ---------- */
+$('#road').innerHTML = `<div></div>${ROAD.phases.map((p,i) => `<div class="ph ${i===1?'on':''}"><b>${p[0]}</b><span>${p[1]}</span></div>`).join('')}` +
+  ROAD.lanes.map(([lane, cells]) => `<div class="lane">${lane}</div>${cells.map((c,i) => c ? `<div class="cell ${i===1?'hot':''}">${c}</div>` : `<div class="cell none">در این فاز چیزی نیست</div>`).join('')}`).join('');
+$('#gates').innerHTML = `<div></div>${ROAD.gates.map((g,i) => `<div class="gate"><button type="button" data-gate="${i}"><span class="dia"></span>${g[0]}</button></div>`).join('')}<div></div>`;
+
+/* ---------- agents & refs ---------- */
+$('#agentCards').innerHTML = AGENTS.map((a,i) => `<button type="button" class="card ${a.phase===1?'p1c':''}" data-agent="${i}"><span class="k">${a.phase===1?'از فاز ۱':'از فاز ۲'}</span><h3>${a.name}</h3><p>${a.does}</p><span class="more">جزئیات ←</span></button>`).join('');
+$('#refCards').innerHTML = REFS.map((r,i) => `<button type="button" class="card" data-ref="${i}"><span class="k">${r.k}</span><h3>${r.name}</h3><p>${r.short}</p><span class="more">${fa(r.mods.length)} ماژول در نقشه ←</span></button>`).join('');
+
+/* ---------- events ---------- */
+document.addEventListener('click', e => {
+  const ov = e.target.closest('[data-go]');
+  if (ov) { openPart(ov.dataset.go); return; }
+  const dc = e.target.closest('.dchip[data-dec]');
+  if (dc) { const inModal = !scrim.hidden; if (inModal) closeModal(); gSelect({t:'d', id:dc.dataset.dec}, inModal); return; }
+  const t = e.target.closest('[data-part],[data-mod],[data-f],[data-act],[data-agent],[data-ref],[data-gate],.seg');
+  if (!t) { if (e.target === scrim) closeModal(); return; }
+  if (t.classList.contains('seg')) { closeModal(); openPart(t.dataset.part, {auto:+t.dataset.auto}); location.hash = '#model'; return; }
+  const act = t.dataset.act;
+  if (act === 'close') return closeModal();
+  if (act === 'close-drill') { state.part = null; document.querySelectorAll('.part').forEach(el => el.classList.remove('sel')); renderDrill(); return; }
+  if (act === 'nav') { if (t.dataset.n) openModule(+t.dataset.n); return; }
+  if (act === 'part') { closeModal(); openPart(t.dataset.part); return; }
+  if (t.dataset.f) { state[t.dataset.f] = +t.dataset.v; renderDrill(); return; }
+  if (t.dataset.mod) { const inGrid = t.closest('.grid'); openModule(+t.dataset.mod, inGrid ? filtered().map(m => m.n) : null); return; }
+  if (t.dataset.part) { openPart(t.dataset.part); return; }
+  if (t.dataset.agent) return openAgent(+t.dataset.agent);
+  if (t.dataset.ref) return openRef(+t.dataset.ref);
+  if (t.dataset.gate) return openGate(+t.dataset.gate);
+});
+document.querySelector('.band.fd').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModule(41); } });
+
+const sections = [...document.querySelectorAll('main section')];
+document.addEventListener('keydown', e => {
+  if (!scrim.hidden) {
+    if (e.key === 'Escape') closeModal();
+    if (e.key === 'Tab') { const f = [...modal.querySelectorAll('button:not([disabled]),a[href]')]; if (f.length) { const first = f[0], last = f.at(-1); if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); } else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); } } }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { const btn = modal.querySelectorAll('[data-act="nav"]')[e.key === 'ArrowLeft' ? 1 : 0]; if (btn && !btn.disabled) btn.click(); }
+    return;
+  }
+  if (e.target.closest('input,textarea')) return;
+  const cur = currentSection();
+  if (e.key === 'ArrowLeft' || e.key === 'PageDown') { e.preventDefault(); go(cur + 1); }
+  if (e.key === 'ArrowRight' || e.key === 'PageUp') { e.preventDefault(); go(cur - 1); }
+});
+function currentSection() { const y = innerHeight * .35; let idx = 0; sections.forEach((s,i) => { if (s.getBoundingClientRect().top <= y) idx = i; }); return idx; }
+function go(i) { i = Math.max(0, Math.min(sections.length - 1, i)); sections[i].scrollIntoView({behavior:'smooth', block:'start'}); }
+
+const navLinks = [...document.querySelectorAll('#nav a')];
+const io = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) navLinks.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + en.target.id)); }), {rootMargin:'-40% 0px -55% 0px'});
+sections.forEach(s => io.observe(s));
+
+const pb = $('#presentBtn');
+pb.addEventListener('click', () => { const on = !document.body.classList.contains('present'); document.body.classList.toggle('present', on); pb.setAttribute('aria-pressed', on); try { localStorage.setItem('hrops-present', on ? '1' : ''); } catch (_) {} });
+try { if (localStorage.getItem('hrops-present')) { document.body.classList.add('present'); pb.setAttribute('aria-pressed', 'true'); } } catch (_) {}
+
+function route() {
+  const h = location.hash.slice(1);
+  let m;
+  if ((m = h.match(/^module-(\d+)$/))) { const n = +m[1]; if (byN[n]) { openPart(byN[n].part, {noScroll:true}); openModule(n, filtered().map(x => x.n)); } }
+  else if ((m = h.match(/^part-(arch|pods|talent|ex|plat)$/))) openPart(m[1]);
+}
+addEventListener('hashchange', route);
+openPart('ex', {noScroll:true, phase:0});
+route();
+</script>
+
+</body></html>

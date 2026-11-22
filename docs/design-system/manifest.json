@@ -1,0 +1,91 @@
+{
+  "manifestVersion": 3,
+  "name": "HR Ops",
+  "namespace": "HROps",
+  "files": [
+    "components/AgentMark/README.md",
+    "components/ApprovalChain/README.md",
+    "components/Badge/README.md",
+    "components/Button/README.md",
+    "components/ChartPanel/README.md",
+    "components/ChatMessage/README.md",
+    "components/DataTable/README.md",
+    "components/DecisionCard/README.md",
+    "components/Field/README.md",
+    "components/InboxItem/README.md",
+    "components/PayBandBar/README.md",
+    "components/StatTile/README.md",
+    "components/VersionTag/README.md",
+    "components/bundle.css",
+    "tokens.css"
+  ],
+  "libraries": [],
+  "components": [
+    {
+      "name": "AgentMark",
+      "group": "Status",
+      "summary": "نشانهٔ هر چیزی که مدل زبانی نوشته؛ مرز میان «محاسبه‌شده» و «نوشتهٔ عامل»."
+    },
+    {
+      "name": "ApprovalChain",
+      "group": "Workflow",
+      "summary": "زنجیرهٔ تأیید: چه کسی تأیید کرده، الان دست کیست، بعد چه می‌شود."
+    },
+    {
+      "name": "Badge",
+      "group": "Status",
+      "summary": "برچسب وضعیت یک یا دو کلمه‌ای؛ همیشه با قاب ۲ پیکسلی و گوشهٔ تیز."
+    },
+    {
+      "name": "Button",
+      "group": "Actions",
+      "summary": "دکمه برای انجام یک کار؛ متن آن فعل است و دقیقاً می‌گوید چه می‌شود."
+    },
+    {
+      "name": "ChartPanel",
+      "group": "Data",
+      "summary": "قاب یک نمودار در گزارش‌ها: عنوانِ نتیجه، زیرعنوانِ تعریف، و خود نمودار."
+    },
+    {
+      "name": "ChatMessage",
+      "group": "Assistant",
+      "summary": "پیام‌های گفت‌وگو با دستیار در وب؛ همان الگو در بله به متن و دکمه تبدیل می‌شود."
+    },
+    {
+      "name": "DataTable",
+      "group": "Data",
+      "summary": "جدول فشردهٔ کارشناس؛ پرکاربردترین نمای محصول."
+    },
+    {
+      "name": "DecisionCard",
+      "group": "Decision",
+      "summary": "نمای استاندارد هر یک از ۱۸ تصمیم؛ الگوی امضای محصول."
+    },
+    {
+      "name": "Field",
+      "group": "Forms",
+      "summary": "ورودی با برچسب بالای آن و یک خط راهنما یا خطا زیرش."
+    },
+    {
+      "name": "InboxItem",
+      "group": "Workflow",
+      "summary": "یک ردیف صندوق کار؛ صفحهٔ اول هر کاربر فهرستی از همین ردیف‌هاست."
+    },
+    {
+      "name": "PayBandBar",
+      "group": "Data",
+      "summary": "جای حقوق یک نفر در باند رتبه‌اش، فعلی و پیشنهادی، در یک نگاه."
+    },
+    {
+      "name": "StatTile",
+      "group": "Data",
+      "summary": "کاشی یک عدد خلاصه بالای صفحه؛ سه یا چهار تا در یک ردیف."
+    },
+    {
+      "name": "VersionTag",
+      "group": "Data",
+      "summary": "نسخهٔ هر چیزی که در یک تصمیم اثر داشته؛ ردپای قابل بازسازی تصمیم."
+    }
+  ],
+  "assetGroups": []
+}

@@ -1,0 +1,46 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Cover</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@500;900&display=swap">
+<style>
+  html, body { margin: 0; background: var(--surface); }
+  .cv { position: relative; width: 960px; height: 288px; overflow: hidden; background: var(--surface); }
+  .cv svg { position: absolute; inset: 0; }
+  .b-navy { fill: var(--navy); }
+  .b-red { fill: var(--red); }
+  .b-steel { fill: var(--steel); }
+  .b-cream { fill: var(--surface-cream); }
+  .b-dark { fill: var(--red-dark); }
+  .edge { stroke: var(--navy); stroke-width: 2; }
+  .txt { position: absolute; left: 40px; bottom: 40px; max-width: 440px; }
+  .name { font-family: var(--font-sans); font-weight: 900; font-size: 104px; line-height: .92; color: var(--navy); margin: 0; letter-spacing: -1px; }
+  .rule { display: block; width: 168px; height: 6px; background: var(--red); margin-top: 10px; }
+  .tag { font-family: var(--font-sans); font-weight: 500; font-size: 14px; line-height: 22px; color: var(--ink-muted); margin: 10px 0 0; direction: rtl; text-align: left; }
+</style></head>
+<body>
+<div class="cv">
+  <svg width="960" height="288" viewBox="0 0 960 288" aria-hidden="true">
+    <!--
+      blocks: navy 208×288 (full height), red 176×112, steel 160×96, cream 176×80 with navy edge, red-dark 64×64; radius-none everywhere
+      arrangement: modular grid of square-cornered slabs, each but navy carrying the system's hard offset shadow (-6px 6px, navy)
+      pattern: hard shadows plus 2px navy edges; "brutalist on white, 2px borders, hard shadows, sharp corners" chose the loud-modular row
+      steps: border-width 2px, shadow-hard-lg offset 6px, gaps space-5 (22px) rounded to 24
+    -->
+    <rect class="b-navy" x="752" y="0" width="208" height="288"/>
+    <rect class="b-navy" x="534" y="30" width="176" height="112"/>
+    <rect class="b-red edge" x="540" y="24" width="176" height="112"/>
+    <rect class="b-navy" x="522" y="166" width="160" height="96"/>
+    <rect class="b-steel edge" x="528" y="160" width="160" height="96"/>
+    <rect class="b-navy" x="770" y="176" width="176" height="80"/>
+    <rect class="b-cream edge" x="776" y="170" width="176" height="80"/>
+    <rect class="b-dark" x="800" y="40" width="64" height="64"/>
+  </svg>
+  <div class="txt">
+    <p class="name">HR OPS</p>
+    <span class="rule"></span>
+    <p class="tag">پلتفرم تصمیم منابع انسانی؛ سرمه‌ای، قرمز، روی سفید.</p>
+  </div>
+</div>
+</body>
+</html>

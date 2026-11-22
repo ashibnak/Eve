@@ -10,13 +10,13 @@ RUN corepack enable pnpm
 WORKDIR /repo
 
 FROM base AS build
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json .npmrc ./
-COPY apps/api/package.json apps/api/
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json .npmrc tsconfig.base.json ./
+COPY apps/api/package.json apps/api/prisma.config.ts apps/api/tsconfig.json apps/api/
+COPY apps/api/prisma apps/api/prisma
 COPY apps/web/package.json apps/web/
 COPY packages/contracts/package.json packages/contracts/
 COPY packages/jurisdictions/ir/package.json packages/jurisdictions/ir/
 RUN pnpm install --frozen-lockfile
-COPY tsconfig.base.json ./
 COPY packages packages
 COPY apps apps
 RUN pnpm --filter @eve/contracts --filter @eve/jurisdiction-ir build \

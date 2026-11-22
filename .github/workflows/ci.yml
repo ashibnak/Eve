@@ -1,0 +1,55 @@
+# Mirror of .gitlab-ci.yml for the GitHub-hosted phase. Every merge must pass lint, typecheck,
+# test and module boundaries (CLAUDE.md DoD). Keep both files in sync until the move to GitLab.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: ${{ matrix.check }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        check: [lint, typecheck, test, boundaries, 'check:i18n']
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - run: corepack enable pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm ${{ matrix.check }}
+
+  e2e:
+    needs: verify
+    runs-on: ubuntu-24.04
+    container: mcr.microsoft.com/playwright:v1.65.1-noble
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - run: corepack enable pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm e2e
+        env:
+          CI: 'true'
+      - if: failure()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: playwright-report
+          path: |
+            apps/web/playwright-report/
+            apps/web/test-results/
+          retention-days: 7

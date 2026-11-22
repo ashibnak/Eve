@@ -1,0 +1,24 @@
+{
+  "name": "@eve/contracts",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Versioned contracts per module (packages/contracts/<slug>/v1). Filled from S1.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "eve-source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3"
+  }
+}

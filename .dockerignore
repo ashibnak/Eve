@@ -1,0 +1,11 @@
+**/node_modules
+**/dist
+**/coverage
+**/test-results
+**/playwright-report
+apps/api/src/generated
+.git
+.env
+docs
+tools
+EveDesignSystem.zip

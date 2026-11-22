@@ -1,0 +1,61 @@
+# Eve single-customer stack: app, PostgreSQL, Caddy. Start with:
+#   docker compose -f deploy/docker-compose.yml --env-file .env up -d --build
+name: eve
+
+services:
+  postgres:
+    image: ${IMAGE_REGISTRY:-}pgvector/pgvector:0.8.1-pg17
+    environment:
+      POSTGRES_DB: eve
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      EVE_OWNER_PASSWORD: ${EVE_OWNER_PASSWORD:?set EVE_OWNER_PASSWORD in .env}
+      EVE_APP_PASSWORD: ${EVE_APP_PASSWORD:?set EVE_APP_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d eve']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      target: api
+      args:
+        IMAGE_REGISTRY: ${IMAGE_REGISTRY:-}
+    environment:
+      DATABASE_URL: postgresql://eve_app:${EVE_APP_PASSWORD}@postgres:5432/eve
+      MIGRATION_DATABASE_URL: postgresql://eve_owner:${EVE_OWNER_PASSWORD}@postgres:5432/eve
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  caddy:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      target: web
+      args:
+        IMAGE_REGISTRY: ${IMAGE_REGISTRY:-}
+    environment:
+      EVE_SITE_ADDRESS: ${EVE_SITE_ADDRESS:-localhost}
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - caddy_data:/data
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  caddy_data:

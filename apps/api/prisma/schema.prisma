@@ -1,0 +1,13 @@
+// Eve schema. Models arrive with their slices; tables are prefixed by module slug (ADR-002).
+// Constraints Prisma cannot express (exclusion constraints, grants) live in hand-written
+// SQL migrations under prisma/migrations/NNNN_<name>/ — forward-only.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}

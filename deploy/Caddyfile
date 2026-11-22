@@ -1,0 +1,18 @@
+{
+	# Local/self-signed TLS until a customer domain is configured via EVE_SITE_ADDRESS.
+	local_certs
+}
+
+{$EVE_SITE_ADDRESS:localhost} {
+	encode zstd gzip
+
+	handle /api/* {
+		reverse_proxy api:3000
+	}
+
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}

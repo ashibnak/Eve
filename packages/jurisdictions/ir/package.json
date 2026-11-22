@@ -1,0 +1,24 @@
+{
+  "name": "@eve/jurisdiction-ir",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Iran jurisdiction pack (ADR-010). Calendar and legal fields arrive in S1.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "eve-source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3"
+  }
+}

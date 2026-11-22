@@ -1,0 +1,123 @@
+/* HR Ops Design System tokens — copied verbatim from docs/design-system/tokens.css (generated from tokens.json). Do not edit here; re-copy on design-system updates. */
+:root, [data-theme="light"] {
+  --surface: #ffffff; /* زمینهٔ صفحه، کارت، جدول و ورودی. همه‌چیز روی سفید. */
+  --surface-cream: #fef1d5; /* سطح تأکید آرام: نشان «منتظر شما»، دکمهٔ «گفت‌وگوی تازه»، شمارهٔ روی منو. هرگز زمینهٔ کل صفحه. */
+  --surface-muted: #f1f4f6; /* ریل خالی نمودار میله‌ای و پس‌زمینهٔ فرورفته. */
+  --navy: #00314a; /* رنگ ساختار: متن اصلی، همهٔ مرزها، سایهٔ سخت، منوی کناری، سرستون جدول، پیام کاربر. روی surface و surface-cream و steel-soft. */
+  --ink-muted: #3d4f5c; /* متن فرعی، برچسب، فراداده و محور نمودار روی surface و surface-cream (۸٫۵:۱). */
+  --red: #c01221; /* یک کار اصلی در هر نما (دکمهٔ «تأیید»)، مورد فعال منو، کاشی مهم‌ترین عدد، مقدار مشکل‌دار در نمودار. متن روی آن on-red. */
+  --on-red: #ffffff; /* متن روی red و navy. */
+  --red-tint: #ffe3e5; /* متن فرعی روی red (۵٫۲:۱). */
+  --red-dark: #770201; /* متن هشدار و خطا، عدد مشکل‌دار، برچسب بالای عنوان (eyebrow)، دکمهٔ «رد». روی surface و surface-cream. */
+  --steel: #669bbc; /* سطح دوم: نشان «دستیار»، آواتار، تغییر درصد، دستهٔ دوم نمودار. متن روی آن فقط navy (۴٫۵:۱). خودش متن نمی‌شود (۳:۱ روی سفید). */
+  --steel-soft: #cfe0ec; /* ریل نوار باند، سطح زیر خط نمودار، متن فرعی روی navy. */
+  --steel-wash: #dce9f2; /* زمینهٔ توضیح عامل با مرز نقطه‌چین navy. */
+  --cream-on-navy: #fef1d5; /* متن و پیوند روی navy (منو، سرستون). */
+  --success: #2f6b47; /* تیک قاعدهٔ رعایت‌شده و وضعیت «در باند» روی surface. */
+  --grid: #e3e9ed; /* خطوط راهنمای افقی نمودار؛ بی‌معنا و کم‌رنگ. */
+  --focus: var(--red); /* حلقهٔ تمرکز صفحه‌کلید: ۲ پیکسل توپر با فاصلهٔ ۲ پیکسل؛ روی surface ۶٫۳:۱. */
+  --shadow-hard: -5px 5px 0 #00314a; /* کاشی خلاصه و کارت اصلی صفحه؛ سایهٔ سخت بدون محو، رو به پایین‌چپ در راست‌به‌چپ. */
+  --shadow-hard-lg: -6px 6px 0 #00314a; /* فقط کارت تصمیم. */
+  --shadow-hard-sm: -4px 4px 0 #00314a; /* دکمهٔ اصلی، دکمهٔ «گفت‌وگوی تازه» و جعبهٔ نوشتن پیام. */
+}
+:root {
+  --space-1: 4px; /* فاصلهٔ درون فهرست فشرده. */
+  --space-2: 8px; /* بین دکمه‌ها و نشان‌ها. */
+  --space-3: 12px; /* پدینگ ردیف و سلول. */
+  --space-4: 16px; /* پدینگ کاشی و پیام. */
+  --space-5: 22px; /* فاصلهٔ کارت‌ها و بخش‌های صفحه؛ جا برای سایهٔ سخت. */
+  --space-6: 28px; /* حاشیهٔ بالای صفحه. */
+  --space-7: 36px; /* حاشیهٔ کناری محتوا. */
+  --radius-none: 0px; /* همه‌چیز گوشهٔ تیز دارد؛ تنها استثنا نقطه‌های ریز نمودار نیست، آن‌ها هم مربع‌اند. */
+  --border-width: 2px; /* همهٔ مرزها، جداکننده‌ها و خطوط جدول؛ رنگ navy. */
+  --border-brand: 6px; /* زیرخط نام محصول. */
+  --font-sans: Vazirmatn, Tahoma, "Segoe UI", sans-serif;
+  --text-figure-xl: 900 46px/52px var(--font-sans); /* عدد اصلی کارت تصمیم؛ یکی در هر کارت. */
+  --text-figure-lg: 900 36px/44px var(--font-sans); /* عدد کاشی خلاصه (StatTile). */
+  --text-page-title: 900 34px/44px var(--font-sans); /* عنوان صفحه. */
+  --text-brand: 900 24px/30px var(--font-sans); /* نام محصول در منو، با زیرخط ۶ پیکسلی red. */
+  --text-title: 900 20px/30px var(--font-sans); /* عنوان کارت تصمیم و سر گفت‌وگو. */
+  --text-heading: 900 17px/26px var(--font-sans); /* عنوان نمودار و بخش؛ یک جملهٔ نتیجه، نه نام موضوع. */
+  --text-body-strong: 800 14px/24px var(--font-sans); /* عنوان ردیف، مقدار ورودی، متن دکمه. */
+  --text-body: 500 14px/24px var(--font-sans); /* متن پیش‌فرض. */
+  --text-label: 800 12px/18px var(--font-sans); /* برچسب کاشی، فیلد و نشان. */
+  --text-meta: 500 12px/18px var(--font-sans); /* فراداده زیر عنوان ردیف. */
+  --text-caption: 700 11.5px/18px var(--font-sans); /* نسخه، منبع و محور نمودار؛ کوچک‌ترین اندازه. */
+}
+.figure-xl {
+  font-family: var(--font-sans);
+  font-size: 46px;
+  line-height: 52px;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+.figure-lg {
+  font-family: var(--font-sans);
+  font-size: 36px;
+  line-height: 44px;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+.page-title {
+  font-family: var(--font-sans);
+  font-size: 34px;
+  line-height: 44px;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+.brand {
+  font-family: var(--font-sans);
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+.title {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  line-height: 30px;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+.heading {
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 26px;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+.body-strong {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 24px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+.body {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 24px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+.label {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+.meta {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+.caption {
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  line-height: 18px;
+  font-weight: 700;
+  letter-spacing: 0;
+}

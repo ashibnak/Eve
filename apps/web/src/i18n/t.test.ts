@@ -8,8 +8,12 @@ describe('i18n catalogs', () => {
     expect(Object.keys(en).sort()).toEqual(Object.keys(fa).sort());
   });
 
+  it('fill placeholders', () => {
+    expect(t('auth.code.help', { sentTo: '…4567' }, 'en')).toContain('…4567');
+  });
+
   it('resolve a key per locale', () => {
-    expect(t('app.shell.title', 'fa')).toBe('صندوق کار');
-    expect(t('app.shell.title', 'en')).toBe('Inbox');
+    expect(t('app.shell.title', {}, 'fa')).toBe('صندوق کار');
+    expect(t('app.shell.title', {}, 'en')).toBe('Inbox');
   });
 });

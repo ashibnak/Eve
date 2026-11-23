@@ -16,6 +16,14 @@ export const localeInfo: Record<Locale, { dir: 'rtl' | 'ltr' }> = {
 // R1 ships Persian only; locale selection arrives with user settings.
 export const currentLocale: Locale = 'fa';
 
-export function t(key: MessageKey, locale: Locale = currentLocale): string {
-  return catalogs[locale][key];
+/** The message for `key`, with `{name}` placeholders filled from `params`. */
+export function t(
+  key: MessageKey,
+  params: Record<string, string> = {},
+  locale: Locale = currentLocale,
+): string {
+  return catalogs[locale][key].replace(
+    /\{(\w+)\}/g,
+    (match, name: string) => params[name] ?? match,
+  );
 }

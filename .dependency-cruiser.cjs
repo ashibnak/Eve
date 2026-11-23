@@ -40,6 +40,15 @@ module.exports = {
       },
     },
     {
+      name: 'packs-no-raw-prisma',
+      comment:
+        'Pack code reads through the scope layer (platform/scope/scoped-prisma) and writes through ' +
+        'commands, never with the unscoped PrismaService (CLAUDE.md rule 11).',
+      severity: 'error',
+      from: { path: '^apps/api/src/packs/' },
+      to: { path: '^apps/api/src/platform/db/prisma\\.service\\.ts$' },
+    },
+    {
       name: 'packages-not-to-apps',
       comment: 'Shared packages (contracts, jurisdictions) must not depend on an app.',
       severity: 'error',
@@ -67,9 +76,12 @@ module.exports = {
     },
     {
       name: 'not-to-unresolvable',
+      comment:
+        'express is imported for types only (from @types/express); at runtime it comes with ' +
+        '@nestjs/platform-express, so it is not a direct dependency to resolve.',
       severity: 'error',
       from: {},
-      to: { couldNotResolve: true },
+      to: { couldNotResolve: true, pathNot: '^express$' },
     },
   ],
   options: {

@@ -55,6 +55,7 @@ describe('module boundaries', () => {
     ['adapter-to-internals', 'adapters-only-public-service'],
     ['package-to-app', 'packages-not-to-apps'],
     ['circular', 'no-circular'],
+    ['pack-raw-prisma', 'packs-no-raw-prisma'],
   ])('fixture %s fails with rule %s', (fixture, rule) => {
     const { exitCode, violations } = cruise(fixture);
     expect(violations.map((v) => v.rule.name)).toContain(rule);

@@ -14,6 +14,16 @@ docker compose -f deploy/docker-compose.yml --env-file .env up -d --build
 
 On start the `api` container runs `prisma migrate deploy` as `eve_owner`, then serves as `eve_app`.
 
+## First administrator
+
+After the first start, create the first system administrator (and set the customer time zone):
+
+```sh
+docker compose -f deploy/docker-compose.yml --env-file .env exec   -e EVE_BOOTSTRAP_PASSWORD='choose-a-long-password' api   node dist/cli/bootstrap.js --username admin --contact-address 09120000000 --time-zone Asia/Tehran
+```
+
+R1 delivers one-time login codes only through the stub channel. To see codes in a test environment, set `EVE_STUB_CHANNEL_REVEAL_SECRETS=true` on the `api` service; never in production.
+
 ## Database roles
 
 Created once by [postgres/init/01-setup.sh](postgres/init/01-setup.sh) (using [postgres/sql/](postgres/sql/), shared with the test harness) on an empty data volume:

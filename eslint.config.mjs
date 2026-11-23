@@ -38,7 +38,30 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       'eve/no-physical-tailwind': 'error',
       // UI text lives only in i18n/*.json (CLAUDE.md); flag literal strings in JSX.
-      'i18next/no-literal-string': ['error', { mode: 'jsx-only' }],
+      'i18next/no-literal-string': [
+        'error',
+        {
+          mode: 'jsx-only',
+          // Technical attributes, never shown to people. Visible text (labels, aria-label,
+          // title, placeholder, alt) must come from i18n.
+          'jsx-attributes': {
+            exclude: [
+              'className',
+              'style',
+              'type',
+              'key',
+              'id',
+              'htmlFor',
+              'role',
+              'dir',
+              'variant',
+              'autoComplete',
+              'inputMode',
+              'data-testid',
+            ],
+          },
+        },
+      ],
     },
   },
 );

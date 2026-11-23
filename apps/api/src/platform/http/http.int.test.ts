@@ -1,0 +1,222 @@
+import type { INestApplication } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import type { AddressInfo } from 'node:net';
+import { afterAll, beforeAll, describe, expect, inject, it } from 'vitest';
+import { asUser, uniqueCompanyCode, uniqueUsername } from '../../../test/platform';
+import { AppModule } from '../../app.module';
+import { UserService } from '../auth/user.service';
+import { ChannelRegistry } from '../channels/channel';
+import type { StubChannel } from '../channels/stub.channel';
+import { ConfigService } from '../config/config.service';
+import { TimeZoneSetting } from '../config/settings';
+import { PrismaService } from '../db/prisma.service';
+import { configureApp } from './configure-app';
+
+const PASSWORD = 'a-long-enough-password';
+
+/** A minimal cookie-keeping HTTP client for one user. */
+class Client {
+  private cookie = '';
+
+  get cookieHeader(): string {
+    return this.cookie;
+  }
+
+  constructor(private readonly base: string) {}
+
+  async call(method: string, path: string, body?: unknown) {
+    const res = await fetch(`${this.base}/api/v1${path}`, {
+      method,
+      headers: {
+        ...(body === undefined ? {} : { 'content-type': 'application/json' }),
+        ...(this.cookie ? { cookie: this.cookie } : {}),
+      },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+    const setCookie = res.headers.get('set-cookie');
+    if (setCookie) {
+      const pair = setCookie.split(';')[0] ?? '';
+      this.cookie = pair.endsWith('=') ? '' : pair;
+    }
+    const text = await res.text();
+    return { status: res.status, body: text ? (JSON.parse(text) as unknown) : null, setCookie };
+  }
+}
+
+describe('HTTP API: login, deny by default, scoped reads', () => {
+  let app: INestApplication;
+  let base: string;
+  let stub: StubChannel;
+
+  async function login(username: string, address: string): Promise<Client> {
+    const client = new Client(base);
+    const step1 = await client.call('POST', '/auth/login', { username, password: PASSWORD });
+    expect(step1.status).toBe(200);
+    const code = stub.lastTo(address)?.params.code;
+    const step2 = await client.call('POST', '/auth/code', { code });
+    expect(step2.status).toBe(200);
+    return client;
+  }
+
+  beforeAll(async () => {
+    process.env.DATABASE_URL = inject('db').appUrl;
+    process.env.EVE_WORKER = 'off';
+    app = await NestFactory.create(AppModule, { logger: ['error'] });
+    configureApp(app);
+    await app.listen(0, '127.0.0.1');
+    base = `http://127.0.0.1:${(app.getHttpServer().address() as AddressInfo).port}`;
+    stub = app.get(ChannelRegistry).get('stub') as StubChannel;
+
+    // First administrator, as the bootstrap CLI would create it.
+    await asUser(async () => {
+      await app
+        .get(ConfigService)
+        .set({ setting: TimeZoneSetting, companyId: null, value: 'Asia/Tehran', reason: 'setup' });
+      const users = app.get(UserService);
+      const admin = await users.create({
+        username: 'http.admin',
+        password: PASSWORD,
+        contactChannel: 'stub',
+        contactAddress: '09121111111',
+        reason: 'setup',
+      });
+      await users.grantRole({
+        userId: admin.id,
+        role: 'system_admin',
+        scopeKind: 'customer',
+        companyId: null,
+        unitId: null,
+        reason: 'setup',
+      });
+    });
+  });
+
+  afterAll(() => app.close());
+
+  it('serves health without a session and nothing else', async () => {
+    const anonymous = new Client(base);
+    expect((await anonymous.call('GET', '/health')).status).toBe(200);
+    expect((await anonymous.call('GET', '/auth/me')).status).toBe(401);
+    expect((await anonymous.call('GET', '/platform/companies')).status).toBe(401);
+  });
+
+  it('sets a secure, httpOnly, SameSite=Strict cookie scoped to /api', async () => {
+    const client = new Client(base);
+    const { setCookie } = await client.call('POST', '/auth/login', {
+      username: 'http.admin',
+      password: PASSWORD,
+    });
+    expect(setCookie).toMatch(/eve_session=/);
+    expect(setCookie).toMatch(/HttpOnly/i);
+    expect(setCookie).toMatch(/Secure/i);
+    expect(setCookie).toMatch(/SameSite=Strict/i);
+    expect(setCookie).toMatch(/Path=\/api/);
+    // The pending session (code not entered) does not authenticate.
+    expect((await client.call('GET', '/auth/me')).status).toBe(401);
+  });
+
+  it('rejects a wrong password with 401 and a malformed body with 400', async () => {
+    const client = new Client(base);
+    expect(
+      (await client.call('POST', '/auth/login', { username: 'http.admin', password: 'nope' }))
+        .status,
+    ).toBe(401);
+    expect((await client.call('POST', '/auth/login', { username: 'http.admin' })).status).toBe(400);
+  });
+
+  it('lets an admin set up companies and auditors; each auditor sees only their company', async () => {
+    const admin = await login('http.admin', '09121111111');
+    const me = await admin.call('GET', '/auth/me');
+    expect(me.body).toMatchObject({
+      username: 'http.admin',
+      roles: [{ role: 'system_admin', scopeKind: 'customer' }],
+    });
+
+    const companyA = (
+      await admin.call('POST', '/platform/companies', {
+        code: uniqueCompanyCode('A'),
+        jurisdictionCode: 'ir',
+        reason: 'pilot',
+      })
+    ).body as { id: string };
+    const companyB = (
+      await admin.call('POST', '/platform/companies', {
+        code: uniqueCompanyCode('B'),
+        jurisdictionCode: 'ir',
+        reason: 'pilot',
+      })
+    ).body as { id: string };
+
+    // Registering a company writes an audit row in that company, so each has company data.
+    const auditorA = uniqueUsername('audit.a');
+    const created = await admin.call('POST', '/platform/users', {
+      username: auditorA,
+      password: PASSWORD,
+      contactChannel: 'stub',
+      contactAddress: '09122222222',
+      reason: 'auditor for A',
+    });
+    expect(created.status).toBe(201);
+    const auditorAId = (created.body as { id: string }).id;
+    const granted = await admin.call('POST', `/platform/users/${auditorAId}/roles`, {
+      role: 'auditor',
+      scopeKind: 'company',
+      companyId: companyA.id,
+      reason: 'auditor for A',
+    });
+    expect(granted.status).toBe(201);
+
+    // The admin has no audit access (product-owner decision).
+    expect((await admin.call('GET', '/platform/audit')).status).toBe(403);
+
+    const auditor = await login(auditorA, '09122222222');
+    const companies = (await auditor.call('GET', '/platform/companies')).body as { id: string }[];
+    expect(companies.map((c) => c.id)).toEqual([companyA.id]);
+
+    const audit = (await auditor.call('GET', '/platform/audit?limit=200')).body as {
+      companyId: string | null;
+    }[];
+    expect(audit.length).toBeGreaterThan(0);
+    expect(audit.every((row) => row.companyId === companyA.id)).toBe(true);
+
+    expect((await auditor.call('GET', `/platform/audit?companyId=${companyB.id}`)).status).toBe(
+      403,
+    );
+    expect((await auditor.call('GET', '/platform/config/platform.time_zone')).status).toBe(403);
+    expect((await auditor.call('GET', '/platform/users')).status).toBe(403);
+    expect(
+      (
+        await auditor.call('POST', '/platform/companies', {
+          code: 'X1',
+          jurisdictionCode: 'ir',
+          reason: 'x',
+        })
+      ).status,
+    ).toBe(403);
+  });
+
+  it('logs out', async () => {
+    const admin = await login('http.admin', '09121111111');
+    expect((await admin.call('POST', '/auth/logout')).status).toBe(204);
+    expect((await admin.call('GET', '/auth/me')).status).toBe(401);
+  });
+
+  it('passes a caller correlation id through to the audit log', async () => {
+    const admin = await login('http.admin', '09121111111');
+    const correlationId = '7d0f3c1e-2b4a-4c5d-8e6f-0a1b2c3d4e5f';
+    const res = await fetch(`${base}/api/v1/platform/config/auth.otp_ttl_seconds`, {
+      method: 'PUT',
+      headers: {
+        'content-type': 'application/json',
+        cookie: admin.cookieHeader,
+        'x-correlation-id': correlationId,
+      },
+      body: JSON.stringify({ companyId: null, value: 180, reason: 'longer codes' }),
+    });
+    expect(res.status).toBe(204);
+    expect(res.headers.get('x-correlation-id')).toBe(correlationId);
+    const audit = await app.get(PrismaService).auditLog.findMany({ where: { correlationId } });
+    expect(audit).toHaveLength(1);
+    expect(audit[0]).toMatchObject({ action: 'platform.config.set', source: 'manual' });
+  });
+});

@@ -1,7 +1,20 @@
-import { expect, test } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 import fa from '../src/i18n/fa.json' with { type: 'json' };
 
-test('app shell boots in Persian, right-to-left, with the design-system font', async ({ page }) => {
+const ME = {
+  id: 'u1',
+  username: 'ashkan',
+  roles: [{ role: 'system_admin', scopeKind: 'customer', companyId: null }],
+};
+
+async function mockSignedIn(page: Page) {
+  await page.route('**/api/v1/auth/me', (route) => route.fulfill({ json: ME }));
+}
+
+test('signed-in shell renders in Persian, right-to-left, with the design-system font', async ({
+  page,
+}) => {
+  await mockSignedIn(page);
   await page.goto('/');
 
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
@@ -9,6 +22,9 @@ test('app shell boots in Persian, right-to-left, with the design-system font', a
   await expect(page).toHaveTitle(fa['app.title']);
   await expect(page.getByTestId('brand')).toHaveText(fa['app.brand']);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(fa['app.shell.title']);
+  await expect(
+    page.getByText(fa['app.user.signed_in_as'].replace('{username}', 'ashkan')),
+  ).toBeVisible();
 
   const fontFamily = await page.locator('body').evaluate((el) => getComputedStyle(el).fontFamily);
   expect(fontFamily).toContain('Vazirmatn');

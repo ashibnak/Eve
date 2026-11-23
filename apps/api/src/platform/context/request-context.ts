@@ -18,17 +18,60 @@ export interface RequestContext {
   readonly actionId: string | null;
 }
 
-const storage = new AsyncLocalStorage<RequestContext>();
-
-export function runWithContext<T>(context: RequestContext, fn: () => T): T {
-  return storage.run(context, fn);
+/**
+ * The stored state. An HTTP request opens it in middleware before anyone is authenticated; the
+ * auth guard then sets the actor. Until then `currentContext()` refuses, so no write can be
+ * anonymous.
+ */
+interface ContextState extends Omit<RequestContext, 'actor'> {
+  actor: platformV1.Actor | null;
 }
 
-/** The current context. Throws when called outside one: writes must never be anonymous. */
+const storage = new AsyncLocalStorage<ContextState>();
+
+export function runWithContext<T>(context: RequestContext, fn: () => T): T {
+  return storage.run({ ...context }, fn);
+}
+
+/** Opens a context for an HTTP request whose actor is not known yet (see `setActor`). */
+export function runUnauthenticated<T>(context: Omit<RequestContext, 'actor'>, fn: () => T): T {
+  return storage.run({ ...context, actor: null }, fn);
+}
+
+/** Records the authenticated actor of the current request; it can be set only once. */
+export function setActor(actor: platformV1.Actor): void {
+  const state = storage.getStore();
+  if (!state) throw new Error('No request context to authenticate');
+  if (state.actor && state.actor.id !== actor.id) throw new Error('Request actor already set');
+  state.actor = actor;
+}
+
+/**
+ * Runs `fn` as another actor, e.g. the system acting during login. Inside a context it stays in
+ * the same flow (same correlation and request ids); outside one it starts a new flow.
+ */
+export function runAs<T>(actor: platformV1.Actor, fn: () => T): T {
+  const state = storage.getStore() ?? {
+    source: 'manual' as const,
+    correlationId: randomUUID(),
+    causationId: null,
+    requestId: null,
+    actionId: null,
+  };
+  return storage.run({ ...state, actor }, fn);
+}
+
+/** The current context. Throws outside one or before authentication: writes are never anonymous. */
 export function currentContext(): RequestContext {
-  const context = storage.getStore();
-  if (!context) throw new Error('No request context: run this inside runWithContext()');
-  return context;
+  const state = storage.getStore();
+  if (!state) throw new Error('No request context: run this inside runWithContext()');
+  if (!state.actor) throw new Error('Request is not authenticated');
+  return { ...state, actor: state.actor };
+}
+
+/** The current actor, or null when unauthenticated or outside a context. */
+export function currentActor(): platformV1.Actor | null {
+  return storage.getStore()?.actor ?? null;
 }
 
 export function newCorrelationId(): string {

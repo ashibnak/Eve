@@ -20,9 +20,10 @@ model CoreCompany {
   jurisdictionCode String   @map("jurisdiction_code")
   createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  auditEntries AuditLog[]
-  outboxEvents EventsOutbox[]
-  settings     ConfigSetting[]
+  auditEntries    AuditLog[]
+  outboxEvents    EventsOutbox[]
+  settings        ConfigSetting[]
+  roleAssignments AuthRoleAssignment[]
 
   @@map("core_company")
 }
@@ -100,4 +101,70 @@ model ConfigSetting {
 
   @@unique([key, companyId], map: "config_setting_key_company_uq")
   @@map("config_setting")
+}
+
+// ── platform/auth ───────────────────────────────────────────────────────────
+
+model AuthUser {
+  id                     String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  username               String    @unique
+  passwordHash           String    @map("password_hash")
+  status                 String
+  contactChannel         String    @map("contact_channel")
+  contactAddress         String    @map("contact_address")
+  failedPasswordAttempts Int       @default(0) @map("failed_password_attempts")
+  lockedUntil            DateTime? @map("locked_until") @db.Timestamptz(6)
+  createdAt              DateTime  @map("created_at") @db.Timestamptz(6)
+  updatedAt              DateTime  @map("updated_at") @db.Timestamptz(6)
+
+  sessions        AuthSession[]
+  roleAssignments AuthRoleAssignment[]
+
+  @@map("auth_user")
+}
+
+model AuthSession {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tokenHash  String    @unique @map("token_hash") @db.Char(64)
+  userId     String    @map("user_id") @db.Uuid
+  user       AuthUser  @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  stage      String
+  createdAt  DateTime  @map("created_at") @db.Timestamptz(6)
+  lastSeenAt DateTime  @map("last_seen_at") @db.Timestamptz(6)
+  expiresAt  DateTime  @map("expires_at") @db.Timestamptz(6)
+  revokedAt  DateTime? @map("revoked_at") @db.Timestamptz(6)
+
+  otps AuthOtp[]
+
+  @@index([userId], map: "auth_session_user_idx")
+  @@map("auth_session")
+}
+
+model AuthOtp {
+  id         String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId  String      @map("session_id") @db.Uuid
+  session    AuthSession @relation(fields: [sessionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  codeHash   String      @map("code_hash") @db.Char(64)
+  createdAt  DateTime    @map("created_at") @db.Timestamptz(6)
+  expiresAt  DateTime    @map("expires_at") @db.Timestamptz(6)
+  attempts   Int         @default(0)
+  consumedAt DateTime?   @map("consumed_at") @db.Timestamptz(6)
+
+  @@index([sessionId, createdAt], map: "auth_otp_session_idx")
+  @@map("auth_otp")
+}
+
+model AuthRoleAssignment {
+  id        String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String       @map("user_id") @db.Uuid
+  user      AuthUser     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  role      String
+  scopeKind String       @map("scope_kind")
+  companyId String?      @map("company_id") @db.Uuid
+  company   CoreCompany? @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  unitId    String?      @map("unit_id") @db.Uuid
+  createdAt DateTime     @map("created_at") @db.Timestamptz(6)
+  revokedAt DateTime?    @map("revoked_at") @db.Timestamptz(6)
+
+  @@map("auth_role_assignment")
 }

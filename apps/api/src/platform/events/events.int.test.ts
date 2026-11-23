@@ -77,6 +77,27 @@ describe('events: outbox, relay and idempotent consumers', () => {
     expect(row.publishedAt).not.toBeNull();
   });
 
+  it('drains a backlog without pausing a polling interval per event', async () => {
+    const ids: string[] = [];
+    for (let i = 0; i < 25; i += 1) {
+      const { correlationId } = await asUser(() =>
+        platform.config.set({
+          setting: Flag,
+          companyId: null,
+          value: i % 2 === 0,
+          reason: `backlog ${i}`,
+        }),
+      );
+      ids.push(correlationId);
+    }
+    await platform.relay.relayPending();
+
+    // One job per 2 s poll (pg-boss defaults) would need about 50 s here.
+    await waitFor(() => ids.every((id) => received.some((m) => m.correlation_id === id)), 10_000);
+    const order = ids.map((id) => received.findIndex((m) => m.correlation_id === id));
+    expect(order).toEqual([...order].sort((a, b) => a - b));
+  });
+
   it('skips a redelivered event (idempotent on event_id)', async () => {
     const message = received.at(-1);
     expect(message).toBeDefined();

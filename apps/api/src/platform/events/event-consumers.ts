@@ -5,7 +5,7 @@ import { runWithContext } from '../context/request-context';
 import { type Tx, TxRunner } from '../context/tx-runner';
 import { JobsService } from '../jobs/jobs.service';
 import { type EventDefinition, EventRegistry } from './event-registry';
-import { busEventName } from './outbox-relay';
+import { busEventName, type RelayedJob } from './outbox-relay';
 
 /**
  * A subscriber to one event type and version. `handle` runs in one transaction with the inbox
@@ -21,6 +21,18 @@ export interface EventConsumer<TSchema extends z.ZodType = z.ZodType> {
 }
 
 export type DeliveryResult = 'applied' | 'duplicate';
+
+/**
+ * pg-boss defaults (one job per fetch, a 2 s pause between fetches) would drain a backlog at
+ * about 30 events a minute. Fetch in batches and keep fetching while batches come back full;
+ * report each job's outcome separately so one failing event is retried alone.
+ */
+const CONSUMER_WORK_OPTIONS = {
+  batchSize: 20,
+  burstWhenBatchFull: true,
+  pollingIntervalSeconds: 1,
+  perJobResults: true,
+} as const;
 
 @Injectable()
 export class EventConsumers {
@@ -51,8 +63,26 @@ export class EventConsumers {
       const queue = `consumer.${consumer.name}`;
       await boss.createQueue(queue);
       await boss.subscribe(busEventName(consumer.event.type, consumer.event.schemaVersion), queue);
-      await boss.work<unknown>(queue, async (jobs) => {
-        for (const job of jobs) await this.deliver(consumer.name, job.data);
+      await boss.work<RelayedJob>(queue, CONSUMER_WORK_OPTIONS, async (jobs) => {
+        // pg-boss returns a batch unordered; process it sequentially in outbox (write) order.
+        const ordered = [...jobs].sort((a, b) =>
+          BigInt(a.data.outbox_seq) < BigInt(b.data.outbox_seq) ? -1 : 1,
+        );
+        const results = [];
+        for (const job of ordered) {
+          try {
+            await this.deliver(consumer.name, job.data);
+            results.push({ id: job.id, status: 'completed' as const });
+          } catch (error) {
+            this.logger.error(`Consumer ${consumer.name} failed on job ${job.id}`, error);
+            results.push({
+              id: job.id,
+              status: 'failed' as const,
+              output: { message: error instanceof Error ? error.message : String(error) },
+            });
+          }
+        }
+        return results;
       });
     }
   }

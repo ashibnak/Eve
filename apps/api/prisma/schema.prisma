@@ -59,6 +59,7 @@ model AuditLog {
 
 model EventsOutbox {
   eventId         String       @id @map("event_id") @db.Uuid
+  seq             BigInt       @unique(map: "events_outbox_seq_key") @default(autoincrement())
   type            String
   schemaVersion   Int          @map("schema_version")
   occurredAt      DateTime     @map("occurred_at") @db.Timestamptz(6)

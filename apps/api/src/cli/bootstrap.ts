@@ -16,6 +16,10 @@ import { UserService } from '../platform/auth/user.service';
 import { ConfigService } from '../platform/config/config.service';
 import { TimeZoneSetting } from '../platform/config/settings';
 import { newCorrelationId, runWithContext } from '../platform/context/request-context';
+import {
+  HomeJurisdictionSetting,
+  JurisdictionRegistry,
+} from '../platform/jurisdiction/jurisdiction.registry';
 
 async function main(): Promise<void> {
   const { values } = parseArgs({
@@ -24,12 +28,13 @@ async function main(): Promise<void> {
       'contact-channel': { type: 'string', default: 'stub' },
       'contact-address': { type: 'string' },
       'time-zone': { type: 'string' },
+      jurisdiction: { type: 'string' },
     },
   });
   const password = process.env.EVE_BOOTSTRAP_PASSWORD;
-  if (!values.username || !values['contact-address'] || !password) {
+  if (!values.username || !values['contact-address'] || !values.jurisdiction || !password) {
     throw new Error(
-      'Usage: EVE_BOOTSTRAP_PASSWORD=... bootstrap --username <u> --contact-address <a> [--contact-channel stub] [--time-zone Area/City]',
+      'Usage: EVE_BOOTSTRAP_PASSWORD=... bootstrap --jurisdiction <ir> --username <u> --contact-address <a> [--contact-channel stub] [--time-zone Area/City]',
     );
   }
 
@@ -46,14 +51,20 @@ async function main(): Promise<void> {
         actionId: null,
       },
       async () => {
-        if (values['time-zone']) {
-          await app.get(ConfigService).set({
-            setting: TimeZoneSetting,
-            companyId: null,
-            value: values['time-zone'],
-            reason: 'initial setup',
-          });
-        }
+        const pack = app.get(JurisdictionRegistry).get(values.jurisdiction as string);
+        const config = app.get(ConfigService);
+        await config.set({
+          setting: TimeZoneSetting,
+          companyId: null,
+          value: values['time-zone'] ?? pack.defaultTimeZone,
+          reason: 'initial setup',
+        });
+        await config.set({
+          setting: HomeJurisdictionSetting,
+          companyId: null,
+          value: pack.code,
+          reason: 'initial setup',
+        });
         const users = app.get(UserService);
         const user = await users.create({
           username: values.username as string,

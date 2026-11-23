@@ -24,6 +24,7 @@ model CoreCompany {
   outboxEvents    EventsOutbox[]
   settings        ConfigSetting[]
   roleAssignments AuthRoleAssignment[]
+  usageEntries    UsageLedger[]
 
   @@map("core_company")
 }
@@ -119,6 +120,8 @@ model AuthUser {
 
   sessions        AuthSession[]
   roleAssignments AuthRoleAssignment[]
+  activeDays      UsageActiveUser[]
+  usageEntries    UsageLedger[]
 
   @@map("auth_user")
 }
@@ -167,4 +170,45 @@ model AuthRoleAssignment {
   revokedAt DateTime?    @map("revoked_at") @db.Timestamptz(6)
 
   @@map("auth_role_assignment")
+}
+
+// ── platform/usage ──────────────────────────────────────────────────────────
+
+model UsageDaily {
+  day    DateTime @db.Date
+  module String
+  metric String
+  count  BigInt   @default(0)
+
+  @@id([day, module, metric])
+  @@map("usage_daily")
+}
+
+model UsageActiveUser {
+  day    DateTime @db.Date
+  userId String   @map("user_id") @db.Uuid
+  user   AuthUser @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([day, userId])
+  @@map("usage_active_user")
+}
+
+model UsageLedger {
+  id         String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  occurredAt DateTime     @map("occurred_at") @db.Timestamptz(6)
+  day        DateTime     @db.Date
+  kind       String
+  module     String
+  skill      String?
+  model      String?
+  tokensIn   Int?         @map("tokens_in")
+  tokensOut  Int?         @map("tokens_out")
+  durationMs Int?         @map("duration_ms")
+  userId     String?      @map("user_id") @db.Uuid
+  user       AuthUser?    @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  companyId  String?      @map("company_id") @db.Uuid
+  company    CoreCompany? @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([day, module], map: "usage_ledger_day_idx")
+  @@map("usage_ledger")
 }

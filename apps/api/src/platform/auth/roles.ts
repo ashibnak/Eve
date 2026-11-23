@@ -17,11 +17,12 @@ export const Permissions = {
   companyRead: 'platform.company.read',
   companyManage: 'platform.company.manage',
   auditRead: 'platform.audit.read',
+  usageRead: 'platform.usage.read',
 } as const;
 
 /**
- * Customer system administrator: settings, users, role grants and the company registry.
- * No business data and no audit log (product-owner decision, S1).
+ * Customer system administrator: settings, users, role grants, the company registry and the
+ * aggregate usage report. No business data and no audit log (product-owner decision, S1).
  */
 export const SystemAdminRole: RoleDefinition = {
   name: 'system_admin',
@@ -31,6 +32,7 @@ export const SystemAdminRole: RoleDefinition = {
     Permissions.usersManage,
     Permissions.companyRead,
     Permissions.companyManage,
+    Permissions.usageRead,
   ],
   allowedScopes: ['customer'],
 };

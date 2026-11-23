@@ -16,10 +16,10 @@ On start the `api` container runs `prisma migrate deploy` as `eve_owner`, then s
 
 ## First administrator
 
-After the first start, create the first system administrator (and set the customer time zone):
+After the first start, set the customer's home jurisdiction and create the first system administrator (the time zone defaults to the jurisdiction's; pass `--time-zone` to override):
 
 ```sh
-docker compose -f deploy/docker-compose.yml --env-file .env exec   -e EVE_BOOTSTRAP_PASSWORD='choose-a-long-password' api   node dist/cli/bootstrap.js --username admin --contact-address 09120000000 --time-zone Asia/Tehran
+docker compose -f deploy/docker-compose.yml --env-file .env exec   -e EVE_BOOTSTRAP_PASSWORD='choose-a-long-password' api   node dist/cli/bootstrap.js --jurisdiction ir --username admin --contact-address 09120000000
 ```
 
 R1 delivers one-time login codes only through the stub channel. To see codes in a test environment, set `EVE_STUB_CHANNEL_REVEAL_SECRETS=true` on the `api` service; never in production.

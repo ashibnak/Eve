@@ -57,6 +57,14 @@ Each slice = one or more small PRs. Do not start a slice before the previous one
   - [x] Scope layer: `AccessService` resolves a scope per permission; `scopedPrisma()` is read-only and adds the company filter to every registered model; rows without a company are customer-wide only. `UnitSubtreePort` with a deny-all adapter until org (S5). New boundary rule: pack code cannot import the raw `PrismaService`.
   - [x] First administrator via `node dist/cli/bootstrap.js` (password from `EVE_BOOTSTRAP_PASSWORD`). Login screen + signed-in shell with logout; Persian digits accepted in the code field.
   - [ ] Open: R1 has only the stub channel, so a real deployment cannot deliver codes until a real channel (Bale, R2) or another delivery path exists.
+- **S1c — i18n, Money, dates, jurisdiction, usage (status / decisions):**
+  - [x] `Money` in contracts (`{ amountMinor: bigint, currency }`, JSON amount as string); arithmetic in `platform/money`: no currency mixing, every rounding step takes an explicit mode (no default), exact `allocate`, exact parse/print. Currency table: IRR scale 0 (ADR-010), AED/EUR/USD 2; others must be added before use.
+  - [x] `JurisdictionPack` contract; `ir` pack: Persian calendar (jalaali algorithm, verified against ICU for every day of 1300–1500 SH), default time zone `Asia/Tehran`, currency IRR, company legal fields = national ID (11 digits + check digit) and workshop code (exactly 10 digits). Packs are handed to the platform by the app wiring; company registration rejects jurisdictions the deployment does not ship.
+  - [x] National-ID check digit: the standard algorithm, confirmed with two independently remembered real IDs. **Verify with the pilot companies' real IDs before go-live.**
+  - [x] `platform.home_jurisdiction` setting (no default) chooses the calendar of reporting months; bootstrap CLI now requires `--jurisdiction` and defaults the time zone from the pack.
+  - [x] Usage: per-day request counters per module and daily active users, days in the customer time zone (more precise than UTC days for a local-calendar month); monthly report for a month of the home-jurisdiction calendar (Jalali for `ir`), aggregates only, `system_admin` only. LLM ledger table with token fields, unused in R1. Counters are telemetry and are not audited.
+  - [x] Server i18n catalogs (`apps/api/src/platform/i18n`, first message: the sign-in code); the CI key check covers web and API catalogs.
+  - [ ] Not in S1: the signed monthly usage report (ADR-014) and quotas.
 
 ## S2 — Rules engine + approvals
 - Rule template registry: id, version, param schema (Zod), evaluate fn, test cases; immutable once published.

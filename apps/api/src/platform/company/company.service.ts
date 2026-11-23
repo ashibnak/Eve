@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { z } from 'zod';
 import { AuditService } from '../audit/audit.service';
 import { Clock } from '../context/clock';
@@ -9,6 +9,7 @@ import { businessDateIn } from '../dates/dates';
 import { PrismaService } from '../db/prisma.service';
 import { defineEvent, EventRegistry } from '../events/event-registry';
 import { EventPublisher } from '../events/event-publisher';
+import { JurisdictionRegistry } from '../jurisdiction/jurisdiction.registry';
 
 export const CompanyRegistered = defineEvent({
   type: 'platform.company.registered',
@@ -42,12 +43,18 @@ export class CompanyService {
     private readonly events: EventPublisher,
     private readonly config: ConfigService,
     private readonly clock: Clock,
+    private readonly jurisdictions: JurisdictionRegistry,
     eventRegistry: EventRegistry,
   ) {
     eventRegistry.register(CompanyRegistered);
   }
 
   async register(request: RegisterCompanyRequest): Promise<Company> {
+    if (!this.jurisdictions.has(request.jurisdictionCode)) {
+      throw new BadRequestException(
+        `Jurisdiction ${request.jurisdictionCode} is not available (${this.jurisdictions.codes().join(', ')})`,
+      );
+    }
     const timeZone = await this.config.get(TimeZoneSetting);
     return this.txRunner.run(async (tx) => {
       const company = await tx.coreCompany.create({

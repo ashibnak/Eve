@@ -6,7 +6,7 @@ export default defineConfig({
       'apps/api/vitest.config.mts',
       'apps/api/vitest.int.config.mts',
       'apps/web',
-      'packages/*',
+      'packages/contracts',
       'packages/jurisdictions/*',
       'tools',
     ],

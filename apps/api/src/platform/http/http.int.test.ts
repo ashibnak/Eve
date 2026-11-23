@@ -9,6 +9,9 @@ import { ChannelRegistry } from '../channels/channel';
 import type { StubChannel } from '../channels/stub.channel';
 import { ConfigService } from '../config/config.service';
 import { TimeZoneSetting } from '../config/settings';
+import { HomeJurisdictionSetting } from '../jurisdiction/jurisdiction.registry';
+import { jurisdiction as ir } from '@eve/jurisdiction-ir';
+import type { platformV1 } from '@eve/contracts';
 import { PrismaService } from '../db/prisma.service';
 import { configureApp } from './configure-app';
 
@@ -69,9 +72,19 @@ describe('HTTP API: login, deny by default, scoped reads', () => {
 
     // First administrator, as the bootstrap CLI would create it.
     await asUser(async () => {
-      await app
-        .get(ConfigService)
-        .set({ setting: TimeZoneSetting, companyId: null, value: 'Asia/Tehran', reason: 'setup' });
+      const config = app.get(ConfigService);
+      await config.set({
+        setting: TimeZoneSetting,
+        companyId: null,
+        value: 'Asia/Tehran',
+        reason: 'setup',
+      });
+      await config.set({
+        setting: HomeJurisdictionSetting,
+        companyId: null,
+        value: 'ir',
+        reason: 'setup',
+      });
       const users = app.get(UserService);
       const admin = await users.create({
         username: 'http.admin',
@@ -195,6 +208,49 @@ describe('HTTP API: login, deny by default, scoped reads', () => {
     ).toBe(403);
   });
 
+  it('refuses a company in a jurisdiction this deployment does not ship', async () => {
+    const admin = await login('http.admin', '09121111111');
+    const res = await admin.call('POST', '/platform/companies', {
+      code: uniqueCompanyCode('X'),
+      jurisdictionCode: 'zz',
+      reason: 'x',
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it('reports the current Jalali month of usage to the administrator only', async () => {
+    const admin = await login('http.admin', '09121111111');
+    await admin.call('GET', '/auth/me');
+    await admin.call('GET', '/platform/companies');
+    const today = new Date().toLocaleDateString('en-CA', {
+      timeZone: 'Asia/Tehran',
+    }) as platformV1.BusinessDate;
+    const { year, month } = ir.calendar.fromBusinessDate(today);
+
+    // Counting runs after the response; give it a moment.
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    const res = await admin.call('GET', `/platform/usage/monthly?year=${year}&month=${month}`);
+    expect(res.status).toBe(200);
+    const report = res.body as {
+      calendar: string;
+      activeUsers: number;
+      requests: Record<string, number>;
+    };
+    expect(report.calendar).toBe('persian');
+    expect(report.activeUsers).toBeGreaterThanOrEqual(1);
+    expect(report.requests.platform).toBeGreaterThanOrEqual(1);
+    expect(report.requests.auth).toBeGreaterThanOrEqual(1);
+    expect(JSON.stringify(report)).not.toContain('http.admin'); // aggregates only, no names
+
+    const anonymous = new Client(base);
+    expect(
+      (await anonymous.call('GET', `/platform/usage/monthly?year=${year}&month=${month}`)).status,
+    ).toBe(401);
+    expect((await admin.call('GET', '/platform/usage/monthly?year=1405&month=13')).status).toBe(
+      400,
+    );
+  });
+
   it('logs out', async () => {
     const admin = await login('http.admin', '09121111111');
     expect((await admin.call('POST', '/auth/logout')).status).toBe(204);
@@ -204,14 +260,14 @@ describe('HTTP API: login, deny by default, scoped reads', () => {
   it('passes a caller correlation id through to the audit log', async () => {
     const admin = await login('http.admin', '09121111111');
     const correlationId = '7d0f3c1e-2b4a-4c5d-8e6f-0a1b2c3d4e5f';
-    const res = await fetch(`${base}/api/v1/platform/config/auth.otp_ttl_seconds`, {
+    const res = await fetch(`${base}/api/v1/platform/config/platform.time_zone`, {
       method: 'PUT',
       headers: {
         'content-type': 'application/json',
         cookie: admin.cookieHeader,
         'x-correlation-id': correlationId,
       },
-      body: JSON.stringify({ companyId: null, value: 180, reason: 'longer codes' }),
+      body: JSON.stringify({ companyId: null, value: 'Asia/Tehran', reason: 'confirm time zone' }),
     });
     expect(res.status).toBe(204);
     expect(res.headers.get('x-correlation-id')).toBe(correlationId);

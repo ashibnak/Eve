@@ -1,7 +1,14 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { inject } from 'vitest';
-import { asUser, createPlatform, type Platform, uniqueUsername } from '../../../test/platform';
+import {
+  asUser,
+  createPlatform,
+  ensureTimeZone,
+  type Platform,
+  uniqueUsername,
+} from '../../../test/platform';
 import { AccountLockedException } from './auth.service';
+import { AuthSettings } from './auth.settings';
 import { SystemAdminRole } from './roles';
 
 const PASSWORD = 'a-long-enough-password';
@@ -10,8 +17,24 @@ const MINUTE = 60_000;
 describe('auth: password + one-time code', () => {
   let platform: Platform;
 
-  beforeAll(() => {
+  beforeAll(async () => {
     platform = createPlatform(inject('db'));
+    await ensureTimeZone(platform);
+    // The tests below assume the product-owner defaults; other test files share this database.
+    const policy = [
+      [AuthSettings.otpTtlSeconds, 120],
+      [AuthSettings.otpMaxAttempts, 5],
+      [AuthSettings.passwordMaxFailures, 5],
+      [AuthSettings.lockoutSeconds, 900],
+      [AuthSettings.sessionIdleSeconds, 1_800],
+      [AuthSettings.sessionAbsoluteSeconds, 43_200],
+      [AuthSettings.passwordMinLength, 12],
+    ] as const;
+    for (const [setting, value] of policy) {
+      await asUser(() =>
+        platform.config.set({ setting, companyId: null, value, reason: 'test policy' }),
+      );
+    }
   });
 
   afterAll(() => platform.close());

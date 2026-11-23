@@ -25,7 +25,13 @@ import { EventPublisher } from '../src/platform/events/event-publisher';
 import { EventRegistry } from '../src/platform/events/event-registry';
 import { OutboxRelay } from '../src/platform/events/outbox-relay';
 import { JobsService } from '../src/platform/jobs/jobs.service';
+import {
+  HomeJurisdictionSetting,
+  JurisdictionRegistry,
+} from '../src/platform/jurisdiction/jurisdiction.registry';
+import { jurisdiction as ir } from '@eve/jurisdiction-ir';
 import { AccessService } from '../src/platform/scope/access.service';
+import { UsageService } from '../src/platform/usage/usage.service';
 import { DenyAllUnitSubtreeAdapter } from '../src/platform/scope/adapters/deny-all-unit-subtree.adapter';
 import type { TestDatabase } from './database';
 
@@ -40,6 +46,15 @@ export class TestClock extends Clock {
   advance(ms: number): void {
     this.offsetMs += ms;
   }
+
+  /** Moves the clock to an exact instant; time keeps running from there. */
+  setTime(instant: Date): void {
+    this.offsetMs = instant.getTime() - Date.now();
+  }
+
+  reset(): void {
+    this.offsetMs = 0;
+  }
 }
 
 export function createPlatform(db: TestDatabase) {
@@ -52,6 +67,8 @@ export function createPlatform(db: TestDatabase) {
   const events = new EventPublisher(eventRegistry, clock);
   const settings = new SettingsRegistry();
   const config = new ConfigService(prisma, txRunner, settings, audit, events, clock, eventRegistry);
+  settings.register(HomeJurisdictionSetting);
+  const jurisdictions = new JurisdictionRegistry([ir]);
   const companies = new CompanyService(
     prisma,
     txRunner,
@@ -59,6 +76,7 @@ export function createPlatform(db: TestDatabase) {
     events,
     config,
     clock,
+    jurisdictions,
     eventRegistry,
   );
   const jobs = new JobsService();
@@ -70,6 +88,7 @@ export function createPlatform(db: TestDatabase) {
   const roles = new RoleRegistry();
   const auth = new AuthService(prisma, txRunner, audit, config, channels, clock, settings);
   const users = new UserService(prisma, txRunner, audit, config, channels, roles, clock);
+  const usage = new UsageService(prisma, config, jurisdictions, clock);
   const access = new AccessService(prisma, roles, config, clock, new DenyAllUnitSubtreeAdapter());
   return {
     prisma,
@@ -85,11 +104,13 @@ export function createPlatform(db: TestDatabase) {
     relay,
     consumers,
     stubChannel,
+    jurisdictions,
     channels,
     roles,
     auth,
     users,
     access,
+    usage,
     async close() {
       await jobs.onApplicationShutdown();
       relay.onApplicationShutdown();
@@ -125,6 +146,18 @@ export async function ensureTimeZone(platform: Platform): Promise<void> {
       setting: TimeZoneSetting,
       companyId: null,
       value: 'Asia/Tehran',
+      reason: 'test setup',
+    }),
+  );
+}
+
+/** Sets the customer's home jurisdiction (calendar for usage months). */
+export async function ensureHomeJurisdiction(platform: Platform, code = 'ir'): Promise<void> {
+  await asUser(() =>
+    platform.config.set({
+      setting: HomeJurisdictionSetting,
+      companyId: null,
+      value: code,
       reason: 'test setup',
     }),
   );

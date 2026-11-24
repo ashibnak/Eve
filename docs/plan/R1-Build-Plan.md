@@ -72,6 +72,16 @@ Each slice = one or more small PRs. Do not start a slice before the previous one
 - Rule evaluation result records template id@version + param version (for decision records).
 - `approvals`: state machine on PostgreSQL (pending → approved | rejected | returned), configurable approver role per request type, resumable after restart, pinned rule versions per running workflow.
 - **Done when:** a dummy template v1 and v2 coexist; replay with v1 gives the old result; an approval survives an app restart.
+- **Product-owner decisions (2026-11-23):** ordered approval steps, each a role, configurable per customer (R1 default: one step); rule parameters proposed by `system_admin` and approved by a new `rule_approver` role; the requester never approves (four-eyes); parameter changes take effect today or later only; a returned request is edited and resubmitted from step 1 as a new revision; a running request keeps the chain and rule versions it was submitted with.
+- **Status / decisions (S2):**
+  - [x] Done-when 1: the sample template `v1` (`>`) and `v2` (`>=`) coexist; a v1 evaluation record replays to its old result after the parameters changed and v2 became the latest; altered records are detected (output mismatch, parameter hash).
+  - [x] Done-when 2: a two-step request is submitted and approved once in one application instance, which shuts down; a fresh instance on the same database shows it in the next approver's inbox and completes it (change applied, one audit row per action, outbox events).
+  - [x] Templates: id + version, Zod params/input/output, pure `evaluate`, fa/en description, at least two cases that must pass at registration. Published versions are frozen by committed golden files (`apps/api/rules-golden/`, written by `pnpm rules:golden`, never overwritten) and a CI test; editing v1's logic fails CI (verified).
+  - [x] Parameters: bound to an exact template version, company value over customer value over defaults; bitemporal rows (`valid_from/valid_to`, `recorded_at/superseded_at`); a change from D supersedes and splits periods, never rewrites (the app role may only stamp `superseded_at`); an exclusion constraint forbids overlapping current periods; "as known at" lookups.
+  - [x] Approvals: request types registered in code with their own `apply`, which runs in the final approval's transaction; chains are settings (`approvals.chain.<type>`, customer or company); every action locks the request row, so concurrent decisions cannot both win; actions are append-only; events `platform.approval.requested/decided/returned`.
+  - [x] Engineering default to confirm: **one person approves at most one step of a revision**, even if they hold the roles of several steps.
+  - [x] If a request waits past its effective date, final approval is refused (409) and nothing is applied; the approver returns it so the requester sets a new date.
+  - [x] HTTP: `GET/POST /platform/rules…` (list, propose), `/platform/approvals` (inbox, mine, get, approve, reject, return, resubmit, cancel).
 
 ## S3 — Connectors (file)
 - Pipeline: upload → choose company + effective date → column mapping (saved per source) → structural validation → domain validation hook (module supplies rules) → diff preview → commit as one atomic change bundle with source = file.

@@ -24,6 +24,30 @@ export const NO_SCOPE: ResolvedScope = {
 
 const FULL_SCOPE: ResolvedScope = { customerWide: true, companyIds: new Set(), unitIds: new Set() };
 
+/** One active role grant of a user. */
+export interface RoleGrant {
+  role: string;
+  scopeKind: string;
+  companyId: string | null;
+}
+
+/**
+ * Whether grants include `role` over a company (or customer-wide when `companyId` is null).
+ * Unit-scoped grants never cover a whole company.
+ */
+export function grantsCover(
+  grants: readonly RoleGrant[],
+  role: string,
+  companyId: string | null,
+): boolean {
+  return grants.some(
+    (g) =>
+      g.role === role &&
+      (g.scopeKind === 'customer' ||
+        (companyId !== null && g.scopeKind === 'company' && g.companyId === companyId)),
+  );
+}
+
 /**
  * Turns the caller's active role grants into a scope per permission (CLAUDE.md rule 11).
  * An agent gets exactly the scope of the user it acts for, never more.
@@ -64,6 +88,24 @@ export class AccessService {
       }
     }
     return { customerWide: false, companyIds, unitIds };
+  }
+
+  /** Active role grants of a user (none for an inactive user). Agents and systems hold no roles. */
+  async grantsOf(actor: platformV1.Actor): Promise<RoleGrant[]> {
+    if (actor.kind !== 'user') return [];
+    return this.prisma.authRoleAssignment.findMany({
+      where: { userId: actor.id, revokedAt: null, user: { status: 'active' } },
+      select: { role: true, scopeKind: true, companyId: true },
+    });
+  }
+
+  /** Whether a person holds `role` over a company (customer-wide when `companyId` is null). */
+  async holdsRole(
+    actor: platformV1.Actor,
+    role: string,
+    companyId: string | null,
+  ): Promise<boolean> {
+    return grantsCover(await this.grantsOf(actor), role, companyId);
   }
 
   /** Scope of the current caller; throws 401 when unauthenticated, 403 when the scope is empty. */

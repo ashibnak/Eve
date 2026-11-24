@@ -18,6 +18,8 @@ export const Permissions = {
   companyManage: 'platform.company.manage',
   auditRead: 'platform.audit.read',
   usageRead: 'platform.usage.read',
+  rulesRead: 'platform.rules.read',
+  rulesPropose: 'platform.rules.propose',
 } as const;
 
 /**
@@ -33,6 +35,8 @@ export const SystemAdminRole: RoleDefinition = {
     Permissions.companyRead,
     Permissions.companyManage,
     Permissions.usageRead,
+    Permissions.rulesRead,
+    Permissions.rulesPropose,
   ],
   allowedScopes: ['customer'],
 };
@@ -44,13 +48,23 @@ export const AuditorRole: RoleDefinition = {
   allowedScopes: ['customer', 'company'],
 };
 
-/** Roles by name. The platform registers only system_admin and auditor; packs add theirs. */
+/**
+ * Approves customer rule-parameter changes (product-owner decision, S2), e.g. Group HR. Holding
+ * the role is what lets a person act on an approval step that names it.
+ */
+export const RuleApproverRole: RoleDefinition = {
+  name: 'rule_approver',
+  permissions: [Permissions.rulesRead],
+  allowedScopes: ['customer', 'company'],
+};
+
+/** Roles by name. The platform registers system_admin, auditor and rule_approver; packs add theirs. */
 @Injectable()
 export class RoleRegistry {
   private readonly roles = new Map<string, RoleDefinition>();
 
   constructor() {
-    this.register(SystemAdminRole, AuditorRole);
+    this.register(SystemAdminRole, AuditorRole, RuleApproverRole);
   }
 
   register(...roles: RoleDefinition[]): void {

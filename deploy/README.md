@@ -24,6 +24,14 @@ docker compose -f deploy/docker-compose.yml --env-file .env exec   -e EVE_BOOTST
 
 R1 delivers one-time login codes only through the stub channel. To see codes in a test environment, set `EVE_STUB_CHANNEL_REVEAL_SECRETS=true` on the `api` service; never in production.
 
+## Platform roles
+
+| Role | Scope | Can |
+| --- | --- | --- |
+| `system_admin` | customer | settings, users and role grants, companies, usage report; proposes rule-parameter changes |
+| `auditor` | customer or company | read-only, including the audit log |
+| `rule_approver` | customer or company | approves rule-parameter changes (cannot approve their own requests) |
+
 ## Database roles
 
 Created once by [postgres/init/01-setup.sh](postgres/init/01-setup.sh) (using [postgres/sql/](postgres/sql/), shared with the test harness) on an empty data volume:

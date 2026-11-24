@@ -13,6 +13,8 @@ import { HomeJurisdictionSetting } from '../jurisdiction/jurisdiction.registry';
 import { jurisdiction as ir } from '@eve/jurisdiction-ir';
 import type { platformV1 } from '@eve/contracts';
 import { PrismaService } from '../db/prisma.service';
+import { RuleRegistry } from '../rules/rule-registry';
+import { sampleThresholdTemplates } from '../rules/sample/sample-threshold.template';
 import { configureApp } from './configure-app';
 
 const PASSWORD = 'a-long-enough-password';
@@ -69,6 +71,7 @@ describe('HTTP API: login, deny by default, scoped reads', () => {
     await app.listen(0, '127.0.0.1');
     base = `http://127.0.0.1:${(app.getHttpServer().address() as AddressInfo).port}`;
     stub = app.get(ChannelRegistry).get('stub') as StubChannel;
+    app.get(RuleRegistry).register(...sampleThresholdTemplates('test.http_sample'));
 
     // First administrator, as the bootstrap CLI would create it.
     await asUser(async () => {
@@ -249,6 +252,87 @@ describe('HTTP API: login, deny by default, scoped reads', () => {
     expect((await admin.call('GET', '/platform/usage/monthly?year=1405&month=13')).status).toBe(
       400,
     );
+  });
+
+  it('changes rule parameters only through an approver, never the proposer', async () => {
+    const admin = await login('http.admin', '09121111111');
+    const approverName = uniqueUsername('rule.appr');
+    const created = await admin.call('POST', '/platform/users', {
+      username: approverName,
+      password: PASSWORD,
+      contactChannel: 'stub',
+      contactAddress: '09123333333',
+      reason: 'rule approver',
+    });
+    const approverId = (created.body as { id: string }).id;
+    await admin.call('POST', `/platform/users/${approverId}/roles`, {
+      role: 'rule_approver',
+      scopeKind: 'customer',
+      reason: 'rule approver',
+    });
+
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Tehran' });
+    const proposed = await admin.call('POST', '/platform/rules/test.http_sample/1/params', {
+      params: { threshold: 3 },
+      validFrom: today,
+      reason: 'lower the sample threshold',
+    });
+    expect(proposed.status).toBe(201);
+    const request = proposed.body as { id: string; status: string; chain: string[] };
+    expect(request).toMatchObject({ status: 'pending', chain: ['rule_approver'] });
+
+    // Four-eyes: the admin cannot approve it, and it is not in their inbox.
+    expect((await admin.call('POST', `/platform/approvals/${request.id}/approve`, {})).status).toBe(
+      403,
+    );
+    expect((await admin.call('GET', '/platform/approvals/mine')).body).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: request.id })]),
+    );
+
+    const approver = await login(approverName, '09123333333');
+    const inbox = (await approver.call('GET', '/platform/approvals/inbox')).body as {
+      id: string;
+    }[];
+    expect(inbox.map((r) => r.id)).toContain(request.id);
+    expect(
+      (await approver.call('POST', `/platform/approvals/${request.id}/reject`, {})).status,
+    ).toBe(400);
+    const approved = await approver.call('POST', `/platform/approvals/${request.id}/approve`, {
+      note: 'ok',
+    });
+    expect(approved.status).toBe(201);
+    expect((approved.body as { status: string }).status).toBe('approved');
+
+    const rules = (await admin.call('GET', '/platform/rules')).body as {
+      id: string;
+      version: number;
+      params: unknown;
+      latest: boolean;
+    }[];
+    expect(rules.find((r) => r.id === 'test.http_sample' && r.version === 1)).toMatchObject({
+      params: { threshold: 3 },
+      latest: false,
+    });
+    expect(rules.find((r) => r.id === 'test.http_sample' && r.version === 2)).toMatchObject({
+      params: { threshold: 10 },
+      latest: true,
+    });
+
+    const history = (await approver.call('GET', `/platform/approvals/${request.id}`)).body as {
+      history: { action: string }[];
+    };
+    expect(history.history.map((h) => h.action)).toEqual(['submit', 'approve']);
+
+    // The approver cannot propose (system administrators propose).
+    expect(
+      (
+        await approver.call('POST', '/platform/rules/test.http_sample/1/params', {
+          params: { threshold: 2 },
+          validFrom: today,
+          reason: 'x',
+        })
+      ).status,
+    ).toBe(403);
   });
 
   it('logs out', async () => {

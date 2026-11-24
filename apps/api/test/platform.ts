@@ -3,6 +3,8 @@
  * without the HTTP layer) against a test database.
  */
 import { Client } from 'pg';
+import { ApprovalService } from '../src/platform/approvals/approval.service';
+import { ApprovalTypeRegistry } from '../src/platform/approvals/request-types';
 import { AuditService } from '../src/platform/audit/audit.service';
 import { AuthService } from '../src/platform/auth/auth.service';
 import { RoleRegistry } from '../src/platform/auth/roles';
@@ -32,6 +34,10 @@ import {
 import { jurisdiction as ir } from '@eve/jurisdiction-ir';
 import { AccessService } from '../src/platform/scope/access.service';
 import { UsageService } from '../src/platform/usage/usage.service';
+import { ParamVersionsService } from '../src/platform/rules/param-versions.service';
+import { RuleParamsChanged, ruleParamsChangeType } from '../src/platform/rules/rule-params.request';
+import { RuleRegistry } from '../src/platform/rules/rule-registry';
+import { RuleRuntime } from '../src/platform/rules/rule-runtime';
 import { DenyAllUnitSubtreeAdapter } from '../src/platform/scope/adapters/deny-all-unit-subtree.adapter';
 import type { TestDatabase } from './database';
 
@@ -90,6 +96,25 @@ export function createPlatform(db: TestDatabase) {
   const users = new UserService(prisma, txRunner, audit, config, channels, roles, clock);
   const usage = new UsageService(prisma, config, jurisdictions, clock);
   const access = new AccessService(prisma, roles, config, clock, new DenyAllUnitSubtreeAdapter());
+  const rules = new RuleRegistry();
+  const ruleParams = new ParamVersionsService(prisma, clock);
+  const ruleRuntime = new RuleRuntime(rules, ruleParams, clock);
+  const approvalTypes = new ApprovalTypeRegistry(settings);
+  const approvals = new ApprovalService(
+    prisma,
+    txRunner,
+    audit,
+    events,
+    config,
+    clock,
+    access,
+    approvalTypes,
+    roles,
+    rules,
+    eventRegistry,
+  );
+  eventRegistry.register(RuleParamsChanged);
+  approvalTypes.register(ruleParamsChangeType({ rules, params: ruleParams, audit, events }));
   return {
     prisma,
     clock,
@@ -111,6 +136,11 @@ export function createPlatform(db: TestDatabase) {
     users,
     access,
     usage,
+    rules,
+    ruleParams,
+    ruleRuntime,
+    approvalTypes,
+    approvals,
     async close() {
       await jobs.onApplicationShutdown();
       relay.onApplicationShutdown();

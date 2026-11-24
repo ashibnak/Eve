@@ -1,0 +1,32 @@
+{
+  "rule": {
+    "id": "platform.sample_threshold",
+    "version": 2
+  },
+  "cases": [
+    {
+      "name": "at the threshold",
+      "input": {
+        "value": 10
+      },
+      "params": {
+        "threshold": 10
+      },
+      "output": {
+        "exceeds": true
+      }
+    },
+    {
+      "name": "below",
+      "input": {
+        "value": 9
+      },
+      "params": {
+        "threshold": 10
+      },
+      "output": {
+        "exceeds": false
+      }
+    }
+  ]
+}

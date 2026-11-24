@@ -25,6 +25,8 @@ model CoreCompany {
   settings        ConfigSetting[]
   roleAssignments AuthRoleAssignment[]
   usageEntries    UsageLedger[]
+  ruleParams      RulesParamVersion[]
+  approvals       ApprovalsRequest[]
 
   @@map("core_company")
 }
@@ -122,6 +124,8 @@ model AuthUser {
   roleAssignments AuthRoleAssignment[]
   activeDays      UsageActiveUser[]
   usageEntries    UsageLedger[]
+  approvalsAsked  ApprovalsRequest[]
+  approvalActions ApprovalsAction[]
 
   @@map("auth_user")
 }
@@ -211,4 +215,68 @@ model UsageLedger {
 
   @@index([day, module], map: "usage_ledger_day_idx")
   @@map("usage_ledger")
+}
+
+// ── platform/rules (bitemporal; see migration 0010) ─────────────────────────
+
+model RulesParamVersion {
+  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  templateId        String            @map("template_id")
+  templateVersion   Int               @map("template_version")
+  companyId         String?           @map("company_id") @db.Uuid
+  company           CoreCompany?      @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  params            Json
+  validFrom         DateTime          @map("valid_from") @db.Date
+  validTo           DateTime?         @map("valid_to") @db.Date
+  recordedAt        DateTime          @map("recorded_at") @db.Timestamptz(6)
+  supersededAt      DateTime?         @map("superseded_at") @db.Timestamptz(6)
+  approvalRequestId String?           @map("approval_request_id") @db.Uuid
+  approvalRequest   ApprovalsRequest? @relation(fields: [approvalRequestId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "rules_param_version_approval_fk")
+
+  @@index([templateId, templateVersion, companyId, validFrom], map: "rules_param_version_lookup_idx")
+  @@map("rules_param_version")
+}
+
+// ── platform/approvals ──────────────────────────────────────────────────────
+
+model ApprovalsRequest {
+  id            String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type          String
+  companyId     String?      @map("company_id") @db.Uuid
+  company       CoreCompany? @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  payload       Json
+  revision      Int          @default(1)
+  status        String
+  currentStep   Int          @default(0) @map("current_step")
+  chain         Json
+  pinnedRules   Json         @default("{}") @map("pinned_rules")
+  requestedBy   String       @map("requested_by") @db.Uuid
+  requester     AuthUser     @relation(fields: [requestedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  correlationId String       @map("correlation_id") @db.Uuid
+  createdAt     DateTime     @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime     @map("updated_at") @db.Timestamptz(6)
+  decidedAt     DateTime?    @map("decided_at") @db.Timestamptz(6)
+
+  actions    ApprovalsAction[]
+  ruleParams RulesParamVersion[]
+
+  @@index([requestedBy, status], map: "approvals_request_requester_idx")
+  @@map("approvals_request")
+}
+
+model ApprovalsAction {
+  id        String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  requestId String           @map("request_id") @db.Uuid
+  request   ApprovalsRequest @relation(fields: [requestId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  revision  Int
+  step      Int
+  action    String
+  actorId   String           @map("actor_id") @db.Uuid
+  actor     AuthUser         @relation(fields: [actorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  note      String?
+  payload   Json?
+  at        DateTime         @db.Timestamptz(6)
+
+  @@index([requestId, at], map: "approvals_action_request_idx")
+  @@map("approvals_action")
 }

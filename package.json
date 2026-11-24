@@ -20,7 +20,8 @@
     "test:unit": "vitest run --project '!@eve/api:int'",
     "db:dev:up": "docker compose -f deploy/docker-compose.dev.yml up -d --wait",
     "db:dev:down": "docker compose -f deploy/docker-compose.dev.yml down",
-    "db:check-drift": "tsx apps/api/scripts/check-schema-drift.ts"
+    "db:check-drift": "tsx apps/api/scripts/check-schema-drift.ts",
+    "rules:golden": "tsx --conditions=eve-source apps/api/scripts/write-rule-golden.ts"
   },
   "devDependencies": {
     "@types/node": "24.19.2",

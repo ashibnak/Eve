@@ -61,6 +61,19 @@ export function runAs<T>(actor: platformV1.Actor, fn: () => T): T {
   return storage.run({ ...state, actor }, fn);
 }
 
+/**
+ * Runs `fn` in the same flow and as the same actor, with some fields changed, e.g. a file import
+ * commit recorded with source `file` and the import id as action id.
+ */
+export function withFlow<T>(
+  overrides: Partial<Pick<RequestContext, 'source' | 'actionId' | 'causationId'>>,
+  fn: () => T,
+): T {
+  const state = storage.getStore();
+  if (!state) throw new Error('No request context: run this inside runWithContext()');
+  return storage.run({ ...state, ...overrides }, fn);
+}
+
 /** The current context. Throws outside one or before authentication: writes are never anonymous. */
 export function currentContext(): RequestContext {
   const state = storage.getStore();

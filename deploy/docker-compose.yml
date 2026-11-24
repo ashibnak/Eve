@@ -33,6 +33,9 @@ services:
       DATABASE_URL: postgresql://eve_app:${EVE_APP_PASSWORD}@postgres:5432/eve
       MIGRATION_DATABASE_URL: postgresql://eve_owner:${EVE_OWNER_PASSWORD}@postgres:5432/eve
       LOG_LEVEL: ${LOG_LEVEL:-info}
+    volumes:
+      # Uploaded import files: committed ones are kept as audit evidence (S3).
+      - eve_files:/var/lib/eve/files
     depends_on:
       postgres:
         condition: service_healthy
@@ -60,3 +63,4 @@ services:
 volumes:
   pgdata:
   caddy_data:
+  eve_files:

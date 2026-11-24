@@ -14,6 +14,12 @@ import { jurisdiction as ir } from '@eve/jurisdiction-ir';
 import type { platformV1 } from '@eve/contracts';
 import { PrismaService } from '../db/prisma.service';
 import { RuleRegistry } from '../rules/rule-registry';
+import { AuditService } from '../audit/audit.service';
+import { RoleRegistry } from '../auth/roles';
+import { ImportService } from '../connectors/import.service';
+import { ApprovalTypeRegistry } from '../approvals/request-types';
+import { widgetTarget, WidgetImporterRole } from '../../../test/widget-target';
+import ExcelJS from 'exceljs';
 import { sampleThresholdTemplates } from '../rules/sample/sample-threshold.template';
 import { configureApp } from './configure-app';
 
@@ -46,6 +52,23 @@ class Client {
     const text = await res.text();
     return { status: res.status, body: text ? (JSON.parse(text) as unknown) : null, setCookie };
   }
+
+  /** Multipart upload with the session cookie. */
+  async upload(
+    path: string,
+    fields: Record<string, string>,
+    file: { name: string; content: Buffer },
+  ) {
+    const form = new FormData();
+    for (const [key, value] of Object.entries(fields)) form.append(key, value);
+    form.append('file', new Blob([new Uint8Array(file.content)]), file.name);
+    const res = await fetch(`${this.base}/api/v1${path}`, {
+      method: 'POST',
+      headers: this.cookie ? { cookie: this.cookie } : {},
+      body: form,
+    });
+    return { status: res.status, body: (await res.json()) as unknown };
+  }
 }
 
 describe('HTTP API: login, deny by default, scoped reads', () => {
@@ -72,6 +95,10 @@ describe('HTTP API: login, deny by default, scoped reads', () => {
     base = `http://127.0.0.1:${(app.getHttpServer().address() as AddressInfo).port}`;
     stub = app.get(ChannelRegistry).get('stub') as StubChannel;
     app.get(RuleRegistry).register(...sampleThresholdTemplates('test.http_sample'));
+    app.get(RoleRegistry).register(WidgetImporterRole);
+    app
+      .get(ImportService)
+      .registerTarget(widgetTarget(app.get(PrismaService), app.get(AuditService)));
 
     // First administrator, as the bootstrap CLI would create it.
     await asUser(async () => {
@@ -87,6 +114,12 @@ describe('HTTP API: login, deny by default, scoped reads', () => {
         companyId: null,
         value: 'ir',
         reason: 'setup',
+      });
+      await config.set({
+        setting: app.get(ApprovalTypeRegistry).chainSetting('platform.rule_params.change'),
+        companyId: null,
+        value: ['rule_approver'],
+        reason: 'one-step chain for this file',
       });
       const users = app.get(UserService);
       const admin = await users.create({
@@ -333,6 +366,77 @@ describe('HTTP API: login, deny by default, scoped reads', () => {
         })
       ).status,
     ).toBe(403);
+  });
+
+  it('imports a spreadsheet over HTTP: multipart upload through commit', async () => {
+    const admin = await login('http.admin', '09121111111');
+    const company = (
+      await admin.call('POST', '/platform/companies', {
+        code: uniqueCompanyCode('I'),
+        jurisdictionCode: 'ir',
+        reason: 'imports',
+      })
+    ).body as { id: string };
+    const name = uniqueUsername('importer');
+    const created = (
+      await admin.call('POST', '/platform/users', {
+        username: name,
+        password: PASSWORD,
+        contactChannel: 'stub',
+        contactAddress: '09124444444',
+        reason: 'importer',
+      })
+    ).body as { id: string };
+    await admin.call('POST', `/platform/users/${created.id}/roles`, {
+      role: 'test_widget_importer',
+      scopeKind: 'company',
+      companyId: company.id,
+      reason: 'importer',
+    });
+    const importer = await login(name, '09124444444');
+
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('ابزارها');
+    ws.addRow(['کد', 'نام', 'قیمت']);
+    ws.addRow(['H-1', 'چکش', 900]);
+    const content = Buffer.from(await wb.xlsx.writeBuffer());
+
+    const uploaded = await importer.upload(
+      '/platform/imports',
+      {
+        target: 'test.widget',
+        companyId: company.id,
+        effectiveDate: '2026-11-22',
+        sourceName: 'http',
+      },
+      { name: 'ابزار.xlsx', content },
+    );
+    expect(uploaded.status).toBe(201);
+    const imp = uploaded.body as { id: string; file: { name: string }; mapping: unknown };
+    expect(imp.file.name).toBe('ابزار.xlsx');
+
+    expect(
+      (await importer.call('PUT', `/platform/imports/${imp.id}/mapping`, { mapping: imp.mapping }))
+        .status,
+    ).toBe(200);
+    expect((await importer.call('POST', `/platform/imports/${imp.id}/validate`)).status).toBe(200);
+    const preview = (await importer.call('GET', `/platform/imports/${imp.id}/preview`)).body as {
+      counts: { added: number };
+    };
+    expect(preview.counts.added).toBe(1);
+    const committed = await importer.call('POST', `/platform/imports/${imp.id}/commit`, {
+      reason: 'first import',
+    });
+    expect((committed.body as { status: string }).status).toBe('committed');
+
+    // Without the target permission (the admin), or without a file, it is refused.
+    expect((await admin.call('GET', `/platform/imports/${imp.id}`)).status).toBe(403);
+    const noFile = await fetch(`${base}/api/v1/platform/imports`, {
+      method: 'POST',
+      headers: { cookie: importer.cookieHeader },
+      body: new FormData(),
+    });
+    expect(noFile.status).toBe(400);
   });
 
   it('logs out', async () => {

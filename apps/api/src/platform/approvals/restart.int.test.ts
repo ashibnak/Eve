@@ -146,6 +146,15 @@ describe('approvals survive an application restart (S2 done-when 2)', () => {
         'platform.approval.requested',
         'platform.approval.decided',
       ]);
+      // Leave the shared test database with the default one-step chain.
+      await asUser(() =>
+        second.get(ConfigService).set({
+          setting: second.get(ApprovalTypeRegistry).chainSetting(TYPE),
+          companyId: null,
+          value: ['rule_approver'],
+          reason: 'restore default chain',
+        }),
+      );
     } finally {
       await second.close();
     }

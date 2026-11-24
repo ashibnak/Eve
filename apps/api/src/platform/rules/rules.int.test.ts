@@ -99,6 +99,15 @@ describe('rules: templates, versioned parameters and replay (S2 done-when 1)', (
     platform = createPlatform(inject('db'));
     platform.rules.register(SampleV1, SampleV2);
     await ensureTimeZone(platform);
+    // Other test files change the approval chain in this shared database; this file needs one step.
+    await asUser(() =>
+      platform.config.set({
+        setting: platform.approvalTypes.chainSetting('platform.rule_params.change'),
+        companyId: null,
+        value: ['rule_approver'],
+        reason: 'test chain',
+      }),
+    );
     today = businessDateIn(new Date(), 'Asia/Tehran');
     admin = await user('system_admin');
     approver = await user('rule_approver');

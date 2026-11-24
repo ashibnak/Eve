@@ -7,3 +7,5 @@ apps/api/src/generated/
 apps/web/test-results/
 apps/web/playwright-report/
 EveDesignSystem.zip
+# Local import file store (EVE_FILES_DIR default)
+var/

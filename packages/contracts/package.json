@@ -14,6 +14,11 @@
       "eve-source": "./src/platform/v1/index.ts",
       "types": "./dist/platform/v1/index.d.ts",
       "default": "./dist/platform/v1/index.js"
+    },
+    "./hr/canonical/v1": {
+      "eve-source": "./src/hr/canonical/v1/index.ts",
+      "types": "./dist/hr/canonical/v1/index.d.ts",
+      "default": "./dist/hr/canonical/v1/index.js"
     }
   },
   "files": [

@@ -10,6 +10,11 @@ import { AuthService } from '../src/platform/auth/auth.service';
 import { RoleRegistry } from '../src/platform/auth/roles';
 import { UserService } from '../src/platform/auth/user.service';
 import { ChannelRegistry } from '../src/platform/channels/channel';
+import { LocalDiskFileStore } from '../src/platform/connectors/file-store';
+import { ImportService } from '../src/platform/connectors/import.service';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { StubChannel } from '../src/platform/channels/stub.channel';
 import { CompanyService } from '../src/platform/company/company.service';
 import { ConfigService } from '../src/platform/config/config.service';
@@ -115,6 +120,22 @@ export function createPlatform(db: TestDatabase) {
   );
   eventRegistry.register(RuleParamsChanged);
   approvalTypes.register(ruleParamsChangeType({ rules, params: ruleParams, audit, events }));
+  const files = new LocalDiskFileStore(mkdtempSync(join(tmpdir(), 'eve-files-')));
+  const imports = new ImportService(
+    prisma,
+    txRunner,
+    audit,
+    events,
+    config,
+    clock,
+    access,
+    jurisdictions,
+    files,
+    approvals,
+    approvalTypes,
+    settings,
+    eventRegistry,
+  );
   return {
     prisma,
     clock,
@@ -141,6 +162,8 @@ export function createPlatform(db: TestDatabase) {
     ruleRuntime,
     approvalTypes,
     approvals,
+    files,
+    imports,
     async close() {
       await jobs.onApplicationShutdown();
       relay.onApplicationShutdown();

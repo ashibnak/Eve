@@ -27,6 +27,8 @@ model CoreCompany {
   usageEntries    UsageLedger[]
   ruleParams      RulesParamVersion[]
   approvals       ApprovalsRequest[]
+  imports         ConnectorsImport[]
+  importMappings  ConnectorsMapping[]
 
   @@map("core_company")
 }
@@ -126,6 +128,8 @@ model AuthUser {
   usageEntries    UsageLedger[]
   approvalsAsked  ApprovalsRequest[]
   approvalActions ApprovalsAction[]
+  imports         ConnectorsImport[]
+  importMappings  ConnectorsMapping[]
 
   @@map("auth_user")
 }
@@ -259,6 +263,7 @@ model ApprovalsRequest {
 
   actions    ApprovalsAction[]
   ruleParams RulesParamVersion[]
+  imports    ConnectorsImport[]
 
   @@index([requestedBy, status], map: "approvals_request_requester_idx")
   @@map("approvals_request")
@@ -279,4 +284,68 @@ model ApprovalsAction {
 
   @@index([requestId, at], map: "approvals_action_request_idx")
   @@map("approvals_action")
+}
+
+// ── platform/connectors ─────────────────────────────────────────────────────
+
+model ConnectorsImport {
+  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  target            String
+  sourceName        String            @map("source_name")
+  companyId         String            @map("company_id") @db.Uuid
+  company           CoreCompany       @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  effectiveDate     DateTime          @map("effective_date") @db.Date
+  status            String
+  fileName          String            @map("file_name")
+  fileFormat        String            @map("file_format")
+  fileSize          Int               @map("file_size")
+  fileSha256        String            @map("file_sha256") @db.Char(64)
+  fileRef           String?           @map("file_ref") @db.Char(64)
+  sheets            Json
+  mapping           Json?
+  counts            Json              @default("{}")
+  findings          Json?
+  diff              Json?
+  approvalRequestId String?           @map("approval_request_id") @db.Uuid
+  approvalRequest   ApprovalsRequest? @relation(fields: [approvalRequestId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  createdBy         String            @map("created_by") @db.Uuid
+  creator           AuthUser          @relation(fields: [createdBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  createdAt         DateTime          @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime          @map("updated_at") @db.Timestamptz(6)
+  committedAt       DateTime?         @map("committed_at") @db.Timestamptz(6)
+  purgedAt          DateTime?         @map("purged_at") @db.Timestamptz(6)
+
+  rows ConnectorsImportRow[]
+
+  @@index([companyId, createdAt], map: "connectors_import_company_idx")
+  @@map("connectors_import")
+}
+
+model ConnectorsImportRow {
+  importId  String           @map("import_id") @db.Uuid
+  import    ConnectorsImport @relation(fields: [importId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  sheet     String
+  rowNumber Int              @map("row_number")
+  entity    String
+  key       String?
+  values    Json
+  errors    Json             @default("[]")
+
+  @@id([importId, sheet, rowNumber])
+  @@map("connectors_import_row")
+}
+
+model ConnectorsMapping {
+  id         String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  target     String
+  companyId  String      @map("company_id") @db.Uuid
+  company    CoreCompany @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  sourceName String      @map("source_name")
+  mapping    Json
+  updatedBy  String      @map("updated_by") @db.Uuid
+  updater    AuthUser    @relation(fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  updatedAt  DateTime    @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([target, companyId, sourceName], map: "connectors_mapping_source_uq")
+  @@map("connectors_mapping")
 }

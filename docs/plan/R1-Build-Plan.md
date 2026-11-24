@@ -88,6 +88,15 @@ Each slice = one or more small PRs. Do not start a slice before the previous one
 - Canonical model types in contracts: person, unit, position, assignment (others later).
 - Excel via ExcelJS.
 - **Done when:** a test module can import a sheet, preview the diff and commit it with full audit.
+- **Product-owner decisions (2026-11-24):** each import target decides whether its commit needs approval (both paths built); committed import files are kept permanently as evidence, discarded/abandoned imports lose file and staged rows after 30 days; formats `.xlsx` and UTF-8 `.csv`.
+- **Status / decisions (S3):**
+  - [x] Done-when: a test-only `test.widget` target imports an Excel sheet: upload → mapping (auto-suggested from Persian header aliases) → validate → preview (3 added) → commit; one audit row per widget plus the import's own row, all with source `file` and the import id as action id; event `platform.import.committed`; the stored file matches its SHA-256. A second file from the same source is pre-mapped and previews added/changed/removed/unchanged.
+  - [x] Pipeline is a PostgreSQL state machine (`connectors_import`): re-mapping invalidates validation and preview; commit needs a fresh preview, no row errors and no blocking findings; the diff is recomputed at commit and the commit is refused if data changed since the preview.
+  - [x] Persian normalization for every cell: Arabic ي/ك → ی/ک, Persian/Arabic-Indic digits and separators, stray direction marks removed, ZWNJ kept inside words; dates as Excel cells, ISO, or Jalali text in the company's calendar; malformed values are row errors, not crashes. Duplicate keys in a file are row errors.
+  - [x] Targets plug in fields, entity key, permission, domain checks, diff and commit; an approval-gated target gets request type `<target>.import.commit` whose `apply` commits atomically.
+  - [x] Files: `FileStore` interface, local-disk adapter on volume `eve_files`, content-addressed by SHA-256; nightly retention job (pg-boss schedule) purges expired imports, never a file a committed import uses. Limits are settings: 20 MB and 50,000 rows by default.
+  - [x] HR canonical model (person, unit, position, assignment) in `packages/contracts/src/hr/canonical/v1` (not the platform), fields only from spec §3 and the S4 list; open value lists (employment status, unit level, position type/status, assignment kind) stay strings until S4/S7.
+  - [x] Found by the HTTP test and fixed: the file store could not be created by Nest (the app would not have started with S3 wired in).
 
 ## S4 — people core (`people`)
 - Tables `people_person`: id, personnel code, names (fa required, en optional), company, hire date, employment status, contact channel id. Temporal where it changes (status).

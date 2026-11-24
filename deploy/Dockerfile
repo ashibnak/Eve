@@ -30,6 +30,9 @@ ENV NODE_ENV=production
 WORKDIR /app
 COPY --from=build /out/api ./
 COPY --from=build /repo/apps/api/dist ./dist
+# Uploaded import files (volume eve_files); owned by the runtime user.
+RUN mkdir -p /var/lib/eve/files && chown node:node /var/lib/eve/files
+ENV EVE_FILES_DIR=/var/lib/eve/files
 USER node
 EXPOSE 3000
 HEALTHCHECK --interval=10s --timeout=3s --start-period=20s --retries=5 \

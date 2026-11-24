@@ -5,6 +5,7 @@ import { AuditModule } from './platform/audit/audit.module';
 import { AuthModule } from './platform/auth/auth.module';
 import { ChannelsModule } from './platform/channels/channels.module';
 import { CompanyModule } from './platform/company/company.module';
+import { ConnectorsModule } from './platform/connectors/connectors.module';
 import { PlatformConfigModule } from './platform/config/config.module';
 import { ContextModule } from './platform/context/context.module';
 import { DbModule } from './platform/db/db.module';
@@ -34,6 +35,7 @@ import { UsageModule } from './platform/usage/usage.module';
     AuthModule,
     ApprovalsModule,
     RulesModule,
+    ConnectorsModule,
     UsageModule,
     HealthModule,
   ],

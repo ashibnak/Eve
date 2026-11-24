@@ -50,7 +50,10 @@ async function withClient<T>(url: string, fn: (client: Client) => Promise<T>): P
   }
 }
 
-export async function createTestDatabase(name: string): Promise<TestDatabase> {
+export async function createTestDatabase(
+  name: string,
+  options: { testTables?: boolean } = {},
+): Promise<TestDatabase> {
   if (!/^eve_test_[a-z0-9_]+$/.test(name)) throw new Error(`Refusing test database name ${name}`);
   await withClient(ADMIN_URL, async (admin) => {
     await admin.query(`CREATE DATABASE ${name}`);
@@ -72,6 +75,20 @@ export async function createTestDatabase(name: string): Promise<TestDatabase> {
   if (migrate.status !== 0) {
     throw new Error(`prisma migrate deploy failed:\n${migrate.stdout}\n${migrate.stderr}`);
   }
+  if (options.testTables === false) return { name, appUrl, ownerUrl };
+  // Test-only tables (never in production migrations), e.g. the widget import target's data.
+  await withClient(ownerUrl, (db) =>
+    db.query(`
+      CREATE TABLE test_widget (
+        company_id uuid NOT NULL REFERENCES core_company (id),
+        code text NOT NULL,
+        name text NOT NULL,
+        price integer NOT NULL,
+        launched date,
+        PRIMARY KEY (company_id, code)
+      );
+      GRANT SELECT, INSERT, UPDATE, DELETE ON test_widget TO eve_app;`),
+  );
   return { name, appUrl, ownerUrl };
 }
 

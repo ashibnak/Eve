@@ -9,7 +9,10 @@ import { createTestDatabase, dropTestDatabase } from '../test/database';
 
 async function main(): Promise<void> {
   const apiRoot = join(__dirname, '..');
-  const db = await createTestDatabase(`eve_test_drift_${Date.now().toString(36)}`);
+  // Only the migrations: no test-only tables.
+  const db = await createTestDatabase(`eve_test_drift_${Date.now().toString(36)}`, {
+    testTables: false,
+  });
   try {
     const diff = spawnSync(
       process.execPath,

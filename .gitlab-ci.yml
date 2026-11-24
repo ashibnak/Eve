@@ -47,6 +47,12 @@ boundaries:
   script:
     - pnpm boundaries
 
+# The production build (nest build, vite build): catches what typecheck alone does not.
+build:
+  stage: verify
+  script:
+    - pnpm build
+
 e2e:
   stage: e2e
   image: ${IMAGE_REGISTRY}mcr.microsoft.com/playwright:v1.65.1-noble

@@ -17,7 +17,7 @@ import { ConfigService } from '../config/config.service';
 import { SettingsRegistry, TimeZoneSetting } from '../config/settings';
 import { Clock } from '../context/clock';
 import { currentActor, runAs, withFlow } from '../context/request-context';
-import { type Tx, TxRunner } from '../context/tx-runner';
+import { LONG_TX, type Tx, TxRunner } from '../context/tx-runner';
 import { businessDateIn } from '../dates/dates';
 import { PrismaService } from '../db/prisma.service';
 import { Prisma } from '../../generated/prisma/client';
@@ -386,7 +386,7 @@ export class ImportService {
       });
       return this.get(id);
     }
-    await this.txRunner.run((tx) => this.executeCommit(tx, id, reason, 'previewed'));
+    await this.txRunner.run((tx) => this.executeCommit(tx, id, reason, 'previewed'), LONG_TX);
     return this.get(id);
   }
 

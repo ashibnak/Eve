@@ -19,6 +19,11 @@
       "eve-source": "./src/hr/canonical/v1/index.ts",
       "types": "./dist/hr/canonical/v1/index.d.ts",
       "default": "./dist/hr/canonical/v1/index.js"
+    },
+    "./people/v1": {
+      "eve-source": "./src/people/v1/index.ts",
+      "types": "./dist/people/v1/index.d.ts",
+      "default": "./dist/people/v1/index.js"
     }
   },
   "files": [

@@ -29,6 +29,8 @@ model CoreCompany {
   approvals       ApprovalsRequest[]
   imports         ConnectorsImport[]
   importMappings  ConnectorsMapping[]
+  people          PeoplePerson[]
+  peopleStatuses  PeopleEmploymentStatus[]
 
   @@map("core_company")
 }
@@ -348,4 +350,42 @@ model ConnectorsMapping {
 
   @@unique([target, companyId, sourceName], map: "connectors_mapping_source_uq")
   @@map("connectors_mapping")
+}
+
+// ── packs/hr/people ─────────────────────────────────────────────────────────
+
+model PeoplePerson {
+  id             String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId      String      @map("company_id") @db.Uuid
+  company        CoreCompany @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  personnelCode  String      @map("personnel_code")
+  firstNameFa    String      @map("first_name_fa")
+  lastNameFa     String      @map("last_name_fa")
+  firstNameEn    String?     @map("first_name_en")
+  lastNameEn     String?     @map("last_name_en")
+  hireDate       DateTime    @map("hire_date") @db.Date
+  contactChannel String?     @map("contact_channel")
+  contactAddress String?     @map("contact_address")
+  createdAt      DateTime    @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime    @map("updated_at") @db.Timestamptz(6)
+
+  statuses PeopleEmploymentStatus[]
+
+  @@unique([companyId, personnelCode], map: "people_person_code_uq")
+  @@map("people_person")
+}
+
+model PeopleEmploymentStatus {
+  id         String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  personId   String       @map("person_id") @db.Uuid
+  person     PeoplePerson @relation(fields: [personId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  companyId  String       @map("company_id") @db.Uuid
+  company    CoreCompany  @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  status     String
+  validFrom  DateTime     @map("valid_from") @db.Date
+  validTo    DateTime?    @map("valid_to") @db.Date
+  recordedAt DateTime     @map("recorded_at") @db.Timestamptz(6)
+
+  @@index([companyId, validFrom], map: "people_employment_status_company_idx")
+  @@map("people_employment_status")
 }

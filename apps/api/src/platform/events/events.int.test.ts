@@ -51,6 +51,8 @@ describe('events: outbox, relay and idempotent consumers', () => {
     });
     await platform.jobs.start(db.appUrl);
     await platform.consumers.start();
+    // Other test files leave events queued in this shared database; start from an empty outbox.
+    while ((await platform.relay.relayPending(1000)) > 0);
   });
 
   afterAll(() => platform.close());

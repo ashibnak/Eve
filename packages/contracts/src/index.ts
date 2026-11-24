@@ -4,3 +4,4 @@
  */
 export * as platformV1 from './platform/v1/index.js';
 export * as hrCanonicalV1 from './hr/canonical/v1/index.js';
+export * as peopleV1 from './people/v1/index.js';

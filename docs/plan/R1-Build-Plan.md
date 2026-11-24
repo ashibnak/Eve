@@ -104,6 +104,16 @@ Each slice = one or more small PRs. Do not start a slice before the previous one
 - File import via S3 connector.
 - **Ask before adding** any other personnel field (full Module 42 spec comes later).
 - **Done when:** both pilot companies' people import cleanly; contract `people/v1` published.
+- **Product-owner decisions (2026-11-24):** statuses `active | on_leave | suspended | terminated` (active + on_leave count as employed); personnel code unique per company; one person record per company in R1; people imports committed directly by the data owner; people missing from a re-import are reported, never changed; new role `people_data_owner` (company or customer scope; `system_admin` has no people access); effective-dated status history (past dates allowed); optional contact `bale | sms`.
+- **Status / decisions (S4):**
+  - [x] Done-when (with anonymized generated data, since the pilot files are not in the repository): two companies with 1,200 and 800 messy-but-realistic people rows (Arabic ي/ك, Persian digits, Jalali/Excel dates, Persian/English status words) import with no blocking finding; employed counts match; service output validates against the `people/v1` contract. **To do with you: run the same import on the two pilot companies' real files.**
+  - [x] Contract `packages/contracts/src/people/v1`: statuses, `PersonView`, `PeopleReadService`, event payloads `people.person.created|status_changed@1`, field sensitivity labels (names and contact sensitive).
+  - [x] Tables `people_person` (unique company + code) and `people_employment_status` (exclusion constraint against overlap; app may only close a period). A person's first status starts on the first import's effective date: earlier history is unknown and reported as no status.
+  - [x] A status change before a later existing change is refused (correcting later history is out of R1 scope); an empty optional cell never clears a stored value (clearing is an explicit correction).
+  - [x] One writer (`PeopleWriter`) for commands and imports: audit row per change, events through the outbox in the same transaction.
+  - [x] Platform additions: `ScopedDb` (packs read only through the scope layer, never the raw client) and `registerScopedModel()`; transactions take a timeout (30 s default, 15 min for import commits and approval decisions — a 1,200-person import exceeded Prisma's 5 s default).
+  - [x] The boundary check caught a platform test importing the people pack; the people HTTP test now lives in the pack.
+  - [ ] Open: which roles besides `people_data_owner` may read people (org roles come in S5; the auditor has no people access yet).
 
 ## S5 — org data model + read services
 - Tables per spec §3/§10 with exclusion constraints on validity ranges and R15 constraint.

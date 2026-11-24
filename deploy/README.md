@@ -30,11 +30,12 @@ Import files live on the `eve_files` volume (`/var/lib/eve/files`), named by the
 
 ## Platform roles
 
-| Role            | Scope               | Can                                                                                       |
-| --------------- | ------------------- | ----------------------------------------------------------------------------------------- |
-| `system_admin`  | customer            | settings, users and role grants, companies, usage report; proposes rule-parameter changes |
-| `auditor`       | customer or company | read-only, including the audit log                                                        |
-| `rule_approver` | customer or company | approves rule-parameter changes (cannot approve their own requests)                       |
+| Role                | Scope               | Can                                                                                       |
+| ------------------- | ------------------- | ----------------------------------------------------------------------------------------- |
+| `system_admin`      | customer            | settings, users and role grants, companies, usage report; proposes rule-parameter changes |
+| `auditor`           | customer or company | read-only, including the audit log                                                        |
+| `rule_approver`     | customer or company | approves rule-parameter changes (cannot approve their own requests)                       |
+| `people_data_owner` | customer or company | imports and corrects the person register (HR Ops pack)                                    |
 
 ## Database roles
 

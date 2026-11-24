@@ -17,6 +17,22 @@ export const SCOPED_MODELS: Record<string, ScopedModel> = {
   AuditLog: { companyField: 'companyId' },
 };
 
+/**
+ * Lets a pack make its own tables readable through the scope layer (the platform never names
+ * pack tables). Registering the same model twice with a different definition is an error.
+ */
+export function registerScopedModel(model: string, definition: ScopedModel): void {
+  const existing = SCOPED_MODELS[model];
+  if (
+    existing &&
+    (existing.companyField !== definition.companyField ||
+      existing.unitField !== definition.unitField)
+  ) {
+    throw new Error(`Scoped model ${model} is already registered differently`);
+  }
+  SCOPED_MODELS[model] = definition;
+}
+
 const READ_OPERATIONS = new Set([
   'findUnique',
   'findUniqueOrThrow',

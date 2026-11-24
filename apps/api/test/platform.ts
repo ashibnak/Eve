@@ -38,6 +38,7 @@ import {
 } from '../src/platform/jurisdiction/jurisdiction.registry';
 import { jurisdiction as ir } from '@eve/jurisdiction-ir';
 import { AccessService } from '../src/platform/scope/access.service';
+import { ScopedDb } from '../src/platform/scope/scoped-db';
 import { UsageService } from '../src/platform/usage/usage.service';
 import { ParamVersionsService } from '../src/platform/rules/param-versions.service';
 import { RuleParamsChanged, ruleParamsChangeType } from '../src/platform/rules/rule-params.request';
@@ -101,6 +102,7 @@ export function createPlatform(db: TestDatabase) {
   const users = new UserService(prisma, txRunner, audit, config, channels, roles, clock);
   const usage = new UsageService(prisma, config, jurisdictions, clock);
   const access = new AccessService(prisma, roles, config, clock, new DenyAllUnitSubtreeAdapter());
+  const scopedDb = new ScopedDb(prisma, access);
   const rules = new RuleRegistry();
   const ruleParams = new ParamVersionsService(prisma, clock);
   const ruleRuntime = new RuleRuntime(rules, ruleParams, clock);
@@ -164,6 +166,7 @@ export function createPlatform(db: TestDatabase) {
     approvals,
     files,
     imports,
+    scopedDb,
     async close() {
       await jobs.onApplicationShutdown();
       relay.onApplicationShutdown();

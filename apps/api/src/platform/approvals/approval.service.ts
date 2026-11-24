@@ -14,7 +14,7 @@ import { ConfigService } from '../config/config.service';
 import { TimeZoneSetting } from '../config/settings';
 import { Clock } from '../context/clock';
 import { currentActor, currentContext } from '../context/request-context';
-import { type Tx, TxRunner } from '../context/tx-runner';
+import { LONG_TX, type Tx, TxRunner } from '../context/tx-runner';
 import { businessDateIn } from '../dates/dates';
 import { PrismaService } from '../db/prisma.service';
 import { EventRegistry } from '../events/event-registry';
@@ -387,7 +387,7 @@ export class ApprovalService {
         reason,
       });
       return this.view(updated);
-    });
+    }, LONG_TX); // a final approval may apply a bulk change (e.g. an import)
   }
 
   private async lock(tx: Tx, id: string): Promise<RequestRow> {

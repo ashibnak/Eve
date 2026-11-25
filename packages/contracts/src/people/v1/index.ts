@@ -77,6 +77,8 @@ export interface PeopleDirectoryService {
     asOf: z.infer<typeof BusinessDateSchema>,
   ): Promise<ReadonlySet<string>>;
   companyOf(personId: string): Promise<string | null>;
+  /** Person ids of a company by personnel code (for imports that refer to people; S7). */
+  idsByPersonnelCode(companyId: string): Promise<ReadonlyMap<string, string>>;
 }
 
 /** Event `people.person.created@1`. */

@@ -21,8 +21,23 @@ export interface ImportField {
 export interface ImportEntity {
   name: string;
   fields: readonly ImportField[];
-  /** Field that identifies a record (legacy code, personnel code); unique within the file. */
-  key: string;
+  /**
+   * Field that identifies a record (legacy code, personnel code), or several fields together
+   * (e.g. person + position + kind for assignments); unique within the file. The first one must
+   * be a required field.
+   */
+  key: string | readonly string[];
+}
+
+/** The key fields of an entity, in order. */
+export function keyFields(entity: ImportEntity): readonly string[] {
+  return typeof entity.key === 'string' ? [entity.key] : entity.key;
+}
+
+/** A row's key: its key fields' values joined with "|" (empty when the first one is missing). */
+export function rowKey(entity: ImportEntity, values: Record<string, unknown>): string {
+  const parts = keyFields(entity).map((k) => (values[k] === undefined ? '' : String(values[k])));
+  return parts[0] ? parts.join('|') : '';
 }
 
 export interface ImportContext {
@@ -76,6 +91,11 @@ export interface ImportTarget {
    * commits directly. Registered as request type `<name>.import.commit`.
    */
   approvalChain?: readonly string[];
+  /**
+   * Whether this import's commit needs the approval chain (default: always, when there is one).
+   * E.g. org: a company's first structure load is committed directly, a re-import is approved.
+   */
+  needsApproval?(context: ImportContext): Promise<boolean>;
   validate(rows: readonly StagedRow[], context: ImportContext): Promise<Finding[]>;
   diff(rows: readonly StagedRow[], context: ImportContext): Promise<DiffEntry[]>;
   commit(
@@ -91,10 +111,14 @@ export function defineImportTarget(target: ImportTarget): ImportTarget {
     throw new Error(`Invalid import target name "${target.name}"`);
   }
   for (const entity of target.entities) {
-    if (!entity.fields.some((f) => f.key === entity.key && f.required)) {
-      throw new Error(
-        `${target.name}/${entity.name}: key field ${entity.key} must be a required field`,
-      );
+    const [first, ...rest] = keyFields(entity);
+    if (!entity.fields.some((f) => f.key === first && f.required)) {
+      throw new Error(`${target.name}/${entity.name}: key field ${first} must be a required field`);
+    }
+    for (const key of rest) {
+      if (!entity.fields.some((f) => f.key === key)) {
+        throw new Error(`${target.name}/${entity.name}: key field ${key} is not a field`);
+      }
     }
   }
   return target;

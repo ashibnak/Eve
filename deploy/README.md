@@ -30,13 +30,14 @@ Import files live on the `eve_files` volume (`/var/lib/eve/files`), named by the
 
 ## Platform roles
 
-| Role                | Scope               | Can                                                                                       |
-| ------------------- | ------------------- | ----------------------------------------------------------------------------------------- |
-| `system_admin`      | customer            | settings, users and role grants, companies, usage report; proposes rule-parameter changes |
-| `auditor`           | customer or company | read-only, including the audit log, people and the organization structure                 |
-| `rule_approver`     | customer or company | approves rule-parameter changes (cannot approve their own requests)                       |
-| `people_data_owner` | customer or company | imports and corrects the person register (HR Ops pack)                                    |
-| `org_data_owner`    | customer or company | reads the organization structure and its people; works the findings inbox (HR Ops pack)   |
+| Role                  | Scope               | Can                                                                                                                               |
+| --------------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `system_admin`        | customer            | settings, users and role grants, companies (and their org profile and unit levels), usage report; proposes rule-parameter changes |
+| `auditor`             | customer or company | read-only, including the audit log, people and the organization structure                                                         |
+| `rule_approver`       | customer or company | approves rule-parameter changes (cannot approve their own requests)                                                               |
+| `people_data_owner`   | customer or company | imports and corrects the person register (HR Ops pack)                                                                            |
+| `org_data_owner`      | customer or company | imports and reads the organization structure; works the findings inbox (HR Ops pack)                                              |
+| `org_change_approver` | customer or company | approves structure changes and re-imports (HR Ops pack)                                                                           |
 
 ## Database roles
 

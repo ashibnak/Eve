@@ -337,3 +337,84 @@ export const ORG_FIELD_SENSITIVITY = {
   incumbentName: 'sensitive',
   incumbentPersonnelCode: 'internal',
 } as const;
+
+// ── Writes (S7/S8) ───────────────────────────────────────────────────────────
+
+/** A company's org profile, registered by the system administrator before the first import. */
+export const OrgProfileInputSchema = z.object({
+  nameFa: z.string().trim().min(1).max(200),
+  nameEn: z.string().trim().min(1).max(200).nullable().optional(),
+  /** Prefix of the system codes, e.g. FNP → FNP-U0001; fixed once codes exist. */
+  codePrefix: z.string().regex(/^[A-Z0-9]{2,10}$/),
+  /** Validated with the company's jurisdiction pack (ADR-010), e.g. national ID for `ir`. */
+  legalFields: z.record(z.string(), z.unknown()),
+});
+export type OrgProfileInput = z.infer<typeof OrgProfileInputSchema>;
+
+export const UnitLevelSchema = z.object({
+  id: z.uuid(),
+  nameFa: z.string(),
+  nameEn: z.string().nullable(),
+  rank: z.number().int().min(1),
+});
+
+/** The company's ordered unit levels: existing ones by id (renamed or moved), new ones without. */
+export const UnitLevelsInputSchema = z
+  .array(
+    z.object({
+      id: z.uuid().optional(),
+      nameFa: z.string().trim().min(1).max(100),
+      nameEn: z.string().trim().min(1).max(100).nullable().optional(),
+    }),
+  )
+  .min(1)
+  .max(20);
+
+/** Event `org.position.created@1`: module 2 opens a grading request (D1). */
+export const PositionCreatedPayload = z.object({
+  position_id: z.uuid(),
+  code: z.string(),
+  unit_id: z.uuid(),
+  job_id: z.string().nullable(),
+  supervisory: z.boolean(),
+});
+
+/** Event `org.position.changed@1`: only a change of unit or job (spec §7). */
+export const PositionChangedPayload = z.object({
+  position_id: z.uuid(),
+  changed: z.array(z.enum(['unit', 'job'])).min(1),
+  unit_from: z.uuid(),
+  unit_to: z.uuid(),
+  job_from: z.string().nullable(),
+  job_to: z.string().nullable(),
+});
+
+/**
+ * Event `org.assignment.started@1`. No module opens a pay decision or an order from it: that is
+ * the personnel-action workflow's job (ADR-006, ADR-007).
+ */
+export const AssignmentStartedPayload = z.object({
+  assignment_id: z.uuid(),
+  person_id: z.uuid(),
+  position_id: z.uuid(),
+  kind: AssignmentKindSchema,
+  time_share: z.number(),
+  /** Personnel action, change request or import that made it. */
+  action_ref: z.string().nullable(),
+});
+
+/** Event `org.assignment.ended@1`: the position may now be vacant. */
+export const AssignmentEndedPayload = z.object({
+  assignment_id: z.uuid(),
+  person_id: z.uuid(),
+  position_id: z.uuid(),
+  kind: AssignmentKindSchema,
+  action_ref: z.string().nullable(),
+});
+
+/** Event `org.manager.changed@1`: module 50 hands pending approvals to the new manager. */
+export const ManagerChangedPayload = z.object({
+  person_id: z.uuid(),
+  from_manager_person_id: z.uuid().nullable(),
+  to_manager_person_id: z.uuid().nullable(),
+});

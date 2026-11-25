@@ -33,7 +33,9 @@ import {
   type ImportContext,
   type ImportMapping,
   type ImportTarget,
+  keyFields,
   MappingSchema,
+  rowKey,
   type StagedRow,
 } from './import-target';
 import { ImportSettings } from './import.settings';
@@ -369,7 +371,10 @@ export class ImportService {
     this.requireStatus(imp.status, ['previewed']);
     this.requireCommittable(imp);
 
-    if (target.approvalChain) {
+    const needsApproval =
+      target.approvalChain !== undefined &&
+      (target.needsApproval ? await target.needsApproval(await this.context(imp)) : true);
+    if (needsApproval) {
       const request = await this.approvals.submit({
         type: `${target.name}.import.commit`,
         companyId: imp.companyId,
@@ -586,12 +591,13 @@ export class ImportService {
           if ('error' in result) errors.push({ field: field.key, message: result.error });
           else if (result.value !== undefined) values[field.key] = result.value;
         }
-        const key = typeof values[entity.key] === 'string' ? (values[entity.key] as string) : '';
+        const key = rowKey(entity, values);
         const dedupe = `${entity.name}:${key}`;
         if (key && seenKeys.has(dedupe)) {
+          const fields = keyFields(entity).join(' + ');
           errors.push({
-            field: entity.key,
-            message: `${entity.key} "${key}" also appears in row ${seenKeys.get(dedupe)}`,
+            field: keyFields(entity)[0]!,
+            message: `${fields} "${key}" also appears in row ${seenKeys.get(dedupe)}`,
           });
         } else if (key) {
           seenKeys.set(dedupe, row.rowNumber);
@@ -660,6 +666,9 @@ export class ImportService {
     }
     const suggestion: ImportMapping = {};
     for (const sheet of sheets) {
+      // The entity that recognizes the most columns of the sheet (its key among them) wins:
+      // a position sheet also has a unit-code column, but more position columns.
+      let best: { entity: string; columns: Record<string, string> } | null = null;
       for (const entity of target.entities) {
         const columns: Record<string, string> = {};
         for (const header of sheet.headers) {
@@ -670,11 +679,12 @@ export class ImportService {
           );
           if (match && !Object.values(columns).includes(match.key)) columns[header] = match.key;
         }
-        if (Object.values(columns).includes(entity.key)) {
-          suggestion[sheet.name] = { entity: entity.name, columns };
-          break;
+        if (!Object.values(columns).includes(keyFields(entity)[0]!)) continue;
+        if (!best || Object.keys(columns).length > Object.keys(best.columns).length) {
+          best = { entity: entity.name, columns };
         }
       }
+      if (best) suggestion[sheet.name] = best;
     }
     return Object.keys(suggestion).length > 0 ? suggestion : null;
   }

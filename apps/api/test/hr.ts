@@ -7,7 +7,15 @@ import { OrgTeamAdapter } from '../src/packs/hr/people/adapters/org-team.adapter
 import { PeopleDirectoryAdapter } from '../src/packs/hr/org/adapters/people-directory.adapter';
 import { OrgUnitSubtreeAdapter } from '../src/packs/hr/org/adapters/unit-subtree.adapter';
 import { registerOrgScopedModels } from '../src/packs/hr/org/org.module';
-import { OrgDataOwnerRole, OrgPermissions } from '../src/packs/hr/org/org.permissions';
+import { OrgEventSink } from '../src/packs/hr/org/events/org-event-sink';
+import { ORG_EVENTS } from '../src/packs/hr/org/events/org.events';
+import { StructureImport } from '../src/packs/hr/org/import/structure.import-target';
+import {
+  OrgChangeApproverRole,
+  OrgDataOwnerRole,
+  OrgPermissions,
+} from '../src/packs/hr/org/org.permissions';
+import { OrgProfileService } from '../src/packs/hr/org/profile/profile.service';
 import { FindingsCommands } from '../src/packs/hr/org/findings/findings.commands';
 import { FindingsService } from '../src/packs/hr/org/findings/findings.service';
 import { OrgRuleRunner } from '../src/packs/hr/org/findings/rule-runner';
@@ -22,8 +30,12 @@ export function createHr(platform: Platform) {
   // Each side reaches the other lazily, as the Nest providers do (org is defined just below).
   const people = createPeople(platform, new OrgTeamAdapter(() => org));
   registerOrgScopedModels();
-  if (!platform.roles.has(OrgDataOwnerRole.name)) platform.roles.register(OrgDataOwnerRole);
+  if (!platform.roles.has(OrgDataOwnerRole.name)) {
+    platform.roles.register(OrgDataOwnerRole, OrgChangeApproverRole);
+  }
   platform.roles.extend('auditor', [OrgPermissions.read]);
+  platform.roles.extend('system_admin', [OrgPermissions.manageCompany]);
+  platform.eventRegistry.register(...ORG_EVENTS);
   platform.unitSubtree.use(new OrgUnitSubtreeAdapter(platform.scopedDb));
   const directory = new PeopleDirectoryAdapter(() => people.service);
   const org = new OrgService(
@@ -55,7 +67,32 @@ export function createHr(platform: Platform) {
       platform.clock,
     ),
   };
-  return { people, org, rules };
+  const eventSink = new OrgEventSink(
+    platform.events,
+    platform.eventRegistry,
+    platform.scopedDb,
+    platform.txRunner,
+    platform.config,
+    platform.clock,
+  );
+  const structureImport = new StructureImport(
+    platform.scopedDb,
+    platform.audit,
+    platform.ruleRuntime,
+    eventSink,
+    platform.clock,
+    directory,
+  );
+  platform.imports.registerTarget(structureImport.target());
+  const profiles = new OrgProfileService(
+    platform.scopedDb,
+    platform.access,
+    platform.txRunner,
+    platform.audit,
+    platform.jurisdictions,
+    platform.clock,
+  );
+  return { people, org, rules, eventSink, profiles };
 }
 
 /** The real app's database client, for seeding fixtures in HTTP tests (packs cannot import it). */

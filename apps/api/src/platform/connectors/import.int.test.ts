@@ -332,8 +332,12 @@ describe('file import pipeline (S3 done-when)', () => {
       })
     ).fileSha256;
 
+    // Other test files share this database: look at this file's import, not the global count.
+    const own = () =>
+      platform.prisma.connectorsImport.findUniqueOrThrow({ where: { id: discarded.id } });
     platform.clock.advance(29 * 86_400_000);
-    expect(await platform.imports.purgeExpired()).toBe(0);
+    await platform.imports.purgeExpired();
+    expect((await own()).purgedAt).toBeNull();
     platform.clock.advance(2 * 86_400_000);
     try {
       expect(await platform.imports.purgeExpired()).toBeGreaterThan(0);

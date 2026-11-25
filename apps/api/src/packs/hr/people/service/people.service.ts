@@ -143,6 +143,18 @@ export class PeopleService implements peopleV1.PeopleReadService, peopleV1.Peopl
     return new Set(rows.map((r) => r.personId));
   }
 
+  /**
+   * Person ids of a company by personnel code, for modules whose files refer to people (org's
+   * structure import). Codes and ids only, no personal data.
+   */
+  async idsByPersonnelCode(companyId: string): Promise<ReadonlyMap<string, string>> {
+    const rows = await this.db.afterOwnCheck().peoplePerson.findMany({
+      where: { companyId },
+      select: { id: true, personnelCode: true },
+    });
+    return new Map(rows.map((r) => [r.personnelCode, r.id]));
+  }
+
   /** The company a person record belongs to, or null (an id only, no personal data). */
   async companyOf(personId: string): Promise<string | null> {
     const row = await this.db.afterOwnCheck().peoplePerson.findUnique({

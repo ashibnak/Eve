@@ -4,6 +4,10 @@ export const OrgPermissions = {
   read: 'org.structure.read',
   /** Accept or reopen findings, start a rule run (S6). */
   manageFindings: 'org.finding.manage',
+  /** Import the structure from a file (S7). */
+  importStructure: 'org.structure.import',
+  /** Register a company's org profile and unit levels (spec §2: the system administrator). */
+  manageCompany: 'org.company.manage',
 } as const;
 
 /**
@@ -13,6 +17,22 @@ export const OrgPermissions = {
  */
 export const OrgDataOwnerRole: RoleDefinition = {
   name: 'org_data_owner',
-  permissions: [OrgPermissions.read, OrgPermissions.manageFindings, 'people.person.read'],
+  permissions: [
+    OrgPermissions.read,
+    OrgPermissions.manageFindings,
+    OrgPermissions.importStructure,
+    'people.person.read',
+  ],
+  allowedScopes: ['customer', 'company'],
+};
+
+/**
+ * Approves structure changes and re-imports (spec §2 تأییدکنندهٔ تغییر ساختار; product-owner decision
+ * 2026-11-25). Holding the role is what lets a person act on an approval step that names it; it
+ * reads the structure it decides on. Fanap default: Group HR.
+ */
+export const OrgChangeApproverRole: RoleDefinition = {
+  name: 'org_change_approver',
+  permissions: [OrgPermissions.read],
   allowedScopes: ['customer', 'company'],
 };

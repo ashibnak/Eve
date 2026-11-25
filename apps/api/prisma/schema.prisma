@@ -431,6 +431,7 @@ model OrgCompany {
   assignments      OrgAssignment[]
   ruleRuns         OrgRuleRun[]
   findings         OrgFinding[]
+  pendingEvents    OrgPendingEvent[]
 
   @@map("org_company")
 }
@@ -628,4 +629,23 @@ model OrgFinding {
 
   @@index([companyId, status, severity], map: "org_finding_inbox_idx")
   @@map("org_finding")
+}
+
+model OrgPendingEvent {
+  id            String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId     String     @map("company_id") @db.Uuid
+  company       OrgCompany @relation(fields: [companyId], references: [companyId], onDelete: NoAction, onUpdate: NoAction)
+  type          String
+  schemaVersion Int        @map("schema_version")
+  payload       Json
+  effectiveAt   DateTime   @map("effective_at") @db.Date
+  correlationId String     @map("correlation_id") @db.Uuid
+  causationId   String?    @map("causation_id") @db.Uuid
+  actor         Json
+  source        String
+  createdAt     DateTime   @map("created_at") @db.Timestamptz(6)
+  publishedAt   DateTime?  @map("published_at") @db.Timestamptz(6)
+  eventId       String?    @map("event_id") @db.Uuid
+
+  @@map("org_pending_event")
 }

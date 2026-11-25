@@ -187,6 +187,15 @@ export class UserService {
     });
   }
 
+  /** Whether an active login account exists (for modules that link accounts to their data). */
+  async exists(userId: string): Promise<boolean> {
+    const user = await this.prisma.authUser.findUnique({
+      where: { id: userId },
+      select: { status: true },
+    });
+    return user?.status === 'active';
+  }
+
   list(): Promise<UserSummary[]> {
     return this.prisma.authUser.findMany({
       orderBy: { username: 'asc' },

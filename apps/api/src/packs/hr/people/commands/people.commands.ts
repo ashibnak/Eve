@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { UserService } from '../../../../platform/auth/user.service';
 import type { peopleV1, platformV1 } from '@eve/contracts';
 import { TxRunner } from '../../../../platform/context/tx-runner';
 import { ScopedDb } from '../../../../platform/scope/scoped-db';
@@ -13,6 +14,7 @@ export class PeopleCommands {
     private readonly db: ScopedDb,
     private readonly txRunner: TxRunner,
     private readonly writer: PeopleWriter,
+    private readonly users: UserService,
   ) {}
 
   /** Changes a person's employment status from `validFrom` on (past dates allowed, audited). */
@@ -36,6 +38,14 @@ export class PeopleCommands {
   ): Promise<boolean> {
     const person = await this.visible(personId);
     return this.txRunner.run((tx) => this.writer.correct(tx, person, changes, reason));
+  }
+
+  /** Links a login account to this person in the person's company (people data owner). */
+  async linkUser(personId: string, userId: string, reason: string): Promise<boolean> {
+    const person = await this.visible(personId);
+    if (!(await this.users.exists(userId)))
+      throw new BadRequestException('Unknown or inactive user');
+    return this.txRunner.run((tx) => this.writer.linkUser(tx, person, userId, reason));
   }
 
   /** The person if the caller may change it (write permission over its company), else 404. */

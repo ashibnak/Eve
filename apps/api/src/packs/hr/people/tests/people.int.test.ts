@@ -315,7 +315,7 @@ describe('people core (S4 done-when: both companies import cleanly)', () => {
     }
   });
 
-  it('keeps each data owner to their company; admins and auditors see no people', async () => {
+  it('keeps each data owner to their company; admins see no people, auditors read them', async () => {
     const bPerson = (
       await asUser(
         () => people.service.findByPersonnelCode(companies.b.id, companies.b.file[3]!.code),
@@ -343,9 +343,67 @@ describe('people core (S4 done-when: both companies import cleanly)', () => {
     await expect(
       asUser(() => people.service.listActive(companies.a.id), as(admin)),
     ).rejects.toBeInstanceOf(ForbiddenException);
+    // Decision 2026-11-25: auditors read people (read only).
+    expect((await asUser(() => people.service.getPerson(bPerson.id), as(auditor))).result?.id).toBe(
+      bPerson.id,
+    );
     await expect(
-      asUser(() => people.service.getPerson(bPerson.id), as(auditor)),
+      asUser(
+        () =>
+          people.commands.changeStatus(
+            bPerson.id,
+            'suspended',
+            '2027-03-01' as platformV1.BusinessDate,
+            'x',
+          ),
+        as(auditor),
+      ),
     ).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it('links a login to a person: one per person and company, ended not deleted', async () => {
+    const owner = as(companies.a.owner);
+    const [first, second] = companies.a.file;
+    const p1 = (
+      await asUser(() => people.service.findByPersonnelCode(companies.a.id, first!.code), owner)
+    ).result!;
+    const p2 = (
+      await asUser(() => people.service.findByPersonnelCode(companies.a.id, second!.code), owner)
+    ).result!;
+    const login = await person('auditor', companies.a.id);
+
+    expect(
+      (await asUser(() => people.commands.linkUser(p1.id, login, 'own account'), owner)).result,
+    ).toBe(true);
+    expect(
+      (await asUser(() => people.commands.linkUser(p1.id, login, 'again'), owner)).result,
+    ).toBe(false);
+    expect((await asUser(() => people.service.myPersonId(companies.a.id), as(login))).result).toBe(
+      p1.id,
+    );
+    expect(
+      (await asUser(() => people.service.myPersonId(companies.b.id), as(login))).result,
+    ).toBeNull();
+
+    // Re-linking the login to someone else ends the first link.
+    await asUser(() => people.commands.linkUser(p2.id, login, 'wrong person before'), owner);
+    expect((await asUser(() => people.service.myPersonId(companies.a.id), as(login))).result).toBe(
+      p2.id,
+    );
+    const links = await platform.prisma.peopleUserLink.findMany({
+      where: { userId: login },
+      orderBy: { linkedAt: 'asc' },
+    });
+    expect(links.map((l) => [l.personId, l.endedAt === null])).toEqual([
+      [p1.id, false],
+      [p2.id, true],
+    ]);
+    await expect(
+      asUser(
+        () => people.commands.linkUser(p1.id, '00000000-0000-4000-8000-000000000000', 'x'),
+        owner,
+      ),
+    ).rejects.toThrow('Unknown or inactive user');
   });
 
   it('corrects identity fields with an audit row, and reports a no-op', async () => {

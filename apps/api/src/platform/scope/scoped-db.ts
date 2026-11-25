@@ -24,4 +24,17 @@ export class ScopedDb {
   async forCompany(permission: string, companyId: string): Promise<ScopedPrisma> {
     return scopedPrisma(this.prisma, await this.access.requireFor(permission, companyId));
   }
+
+  /**
+   * A read client without scope filtering, for a module that has itself decided the caller may
+   * read exactly the rows it is about to read (relationship-based access: a team lead reading
+   * their team, a user reading their own link). Never use it to read more than those rows.
+   */
+  afterOwnCheck(): ScopedPrisma {
+    return scopedPrisma(this.prisma, {
+      customerWide: true,
+      companyIds: new Set(),
+      unitIds: new Set(),
+    });
+  }
 }

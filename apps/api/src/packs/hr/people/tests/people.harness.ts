@@ -9,17 +9,19 @@ import { PeopleCommands } from '../commands/people.commands';
 import { PeopleWriter } from '../commands/people-writer';
 import { PersonCreated, PersonStatusChanged } from '../events/people.events';
 import { personImportTarget } from '../import/person.import-target';
-import { PeopleDataOwnerRole } from '../people.permissions';
+import { PeopleDataOwnerRole, PeoplePermissions } from '../people.permissions';
 import { PeopleService } from '../service/people.service';
 
 export function createPeople(platform: Platform) {
   registerScopedModel('PeoplePerson', { companyField: 'companyId' });
   registerScopedModel('PeopleEmploymentStatus', { companyField: 'companyId' });
+  registerScopedModel('PeopleUserLink', { companyField: 'companyId' });
   if (!platform.roles.has(PeopleDataOwnerRole.name)) platform.roles.register(PeopleDataOwnerRole);
+  platform.roles.extend('auditor', [PeoplePermissions.read]);
   platform.eventRegistry.register(PersonCreated, PersonStatusChanged);
   const writer = new PeopleWriter(platform.audit, platform.events, platform.clock);
   const service = new PeopleService(platform.scopedDb, platform.config, platform.clock);
-  const commands = new PeopleCommands(platform.scopedDb, platform.txRunner, writer);
+  const commands = new PeopleCommands(platform.scopedDb, platform.txRunner, writer, platform.users);
   platform.imports.registerTarget(personImportTarget({ db: platform.scopedDb, writer }));
   return { writer, service, commands };
 }

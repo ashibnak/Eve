@@ -28,6 +28,7 @@ const StatusBody = z.object({
   validFrom: platformV1.BusinessDateSchema,
   reason: z.string().trim().min(1).max(1000),
 });
+const LinkBody = z.object({ userId: z.uuid(), reason: z.string().trim().min(1).max(1000) });
 const Name = z.string().trim().min(1).max(100);
 const CorrectBody = z.object({
   changes: z
@@ -83,5 +84,12 @@ export class PeopleController {
   async correct(@Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
     const { changes, reason } = parseInput(CorrectBody, body);
     return { changed: await this.commands.correct(id, changes, reason) };
+  }
+
+  /** Links a login account to this person (one login per person per company). */
+  @Post(':id/user-link')
+  async linkUser(@Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    const { userId, reason } = parseInput(LinkBody, body);
+    return { changed: await this.commands.linkUser(id, userId, reason) };
   }
 }

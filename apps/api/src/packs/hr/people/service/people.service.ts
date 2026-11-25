@@ -3,6 +3,7 @@ import { peopleV1, type platformV1 } from '@eve/contracts';
 import { ConfigService } from '../../../../platform/config/config.service';
 import { TimeZoneSetting } from '../../../../platform/config/settings';
 import { Clock } from '../../../../platform/context/clock';
+import { currentActor } from '../../../../platform/context/request-context';
 import { businessDateIn } from '../../../../platform/dates/dates';
 import { ScopedDb } from '../../../../platform/scope/scoped-db';
 import { type ScopedPrisma } from '../../../../platform/scope/scoped-prisma';
@@ -86,6 +87,19 @@ export class PeopleService implements peopleV1.PeopleReadService {
       ? views.filter((v) => peopleV1.isActiveStatus(v.status))
       : views;
     return filtered.slice(0, options.limit ?? 1000);
+  }
+
+  /** The person the signed-in user is in a company (their link), or null. Reading your own link needs no permission. */
+  async myPersonId(companyId: string): Promise<string | null> {
+    const actor = currentActor();
+    const userId =
+      actor?.kind === 'user' ? actor.id : actor?.kind === 'agent' ? actor.onBehalfOf : null;
+    if (!userId) return null;
+    const link = await this.db.afterOwnCheck().peopleUserLink.findFirst({
+      where: { userId, companyId, endedAt: null },
+      select: { personId: true },
+    });
+    return link?.personId ?? null;
   }
 
   private async statusesOn(

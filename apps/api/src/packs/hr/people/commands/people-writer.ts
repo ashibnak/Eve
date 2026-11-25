@@ -179,4 +179,39 @@ export class PeopleWriter {
     });
     return true;
   }
+  /**
+   * Links a login to this person for the person's company, ending any earlier link of either
+   * (one login per person per company). Returns false if exactly this link already exists.
+   */
+  async linkUser(
+    tx: Tx,
+    person: { id: string; companyId: string; personnelCode: string },
+    userId: string,
+    reason: string,
+  ): Promise<boolean> {
+    const current = await tx.peopleUserLink.findMany({
+      where: {
+        endedAt: null,
+        OR: [{ personId: person.id }, { userId, companyId: person.companyId }],
+      },
+    });
+    if (current.some((l) => l.personId === person.id && l.userId === userId)) return false;
+    const now = this.clock.now();
+    for (const link of current) {
+      await tx.peopleUserLink.update({ where: { id: link.id }, data: { endedAt: now } });
+    }
+    await tx.peopleUserLink.create({
+      data: { userId, companyId: person.companyId, personId: person.id, linkedAt: now },
+    });
+    await this.audit.record(tx, {
+      action: 'people.person.link_user',
+      entityType: 'people_person',
+      entityId: person.id,
+      companyId: person.companyId,
+      before: { links: current.map((l) => ({ userId: l.userId, personId: l.personId })) },
+      after: { userId, personId: person.id },
+      reason,
+    });
+    return true;
+  }
 }

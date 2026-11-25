@@ -9,7 +9,7 @@ import { PeopleWriter } from './commands/people-writer';
 import { PersonCreated, PersonStatusChanged } from './events/people.events';
 import { personImportTarget } from './import/person.import-target';
 import { PeopleController } from './people.controller';
-import { PeopleDataOwnerRole } from './people.permissions';
+import { PeopleDataOwnerRole, PeoplePermissions } from './people.permissions';
 import { PeopleService } from './service/people.service';
 
 /** people core (ADR-008): the person register org refers to. Owns the people_* tables. */
@@ -30,7 +30,10 @@ export class PeopleModule implements OnModuleInit {
   onModuleInit(): void {
     registerScopedModel('PeoplePerson', { companyField: 'companyId' });
     registerScopedModel('PeopleEmploymentStatus', { companyField: 'companyId' });
+    registerScopedModel('PeopleUserLink', { companyField: 'companyId' });
     this.roles.register(PeopleDataOwnerRole);
+    // Product-owner decision (2026-11-25): auditors read people.
+    this.roles.extend('auditor', [PeoplePermissions.read]);
     this.events.register(PersonCreated, PersonStatusChanged);
     this.imports.registerTarget(personImportTarget({ db: this.db, writer: this.writer }));
   }

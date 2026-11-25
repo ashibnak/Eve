@@ -31,6 +31,7 @@ model CoreCompany {
   importMappings  ConnectorsMapping[]
   people          PeoplePerson[]
   peopleStatuses  PeopleEmploymentStatus[]
+  userLinks       PeopleUserLink[]
 
   @@map("core_company")
 }
@@ -132,6 +133,7 @@ model AuthUser {
   approvalActions ApprovalsAction[]
   imports         ConnectorsImport[]
   importMappings  ConnectorsMapping[]
+  peopleUserLinks PeopleUserLink[]
 
   @@map("auth_user")
 }
@@ -369,7 +371,8 @@ model PeoplePerson {
   createdAt      DateTime    @map("created_at") @db.Timestamptz(6)
   updatedAt      DateTime    @map("updated_at") @db.Timestamptz(6)
 
-  statuses PeopleEmploymentStatus[]
+  statuses  PeopleEmploymentStatus[]
+  userLinks PeopleUserLink[]
 
   @@unique([companyId, personnelCode], map: "people_person_code_uq")
   @@map("people_person")
@@ -388,4 +391,18 @@ model PeopleEmploymentStatus {
 
   @@index([companyId, validFrom], map: "people_employment_status_company_idx")
   @@map("people_employment_status")
+}
+
+model PeopleUserLink {
+  id        String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String       @map("user_id") @db.Uuid
+  user      AuthUser     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  companyId String       @map("company_id") @db.Uuid
+  company   CoreCompany  @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  personId  String       @map("person_id") @db.Uuid
+  person    PeoplePerson @relation(fields: [personId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  linkedAt  DateTime     @map("linked_at") @db.Timestamptz(6)
+  endedAt   DateTime?    @map("ended_at") @db.Timestamptz(6)
+
+  @@map("people_user_link")
 }

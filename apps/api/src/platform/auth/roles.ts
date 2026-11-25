@@ -62,6 +62,8 @@ export const RuleApproverRole: RoleDefinition = {
 @Injectable()
 export class RoleRegistry {
   private readonly roles = new Map<string, RoleDefinition>();
+  /** Permissions packs added to roles they do not own (e.g. people.person.read for auditor). */
+  private readonly extensions = new Map<string, Set<string>>();
 
   constructor() {
     this.register(SystemAdminRole, AuditorRole, RuleApproverRole);
@@ -86,10 +88,24 @@ export class RoleRegistry {
     return this.roles.has(name);
   }
 
+  /**
+   * Adds a pack's permissions to an existing role, e.g. people lets the platform's auditor read
+   * people. Idempotent. The role definition itself stays as its owner wrote it.
+   */
+  extend(roleName: string, permissions: readonly string[]): void {
+    this.get(roleName);
+    const extra = this.extensions.get(roleName) ?? new Set<string>();
+    for (const permission of permissions) extra.add(permission);
+    this.extensions.set(roleName, extra);
+  }
+
+  /** Every permission a role carries: its own and those packs added. */
+  permissionsOf(roleName: string): string[] {
+    return [...this.get(roleName).permissions, ...(this.extensions.get(roleName) ?? [])];
+  }
+
   /** Role names that carry a permission. */
   rolesWith(permission: string): string[] {
-    return [...this.roles.values()]
-      .filter((r) => r.permissions.includes(permission))
-      .map((r) => r.name);
+    return [...this.roles.keys()].filter((name) => this.permissionsOf(name).includes(permission));
   }
 }

@@ -99,6 +99,23 @@ export class AccessService {
     });
   }
 
+  /** Active users holding `role` over a company (customer-wide grants included). */
+  async holdersOf(role: string, companyId: string | null): Promise<string[]> {
+    const grants = await this.prisma.authRoleAssignment.findMany({
+      where: {
+        role,
+        revokedAt: null,
+        user: { status: 'active' },
+        OR: [
+          { scopeKind: 'customer' },
+          ...(companyId ? [{ scopeKind: 'company', companyId }] : []),
+        ],
+      },
+      select: { userId: true },
+    });
+    return [...new Set(grants.map((g) => g.userId))];
+  }
+
   /** Whether a person holds `role` over a company (customer-wide when `companyId` is null). */
   async holdsRole(
     actor: platformV1.Actor,

@@ -10,6 +10,12 @@ import {
   uniqueUsername,
 } from '../../../test/platform';
 import { businessDateIn } from '../dates/dates';
+
+function addDays(day: platformV1.BusinessDate, days: number): platformV1.BusinessDate {
+  const d = new Date(`${day}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10) as platformV1.BusinessDate;
+}
 import { sampleThresholdTemplates } from '../rules/sample/sample-threshold.template';
 
 const TYPE = 'platform.rule_params.change';
@@ -32,13 +38,17 @@ describe('approvals: chains, four-eyes, return/resubmit, concurrency', () => {
     validFrom,
   });
 
+  let phoneSeq = 1_000_000;
+  const phoneOf = new Map<string, string>();
+
   async function person(grants: { role: string; companyId?: string }[]): Promise<string> {
     const { result } = await asUser(() =>
       platform.users.create({
         username: uniqueUsername('appr'),
         password: 'a-long-enough-password',
         contactChannel: 'stub',
-        contactAddress: '09120000000',
+        // A distinct number per person, so notifications can be told apart.
+        contactAddress: `0912${String(++phoneSeq).padStart(7, '0')}`,
         reason: 'approvals test',
       }),
     );
@@ -54,6 +64,7 @@ describe('approvals: chains, four-eyes, return/resubmit, concurrency', () => {
         }),
       );
     }
+    phoneOf.set(result.id, `0912${String(phoneSeq).padStart(7, '0')}`);
     return result.id;
   }
 
@@ -273,25 +284,71 @@ describe('approvals: chains, four-eyes, return/resubmit, concurrency', () => {
     ).rejects.toBeInstanceOf(ConflictException);
   });
 
-  it('refuses to apply once the effective date has passed while waiting', async () => {
+  it('expires a request whose date passed while waiting, instead of applying it', async () => {
     const request = await submit(14);
     platform.clock.advance(2 * 86_400_000);
     try {
       await expect(
         asUser(() => platform.approvals.approve(request.id, null), as(people.approver1)),
-      ).rejects.toThrow('from today');
+      ).rejects.toThrow('expired');
       const row = await platform.prisma.approvalsRequest.findUniqueOrThrow({
         where: { id: request.id },
       });
-      expect(row.status).toBe('pending'); // nothing applied, nothing recorded
+      expect(row.status).toBe('expired');
       expect(
-        await platform.prisma.approvalsAction.count({
-          where: { requestId: request.id, action: 'approve' },
-        }),
+        await platform.prisma.rulesParamVersion.count({ where: { approvalRequestId: request.id } }),
       ).toBe(0);
+      const actions = await platform.prisma.approvalsAction.findMany({
+        where: { requestId: request.id },
+        orderBy: { at: 'asc' },
+      });
+      expect(actions.map((a) => [a.action, a.actorId === null])).toEqual([
+        ['submit', false],
+        ['expire', true],
+      ]);
     } finally {
       platform.clock.reset();
     }
+  });
+
+  it('expires waiting requests nightly and informs requester, admins and the next approvers', async () => {
+    const request = await submit(16);
+    const other = await submit(17, null, addDays(today, 30)); // not due yet
+    platform.clock.advance(2 * 86_400_000);
+    try {
+      expect(await platform.approvals.expireDue()).toBeGreaterThanOrEqual(1);
+    } finally {
+      platform.clock.reset();
+    }
+    expect(
+      (await platform.prisma.approvalsRequest.findUniqueOrThrow({ where: { id: request.id } }))
+        .status,
+    ).toBe('expired');
+    expect(
+      (await platform.prisma.approvalsRequest.findUniqueOrThrow({ where: { id: other.id } }))
+        .status,
+    ).toBe('pending');
+
+    const told = (userId: string) => platform.stubChannel.lastTo(phoneOf.get(userId) as string);
+    for (const userId of [people.admin, people.approver1, people.approver2]) {
+      expect(told(userId)).toMatchObject({
+        template: 'approvals.expired',
+        params: { requestId: expect.any(String) },
+      });
+    }
+    expect(told(people.auditor)?.template).not.toBe('approvals.expired');
+
+    const audit = await platform.prisma.auditLog.findFirstOrThrow({
+      where: { entityId: request.id, action: 'platform.approval.expire' },
+    });
+    expect(audit.actor).toEqual({ kind: 'system', id: 'approvals:expiry' });
+    const event = await platform.prisma.eventsOutbox.findFirstOrThrow({
+      where: {
+        type: 'platform.approval.decided',
+        payload: { path: ['request_id'], equals: request.id },
+      },
+    });
+    expect(event.payload).toMatchObject({ outcome: 'expired' });
   });
 
   it('requires a note to reject or return', async () => {

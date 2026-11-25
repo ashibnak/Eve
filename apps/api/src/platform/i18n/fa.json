@@ -1,3 +1,4 @@
 {
-  "auth.otp": "کد ورود شما به HR Ops: {code}. این کد تا {minutes} دقیقه معتبر است."
+  "auth.otp": "کد ورود شما به HR Ops: {code}. این کد تا {minutes} دقیقه معتبر است.",
+  "approvals.expired": "درخواست «{requestType}» با شناسهٔ {requestId} منقضی شد: تاریخ اثر آن ({date}) گذشته است."
 }

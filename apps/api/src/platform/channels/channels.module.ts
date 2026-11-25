@@ -1,6 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 import { ChannelRegistry } from './channel';
 import { StubChannel } from './stub.channel';
+import { UserNotifier } from './user-notifier';
 
 @Global()
 @Module({
@@ -13,7 +14,8 @@ import { StubChannel } from './stub.channel';
         return registry;
       },
     },
+    UserNotifier,
   ],
-  exports: [ChannelRegistry],
+  exports: [ChannelRegistry, UserNotifier],
 })
 export class ChannelsModule {}

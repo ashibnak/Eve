@@ -278,8 +278,8 @@ model ApprovalsAction {
   revision  Int
   step      Int
   action    String
-  actorId   String           @map("actor_id") @db.Uuid
-  actor     AuthUser         @relation(fields: [actorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  actorId   String?          @map("actor_id") @db.Uuid
+  actor     AuthUser?        @relation(fields: [actorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   note      String?
   payload   Json?
   at        DateTime         @db.Timestamptz(6)

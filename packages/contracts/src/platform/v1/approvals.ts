@@ -2,7 +2,9 @@ import { z } from 'zod';
 
 /**
  * `pending → approved | rejected | returned`; `returned → pending` on resubmission (a new
- * revision, back to the first step); `pending | returned → cancelled` by the requester.
+ * revision, back to the first step); `pending | returned → cancelled` by the requester;
+ * `pending | returned → expired` when the request's effective date passes while it waits (S2
+ * follow-up, product-owner decision 2026-11-25).
  */
 export const ApprovalStatusSchema = z.enum([
   'pending',
@@ -10,6 +12,7 @@ export const ApprovalStatusSchema = z.enum([
   'rejected',
   'returned',
   'cancelled',
+  'expired',
 ]);
 export type ApprovalStatus = z.infer<typeof ApprovalStatusSchema>;
 
@@ -20,6 +23,7 @@ export const ApprovalActionKindSchema = z.enum([
   'return',
   'resubmit',
   'cancel',
+  'expire',
 ]);
 export type ApprovalActionKind = z.infer<typeof ApprovalActionKindSchema>;
 
@@ -36,7 +40,7 @@ export const ApprovalRequestedPayload = z.object({
 export const ApprovalDecidedPayload = z.object({
   request_id: z.uuid(),
   request_type: z.string(),
-  outcome: z.enum(['approved', 'rejected', 'cancelled']),
+  outcome: z.enum(['approved', 'rejected', 'cancelled', 'expired']),
 });
 
 /** Payload of `platform.approval.returned@1`: sent back to the requester for changes. */

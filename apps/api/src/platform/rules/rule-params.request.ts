@@ -54,6 +54,8 @@ export function ruleParamsChangeType(deps: {
     type: RULE_PARAMS_CHANGE,
     payload: RuleParamsChangePayload,
     defaultChain: ['rule_approver'],
+    // A change effective from day D can still be applied on D, not after it (decision S2/S5).
+    expiresOn: (payload) => payload.validFrom,
     check(payload, { today }) {
       const parsed = templateOf(payload).params.safeParse(payload.params);
       if (!parsed.success) {

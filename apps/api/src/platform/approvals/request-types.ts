@@ -36,6 +36,11 @@ export interface ApprovalRequestType<TPayload extends z.ZodType = z.ZodType> {
     context: { companyId: string | null; today: platformV1.BusinessDate },
   ): Promise<void> | void;
   apply(tx: Tx, request: ApprovalContext<z.output<TPayload>>): Promise<void>;
+  /**
+   * The last day the request can still be applied (e.g. a parameter change's effective date).
+   * Once today is past it, a waiting request expires and its people are informed.
+   */
+  expiresOn?(payload: z.output<TPayload>): platformV1.BusinessDate | null;
 }
 
 export function defineApprovalRequestType<TPayload extends z.ZodType>(

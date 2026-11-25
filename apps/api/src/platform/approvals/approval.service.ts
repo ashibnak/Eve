@@ -13,7 +13,9 @@ import { RoleRegistry } from '../auth/roles';
 import { ConfigService } from '../config/config.service';
 import { TimeZoneSetting } from '../config/settings';
 import { Clock } from '../context/clock';
-import { currentActor, currentContext } from '../context/request-context';
+import { currentActor, currentContext, runAs } from '../context/request-context';
+import { UserNotifier } from '../channels/user-notifier';
+import { SystemAdminRole } from '../auth/roles';
 import { LONG_TX, type Tx, TxRunner } from '../context/tx-runner';
 import { businessDateIn } from '../dates/dates';
 import { PrismaService } from '../db/prisma.service';
@@ -87,6 +89,7 @@ export class ApprovalService {
     private readonly types: ApprovalTypeRegistry,
     private readonly roles: RoleRegistry,
     private readonly rules: RuleRegistry,
+    private readonly notifier: UserNotifier,
     eventRegistry: EventRegistry,
   ) {
     eventRegistry.register(ApprovalRequested, ApprovalDecided, ApprovalReturned);
@@ -295,6 +298,88 @@ export class ApprovalService {
     };
   }
 
+  /**
+   * Nightly: expires waiting requests whose effective date has passed (S2 follow-up) and informs
+   * the requester, the system administrators and whoever holds the waiting step's role.
+   */
+  async expireDue(): Promise<number> {
+    const today = await this.today();
+    const waiting = await this.prisma.approvalsRequest.findMany({
+      where: { status: { in: ['pending', 'returned'] } },
+      select: { id: true },
+    });
+    let expired = 0;
+    for (const { id } of waiting) {
+      if (await this.expireIfDue(id, today)) expired += 1;
+    }
+    return expired;
+  }
+
+  /** Expires one request if its type says its last applicable day is before today. */
+  private async expireIfDue(id: string, today: platformV1.BusinessDate): Promise<boolean> {
+    const row = await this.prisma.approvalsRequest.findUnique({ where: { id } });
+    if (!row || (row.status !== 'pending' && row.status !== 'returned')) return false;
+    const definition = this.types.get(row.type);
+    if (!definition.expiresOn) return false;
+    const parsed = definition.payload.safeParse(row.payload);
+    const lastDay = parsed.success ? definition.expiresOn(parsed.data) : null;
+    if (!lastDay || lastDay >= today) return false;
+
+    const done = await runAs({ kind: 'system', id: 'approvals:expiry' }, () =>
+      this.txRunner.run(async (tx) => {
+        const locked = await this.lock(tx, id);
+        if (locked.status !== 'pending' && locked.status !== 'returned') return false;
+        const now = this.clock.now();
+        await tx.approvalsRequest.update({
+          where: { id },
+          data: { status: 'expired', updatedAt: now, decidedAt: now },
+        });
+        await this.recordAction(
+          tx,
+          id,
+          locked.revision,
+          locked.current_step,
+          'expire',
+          null,
+          `effective date ${lastDay} passed`,
+          null,
+        );
+        await this.audit.record(tx, {
+          action: 'platform.approval.expire',
+          entityType: 'approvals_request',
+          entityId: id,
+          companyId: locked.company_id,
+          before: { status: locked.status, step: locked.current_step },
+          after: { status: 'expired', lastApplicableDay: lastDay },
+          reason: `effective date ${lastDay} passed while waiting`,
+        });
+        await this.events.publish(tx, {
+          event: ApprovalDecided,
+          payload: { request_id: id, request_type: locked.type, outcome: 'expired' },
+          effectiveAt: today,
+          companyId: locked.company_id,
+        });
+        return true;
+      }),
+    );
+    if (!done) return false;
+
+    // Inform the requester, the system administrators and the people of the waiting step.
+    const chain = row.chain as string[];
+    const nextRole = row.status === 'pending' ? chain[row.currentStep] : undefined;
+    const recipients = [
+      row.requestedBy,
+      ...(await this.access.holdersOf(SystemAdminRole.name, null)),
+      ...(nextRole ? await this.access.holdersOf(nextRole, row.companyId) : []),
+    ];
+    await this.notifier.notify(recipients, 'approvals.expired', {
+      requestType: row.type,
+      requestId: id,
+      date: lastDay,
+    });
+    return true;
+  }
+
   private async decide(
     id: string,
     decision: Decision,
@@ -304,6 +389,9 @@ export class ApprovalService {
     if (decision !== 'approve' && !note?.trim())
       throw new BadRequestException('A note is required');
     const today = await this.today();
+    if (await this.expireIfDue(id, today)) {
+      throw new ConflictException('The request expired: its effective date has passed');
+    }
     const grants = await this.access.grantsOf({ kind: 'user', id: actor });
 
     return this.txRunner.run(async (tx) => {
@@ -412,7 +500,7 @@ export class ApprovalService {
     revision: number,
     step: number,
     action: platformV1.ApprovalActionKind,
-    actorId: string,
+    actorId: string | null,
     note: string | null,
     payload: unknown,
   ): Promise<void> {

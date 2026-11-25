@@ -1,3 +1,4 @@
 {
-  "auth.otp": "Your HR Ops sign-in code: {code}. It is valid for {minutes} minutes."
+  "auth.otp": "Your HR Ops sign-in code: {code}. It is valid for {minutes} minutes.",
+  "approvals.expired": "Request \"{requestType}\" ({requestId}) expired: its effective date ({date}) has passed."
 }

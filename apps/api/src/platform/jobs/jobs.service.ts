@@ -14,10 +14,6 @@ export function txDatabase(tx: Tx) {
   };
 }
 
-/**
- * Background jobs and event delivery on PostgreSQL (pg-boss; no Redis, CLAUDE.md rule 1).
- * Server and worker share one image; the worker side starts with the application.
- */
 /** A recurring job: a pg-boss queue with a cron schedule (UTC) and its handler. */
 export interface ScheduledJob {
   /** Queue name, e.g. `platform.connectors.retention`. */
@@ -26,6 +22,10 @@ export interface ScheduledJob {
   handler: () => Promise<unknown>;
 }
 
+/**
+ * Background jobs and event delivery on PostgreSQL (pg-boss; no Redis, CLAUDE.md rule 1).
+ * Server and worker share one image; the worker side starts with the application.
+ */
 @Injectable()
 export class JobsService implements OnApplicationShutdown {
   private readonly logger = new Logger(JobsService.name);

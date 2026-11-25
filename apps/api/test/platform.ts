@@ -16,6 +16,7 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { StubChannel } from '../src/platform/channels/stub.channel';
+import { UserNotifier } from '../src/platform/channels/user-notifier';
 import { CompanyService } from '../src/platform/company/company.service';
 import { ConfigService } from '../src/platform/config/config.service';
 import { SettingsRegistry, TimeZoneSetting } from '../src/platform/config/settings';
@@ -107,6 +108,7 @@ export function createPlatform(db: TestDatabase) {
   const ruleParams = new ParamVersionsService(prisma, clock);
   const ruleRuntime = new RuleRuntime(rules, ruleParams, clock);
   const approvalTypes = new ApprovalTypeRegistry(settings);
+  const notifier = new UserNotifier(prisma, channels);
   const approvals = new ApprovalService(
     prisma,
     txRunner,
@@ -118,6 +120,7 @@ export function createPlatform(db: TestDatabase) {
     approvalTypes,
     roles,
     rules,
+    notifier,
     eventRegistry,
   );
   eventRegistry.register(RuleParamsChanged);
@@ -164,6 +167,7 @@ export function createPlatform(db: TestDatabase) {
     ruleRuntime,
     approvalTypes,
     approvals,
+    notifier,
     files,
     imports,
     scopedDb,

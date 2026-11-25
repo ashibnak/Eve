@@ -17,6 +17,7 @@ import { LoggingModule } from './platform/logging/logging.module';
 import { RulesModule } from './platform/rules/rules.module';
 import { ScopeModule } from './platform/scope/scope.module';
 import { UsageModule } from './platform/usage/usage.module';
+import { OrgModule } from './packs/hr/org/org.module';
 import { PeopleModule } from './packs/hr/people/people.module';
 
 @Module({
@@ -41,6 +42,7 @@ import { PeopleModule } from './packs/hr/people/people.module';
     HealthModule,
     // HR Ops pack (ADR-001): domain modules on top of the platform.
     PeopleModule,
+    OrgModule,
   ],
 })
 export class AppModule {}

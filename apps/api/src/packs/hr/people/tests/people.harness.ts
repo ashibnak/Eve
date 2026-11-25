@@ -11,8 +11,10 @@ import { PersonCreated, PersonStatusChanged } from '../events/people.events';
 import { personImportTarget } from '../import/person.import-target';
 import { PeopleDataOwnerRole, PeoplePermissions } from '../people.permissions';
 import { PeopleService } from '../service/people.service';
+import { NoTeamAdapter } from '../adapters/no-team.adapter';
+import type { TeamPort } from '../ports/team.port';
 
-export function createPeople(platform: Platform) {
+export function createPeople(platform: Platform, team: TeamPort = new NoTeamAdapter()) {
   registerScopedModel('PeoplePerson', { companyField: 'companyId' });
   registerScopedModel('PeopleEmploymentStatus', { companyField: 'companyId' });
   registerScopedModel('PeopleUserLink', { companyField: 'companyId' });
@@ -20,7 +22,13 @@ export function createPeople(platform: Platform) {
   platform.roles.extend('auditor', [PeoplePermissions.read]);
   platform.eventRegistry.register(PersonCreated, PersonStatusChanged);
   const writer = new PeopleWriter(platform.audit, platform.events, platform.clock);
-  const service = new PeopleService(platform.scopedDb, platform.config, platform.clock);
+  const service = new PeopleService(
+    platform.scopedDb,
+    platform.config,
+    platform.clock,
+    platform.access,
+    team,
+  );
   const commands = new PeopleCommands(platform.scopedDb, platform.txRunner, writer, platform.users);
   platform.imports.registerTarget(personImportTarget({ db: platform.scopedDb, writer }));
   return { writer, service, commands };

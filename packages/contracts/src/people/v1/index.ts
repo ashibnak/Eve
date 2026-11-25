@@ -43,6 +43,11 @@ export interface AsOfOptions {
   asOf?: z.infer<typeof BusinessDateSchema>;
 }
 
+/** `getMany` options: with `companyId`, only people of that company (and a faster read). */
+export interface GetManyOptions extends AsOfOptions {
+  companyId?: string;
+}
+
 /**
  * The public read service other modules call through their own port (ADR-004). Every call is
  * limited to the scope of the user (or the agent's user) making it.
@@ -55,6 +60,23 @@ export interface PeopleReadService {
     options?: AsOfOptions,
   ): Promise<PersonView | null>;
   listActive(companyId: string, options?: AsOfOptions): Promise<PersonView[]>;
+  /** The people among `ids` the caller may read; the others are left out (added in S5). */
+  getMany(ids: readonly string[], options?: GetManyOptions): Promise<PersonView[]>;
+}
+
+/**
+ * Lookups for other modules that reveal no personal data, only ids and yes/no answers (S5): the
+ * caller's own person, whether people are employed on a date, a person's company.
+ */
+export interface PeopleDirectoryService {
+  myPersonId(companyId: string): Promise<string | null>;
+  /** Ids of people employed (active or on leave) on `asOf`; null `personIds` = whole company. */
+  employedAmong(
+    companyId: string,
+    personIds: readonly string[] | null,
+    asOf: z.infer<typeof BusinessDateSchema>,
+  ): Promise<ReadonlySet<string>>;
+  companyOf(personId: string): Promise<string | null>;
 }
 
 /** Event `people.person.created@1`. */

@@ -24,6 +24,11 @@
       "eve-source": "./src/people/v1/index.ts",
       "types": "./dist/people/v1/index.d.ts",
       "default": "./dist/people/v1/index.js"
+    },
+    "./org/v1": {
+      "eve-source": "./src/org/v1/index.ts",
+      "types": "./dist/org/v1/index.d.ts",
+      "default": "./dist/org/v1/index.js"
     }
   },
   "files": [

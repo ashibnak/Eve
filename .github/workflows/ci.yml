@@ -52,6 +52,7 @@ jobs:
       - run: corepack enable pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
+      - run: pnpm test:perf
       - run: pnpm db:check-drift
 
   e2e:

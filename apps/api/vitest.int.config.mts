@@ -11,6 +11,8 @@ export default defineConfig({
     ...inlineWorkspace,
     name: '@eve/api:int',
     include: ['src/**/*.int.test.ts'],
+    // Latency budgets run alone: vitest.perf.config.mts (`pnpm test:perf`).
+    exclude: ['src/**/*.perf.int.test.ts'],
     root: import.meta.dirname,
     globalSetup: ['test/global-setup.ts'],
     fileParallelism: false,

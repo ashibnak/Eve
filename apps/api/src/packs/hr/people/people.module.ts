@@ -11,11 +11,12 @@ import { personImportTarget } from './import/person.import-target';
 import { PeopleController } from './people.controller';
 import { PeopleDataOwnerRole, PeoplePermissions } from './people.permissions';
 import { PeopleService } from './service/people.service';
+import { orgTeamProvider } from './adapters/org-team.adapter';
 
 /** people core (ADR-008): the person register org refers to. Owns the people_* tables. */
 @Module({
   controllers: [PeopleController],
-  providers: [PeopleService, PeopleWriter, PeopleCommands],
+  providers: [PeopleService, PeopleWriter, PeopleCommands, orgTeamProvider],
   exports: [PeopleService],
 })
 export class PeopleModule implements OnModuleInit {

@@ -1,9 +1,9 @@
 import { Global, Module } from '@nestjs/common';
 import { RoleRegistry } from '../auth/roles';
 import { AccessService } from './access.service';
-import { DenyAllUnitSubtreeAdapter } from './adapters/deny-all-unit-subtree.adapter';
 import { UNIT_SUBTREE_PORT } from './ports/unit-subtree.port';
 import { ScopedDb } from './scoped-db';
+import { UnitSubtreeRegistry } from './unit-subtree.registry';
 
 @Global()
 @Module({
@@ -11,9 +11,10 @@ import { ScopedDb } from './scoped-db';
     RoleRegistry,
     AccessService,
     ScopedDb,
-    // Replaced by the org adapter in S5.
-    { provide: UNIT_SUBTREE_PORT, useClass: DenyAllUnitSubtreeAdapter },
+    UnitSubtreeRegistry,
+    // The org pack registers its adapter in the registry at start-up (S5).
+    { provide: UNIT_SUBTREE_PORT, useExisting: UnitSubtreeRegistry },
   ],
-  exports: [RoleRegistry, AccessService, ScopedDb, UNIT_SUBTREE_PORT],
+  exports: [RoleRegistry, AccessService, ScopedDb, UnitSubtreeRegistry, UNIT_SUBTREE_PORT],
 })
 export class ScopeModule {}

@@ -32,6 +32,7 @@ model CoreCompany {
   people          PeoplePerson[]
   peopleStatuses  PeopleEmploymentStatus[]
   userLinks       PeopleUserLink[]
+  orgCompany      OrgCompany?
 
   @@map("core_company")
 }
@@ -405,4 +406,168 @@ model PeopleUserLink {
   endedAt   DateTime?    @map("ended_at") @db.Timestamptz(6)
 
   @@map("people_user_link")
+}
+
+// ── packs/hr/org (exclusion constraints and the R15 trigger: migration 0016) ────────
+
+model OrgCompany {
+  companyId      String      @id @map("company_id") @db.Uuid
+  company        CoreCompany @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  nameFa         String      @map("name_fa")
+  nameEn         String?     @map("name_en")
+  codePrefix     String      @unique @map("code_prefix")
+  legalFields    Json        @default("{}") @map("legal_fields")
+  nextUnitNo     Int         @default(1) @map("next_unit_no")
+  nextPositionNo Int         @default(1) @map("next_position_no")
+  createdAt      DateTime    @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime    @map("updated_at") @db.Timestamptz(6)
+
+  levels           OrgUnitLevel[]
+  units            OrgUnit[]
+  unitVersions     OrgUnitVersion[]
+  positions        OrgPosition[]
+  positionVersions OrgPositionVersion[]
+  reportingLines   OrgReportingLine[]
+  assignments      OrgAssignment[]
+
+  @@map("org_company")
+}
+
+model OrgUnitLevel {
+  id        String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId String     @map("company_id") @db.Uuid
+  company   OrgCompany @relation(fields: [companyId], references: [companyId], onDelete: NoAction, onUpdate: NoAction)
+  nameFa    String     @map("name_fa")
+  nameEn    String?    @map("name_en")
+  rank      Int
+
+  versions OrgUnitVersion[]
+
+  @@unique([companyId, rank], map: "org_unit_level_rank_uq")
+  @@map("org_unit_level")
+}
+
+model OrgUnit {
+  id        String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId String     @map("company_id") @db.Uuid
+  company   OrgCompany @relation(fields: [companyId], references: [companyId], onDelete: NoAction, onUpdate: NoAction)
+  code      String
+  createdAt DateTime   @map("created_at") @db.Timestamptz(6)
+
+  versions         OrgUnitVersion[]     @relation("UnitVersions")
+  childVersions    OrgUnitVersion[]     @relation("UnitParent")
+  positionVersions OrgPositionVersion[]
+
+  @@unique([companyId, code], map: "org_unit_code_uq")
+  @@map("org_unit")
+}
+
+model OrgUnitVersion {
+  id                   String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  unitId               String        @map("unit_id") @db.Uuid
+  unit                 OrgUnit       @relation("UnitVersions", fields: [unitId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  companyId            String        @map("company_id") @db.Uuid
+  company              OrgCompany    @relation(fields: [companyId], references: [companyId], onDelete: NoAction, onUpdate: NoAction)
+  legacyCode           String?       @map("legacy_code")
+  nameFa               String        @map("name_fa")
+  nameEn               String?       @map("name_en")
+  levelId              String?       @map("level_id") @db.Uuid
+  level                OrgUnitLevel? @relation(fields: [levelId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  parentUnitId         String?       @map("parent_unit_id") @db.Uuid
+  parentUnit           OrgUnit?      @relation("UnitParent", fields: [parentUnitId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  costCenter           String?       @map("cost_center")
+  location             String?
+  supervisorPositionId String?       @map("supervisor_position_id") @db.Uuid
+  supervisorPosition   OrgPosition?  @relation(fields: [supervisorPositionId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "org_unit_version_supervisor_fk")
+  status               String
+  validFrom            DateTime      @map("valid_from") @db.Date
+  validTo              DateTime?     @map("valid_to") @db.Date
+  recordedAt           DateTime      @map("recorded_at") @db.Timestamptz(6)
+
+  @@index([companyId, validFrom], map: "org_unit_version_company_idx")
+  @@index([parentUnitId], map: "org_unit_version_parent_idx")
+  @@map("org_unit_version")
+}
+
+model OrgPosition {
+  id        String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId String     @map("company_id") @db.Uuid
+  company   OrgCompany @relation(fields: [companyId], references: [companyId], onDelete: NoAction, onUpdate: NoAction)
+  code      String
+  createdAt DateTime   @map("created_at") @db.Timestamptz(6)
+
+  versions        OrgPositionVersion[]
+  supervisedUnits OrgUnitVersion[]
+  linesFrom       OrgReportingLine[]   @relation("LineFrom")
+  linesTo         OrgReportingLine[]   @relation("LineTo")
+  assignments     OrgAssignment[]
+
+  @@unique([companyId, code], map: "org_position_code_uq")
+  @@map("org_position")
+}
+
+model OrgPositionVersion {
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  positionId  String      @map("position_id") @db.Uuid
+  position    OrgPosition @relation(fields: [positionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  companyId   String      @map("company_id") @db.Uuid
+  company     OrgCompany  @relation(fields: [companyId], references: [companyId], onDelete: NoAction, onUpdate: NoAction)
+  legacyCode  String?     @map("legacy_code")
+  titleFa     String      @map("title_fa")
+  titleEn     String?     @map("title_en")
+  unitId      String      @map("unit_id") @db.Uuid
+  unit        OrgUnit     @relation(fields: [unitId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  jobId       String?     @map("job_id")
+  type        String
+  fte         Decimal     @db.Decimal(4, 3)
+  supervisory Boolean
+  status      String
+  source      String
+  validFrom   DateTime    @map("valid_from") @db.Date
+  validTo     DateTime?   @map("valid_to") @db.Date
+  recordedAt  DateTime    @map("recorded_at") @db.Timestamptz(6)
+
+  @@index([companyId, validFrom], map: "org_position_version_company_idx")
+  @@index([unitId], map: "org_position_version_unit_idx")
+  @@map("org_position_version")
+}
+
+model OrgReportingLine {
+  id             String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId      String      @map("company_id") @db.Uuid
+  company        OrgCompany  @relation(fields: [companyId], references: [companyId], onDelete: NoAction, onUpdate: NoAction)
+  fromPositionId String      @map("from_position_id") @db.Uuid
+  fromPosition   OrgPosition @relation("LineFrom", fields: [fromPositionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  toPositionId   String      @map("to_position_id") @db.Uuid
+  toPosition     OrgPosition @relation("LineTo", fields: [toPositionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  kind           String
+  validFrom      DateTime    @map("valid_from") @db.Date
+  validTo        DateTime?   @map("valid_to") @db.Date
+  recordedAt     DateTime    @map("recorded_at") @db.Timestamptz(6)
+
+  @@index([toPositionId, kind], map: "org_reporting_line_to_idx")
+  @@index([companyId, kind], map: "org_reporting_line_company_idx")
+  @@map("org_reporting_line")
+}
+
+model OrgAssignment {
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId   String      @map("company_id") @db.Uuid
+  company     OrgCompany  @relation(fields: [companyId], references: [companyId], onDelete: NoAction, onUpdate: NoAction)
+  personId    String      @map("person_id") @db.Uuid
+  positionId  String      @map("position_id") @db.Uuid
+  position    OrgPosition @relation(fields: [positionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  kind        String
+  timeShare   Decimal     @map("time_share") @db.Decimal(4, 3)
+  source      String
+  actionRef   String?     @map("action_ref")
+  orderNumber String?     @map("order_number")
+  validFrom   DateTime    @map("valid_from") @db.Date
+  validTo     DateTime?   @map("valid_to") @db.Date
+  recordedAt  DateTime    @map("recorded_at") @db.Timestamptz(6)
+
+  @@index([positionId, kind], map: "org_assignment_position_idx")
+  @@index([personId], map: "org_assignment_person_idx")
+  @@index([companyId, validFrom], map: "org_assignment_company_idx")
+  @@map("org_assignment")
 }

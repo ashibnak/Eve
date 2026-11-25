@@ -40,6 +40,7 @@ test:
     TEST_DATABASE_ADMIN_URL: postgresql://postgres:postgres@postgres:5432/postgres
   script:
     - pnpm test
+    - pnpm test:perf
     - pnpm db:check-drift
 
 boundaries:

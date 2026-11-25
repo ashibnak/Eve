@@ -45,7 +45,7 @@ import { ParamVersionsService } from '../src/platform/rules/param-versions.servi
 import { RuleParamsChanged, ruleParamsChangeType } from '../src/platform/rules/rule-params.request';
 import { RuleRegistry } from '../src/platform/rules/rule-registry';
 import { RuleRuntime } from '../src/platform/rules/rule-runtime';
-import { DenyAllUnitSubtreeAdapter } from '../src/platform/scope/adapters/deny-all-unit-subtree.adapter';
+import { UnitSubtreeRegistry } from '../src/platform/scope/unit-subtree.registry';
 import type { TestDatabase } from './database';
 
 /** A clock tests can move forward, e.g. past a code's expiry or a lockout. */
@@ -102,7 +102,8 @@ export function createPlatform(db: TestDatabase) {
   const auth = new AuthService(prisma, txRunner, audit, config, channels, clock, settings);
   const users = new UserService(prisma, txRunner, audit, config, channels, roles, clock);
   const usage = new UsageService(prisma, config, jurisdictions, clock);
-  const access = new AccessService(prisma, roles, config, clock, new DenyAllUnitSubtreeAdapter());
+  const unitSubtree = new UnitSubtreeRegistry();
+  const access = new AccessService(prisma, roles, config, clock, unitSubtree);
   const scopedDb = new ScopedDb(prisma, access);
   const rules = new RuleRegistry();
   const ruleParams = new ParamVersionsService(prisma, clock);
@@ -171,6 +172,7 @@ export function createPlatform(db: TestDatabase) {
     files,
     imports,
     scopedDb,
+    unitSubtree,
     async close() {
       await jobs.onApplicationShutdown();
       relay.onApplicationShutdown();

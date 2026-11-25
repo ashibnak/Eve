@@ -1,0 +1,82 @@
+{
+  "rule": {
+    "id": "org.unit_or_proposal_idle",
+    "version": 1
+  },
+  "cases": [
+    {
+      "name": "every unit staffed; a fresh proposal",
+      "input": {
+        "asOf": "2026-11-22",
+        "units": ["u1"],
+        "positions": [
+          {
+            "id": "p1",
+            "unitId": "u1",
+            "status": "active",
+            "proposedSince": null
+          },
+          {
+            "id": "p2",
+            "unitId": "u1",
+            "status": "active",
+            "proposedSince": "2026-11-01"
+          }
+        ]
+      },
+      "params": {
+        "proposalDays": 30
+      },
+      "output": {
+        "violations": []
+      }
+    },
+    {
+      "name": "a unit with only a frozen position; a 31-day-old proposal",
+      "input": {
+        "asOf": "2026-11-22",
+        "units": ["u1", "u2"],
+        "positions": [
+          {
+            "id": "p1",
+            "unitId": "u1",
+            "status": "active",
+            "proposedSince": "2026-10-22"
+          },
+          {
+            "id": "p2",
+            "unitId": "u2",
+            "status": "frozen",
+            "proposedSince": null
+          }
+        ]
+      },
+      "params": {
+        "proposalDays": 30
+      },
+      "output": {
+        "violations": [
+          {
+            "subject": {
+              "type": "position",
+              "id": "p1"
+            },
+            "key": "proposal_unconfirmed",
+            "detail": {
+              "proposedSince": "2026-10-22",
+              "days": 31
+            }
+          },
+          {
+            "subject": {
+              "type": "unit",
+              "id": "u2"
+            },
+            "key": "no_active_position",
+            "detail": {}
+          }
+        ]
+      }
+    }
+  ]
+}

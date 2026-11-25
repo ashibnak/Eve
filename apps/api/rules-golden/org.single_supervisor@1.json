@@ -1,0 +1,87 @@
+{
+  "rule": {
+    "id": "org.single_supervisor",
+    "version": 1
+  },
+  "cases": [
+    {
+      "name": "one primary and one acting on a supervisory position; two on a staff position",
+      "input": {
+        "positions": [
+          {
+            "id": "p1",
+            "supervisory": true
+          },
+          {
+            "id": "p2",
+            "supervisory": false
+          }
+        ],
+        "assignments": [
+          {
+            "personId": "a",
+            "positionId": "p1",
+            "kind": "primary"
+          },
+          {
+            "personId": "b",
+            "positionId": "p1",
+            "kind": "acting"
+          },
+          {
+            "personId": "c",
+            "positionId": "p2",
+            "kind": "primary"
+          },
+          {
+            "personId": "d",
+            "positionId": "p2",
+            "kind": "primary"
+          }
+        ]
+      },
+      "params": {},
+      "output": {
+        "violations": []
+      }
+    },
+    {
+      "name": "two primaries on a supervisory position",
+      "input": {
+        "positions": [
+          {
+            "id": "p1",
+            "supervisory": true
+          }
+        ],
+        "assignments": [
+          {
+            "personId": "a",
+            "positionId": "p1",
+            "kind": "primary"
+          },
+          {
+            "personId": "b",
+            "positionId": "p1",
+            "kind": "primary"
+          }
+        ]
+      },
+      "params": {},
+      "output": {
+        "violations": [
+          {
+            "subject": {
+              "type": "position",
+              "id": "p1"
+            },
+            "key": "two_primary_incumbents",
+            "detail": {
+              "personIds": ["a", "b"]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

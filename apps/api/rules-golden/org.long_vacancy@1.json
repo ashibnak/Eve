@@ -1,0 +1,60 @@
+{
+  "rule": {
+    "id": "org.long_vacancy",
+    "version": 1
+  },
+  "cases": [
+    {
+      "name": "filled, and vacant for exactly 90 days",
+      "input": {
+        "asOf": "2026-11-22",
+        "positions": [
+          {
+            "id": "p1",
+            "vacantSince": null
+          },
+          {
+            "id": "p2",
+            "vacantSince": "2026-08-24"
+          }
+        ]
+      },
+      "params": {
+        "days": 90
+      },
+      "output": {
+        "violations": []
+      }
+    },
+    {
+      "name": "vacant for 91 days",
+      "input": {
+        "asOf": "2026-11-22",
+        "positions": [
+          {
+            "id": "p1",
+            "vacantSince": "2026-08-23"
+          }
+        ]
+      },
+      "params": {
+        "days": 90
+      },
+      "output": {
+        "violations": [
+          {
+            "subject": {
+              "type": "position",
+              "id": "p1"
+            },
+            "key": "long_vacancy",
+            "detail": {
+              "vacantSince": "2026-08-23",
+              "days": 91
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

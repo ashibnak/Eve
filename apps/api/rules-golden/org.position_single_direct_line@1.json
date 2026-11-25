@@ -1,0 +1,103 @@
+{
+  "rule": {
+    "id": "org.position_single_direct_line",
+    "version": 1
+  },
+  "cases": [
+    {
+      "name": "one top, one line each",
+      "input": {
+        "positions": ["p1", "p2", "p3"],
+        "directLines": [
+          {
+            "from": "p2",
+            "to": "p1"
+          },
+          {
+            "from": "p3",
+            "to": "p1"
+          }
+        ]
+      },
+      "params": {},
+      "output": {
+        "violations": []
+      }
+    },
+    {
+      "name": "two tops, two lines from one position, a cycle",
+      "input": {
+        "positions": ["p1", "p2", "p3", "p4", "p5"],
+        "directLines": [
+          {
+            "from": "p3",
+            "to": "p1"
+          },
+          {
+            "from": "p3",
+            "to": "p2"
+          },
+          {
+            "from": "p4",
+            "to": "p5"
+          },
+          {
+            "from": "p5",
+            "to": "p4"
+          }
+        ]
+      },
+      "params": {},
+      "output": {
+        "violations": [
+          {
+            "subject": {
+              "type": "position",
+              "id": "p1"
+            },
+            "key": "extra_top",
+            "detail": {
+              "tops": ["p1", "p2"]
+            }
+          },
+          {
+            "subject": {
+              "type": "position",
+              "id": "p2"
+            },
+            "key": "extra_top",
+            "detail": {
+              "tops": ["p1", "p2"]
+            }
+          },
+          {
+            "subject": {
+              "type": "position",
+              "id": "p3"
+            },
+            "key": "two_direct_lines",
+            "detail": {
+              "to": ["p1", "p2"]
+            }
+          },
+          {
+            "subject": {
+              "type": "position",
+              "id": "p4"
+            },
+            "key": "cycle",
+            "detail": {}
+          },
+          {
+            "subject": {
+              "type": "position",
+              "id": "p5"
+            },
+            "key": "cycle",
+            "detail": {}
+          }
+        ]
+      }
+    }
+  ]
+}

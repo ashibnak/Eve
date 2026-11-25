@@ -429,6 +429,8 @@ model OrgCompany {
   positionVersions OrgPositionVersion[]
   reportingLines   OrgReportingLine[]
   assignments      OrgAssignment[]
+  ruleRuns         OrgRuleRun[]
+  findings         OrgFinding[]
 
   @@map("org_company")
 }
@@ -570,4 +572,60 @@ model OrgAssignment {
   @@index([personId], map: "org_assignment_person_idx")
   @@index([companyId, validFrom], map: "org_assignment_company_idx")
   @@map("org_assignment")
+}
+
+model OrgRuleRun {
+  id         String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId  String     @map("company_id") @db.Uuid
+  company    OrgCompany @relation(fields: [companyId], references: [companyId], onDelete: NoAction, onUpdate: NoAction)
+  asOf       DateTime   @map("as_of") @db.Date
+  knownAt    DateTime   @map("known_at") @db.Timestamptz(6)
+  trigger    String
+  rules      Json
+  opened     Int
+  resolved   Int
+  stillOpen  Int        @map("still_open")
+  accepted   Int
+  startedAt  DateTime   @map("started_at") @db.Timestamptz(6)
+  finishedAt DateTime   @map("finished_at") @db.Timestamptz(6)
+
+  firstFindings OrgFinding[] @relation("FindingFirstRun")
+  lastFindings  OrgFinding[] @relation("FindingLastRun")
+
+  @@index([companyId, finishedAt(sort: Desc)], map: "org_rule_run_company_idx")
+  @@map("org_rule_run")
+}
+
+model OrgFinding {
+  id             String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId      String     @map("company_id") @db.Uuid
+  company        OrgCompany @relation(fields: [companyId], references: [companyId], onDelete: NoAction, onUpdate: NoAction)
+  code           String
+  ruleId         String     @map("rule_id")
+  ruleVersion    Int        @map("rule_version")
+  paramVersionId String?    @map("param_version_id") @db.Uuid
+  paramsHash     String     @map("params_hash")
+  severity       String
+  subjectType    String     @map("subject_type")
+  subjectId      String     @map("subject_id") @db.Uuid
+  key            String
+  fingerprint    String
+  detail         Json
+  status         String
+  firstRunId     String     @map("first_run_id") @db.Uuid
+  firstRun       OrgRuleRun @relation("FindingFirstRun", fields: [firstRunId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  lastRunId      String     @map("last_run_id") @db.Uuid
+  lastRun        OrgRuleRun @relation("FindingLastRun", fields: [lastRunId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  firstSeenAt    DateTime   @map("first_seen_at") @db.Timestamptz(6)
+  lastSeenAt     DateTime   @map("last_seen_at") @db.Timestamptz(6)
+  resolvedAt     DateTime?  @map("resolved_at") @db.Timestamptz(6)
+  acceptedBy     String?    @map("accepted_by")
+  acceptedAt     DateTime?  @map("accepted_at") @db.Timestamptz(6)
+  acceptedReason String?    @map("accepted_reason")
+  reopenedBy     String?    @map("reopened_by")
+  reopenedAt     DateTime?  @map("reopened_at") @db.Timestamptz(6)
+  reopenedReason String?    @map("reopened_reason")
+
+  @@index([companyId, status, severity], map: "org_finding_inbox_idx")
+  @@map("org_finding")
 }

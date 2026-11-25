@@ -36,7 +36,7 @@ Import files live on the `eve_files` volume (`/var/lib/eve/files`), named by the
 | `auditor`           | customer or company | read-only, including the audit log, people and the organization structure                 |
 | `rule_approver`     | customer or company | approves rule-parameter changes (cannot approve their own requests)                       |
 | `people_data_owner` | customer or company | imports and corrects the person register (HR Ops pack)                                    |
-| `org_data_owner`    | customer or company | reads the organization structure and the people in it (HR Ops pack)                       |
+| `org_data_owner`    | customer or company | reads the organization structure and its people; works the findings inbox (HR Ops pack)   |
 
 ## Database roles
 

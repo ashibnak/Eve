@@ -130,6 +130,62 @@ export const StructureDiffSchema = z.object({
   ),
 });
 
+/** Spec §5: blocking refuses a write; warning stays open until fixed or accepted; info is reported. */
+export const SeveritySchema = z.enum(['blocking', 'warning', 'info']);
+export type Severity = z.infer<typeof SeveritySchema>;
+
+export const FindingStatusSchema = z.enum(['open', 'resolved', 'accepted']);
+export type FindingStatus = z.infer<typeof FindingStatusSchema>;
+
+export const FindingSubjectSchema = z.object({
+  type: z.enum(['company', 'unit', 'position', 'person']),
+  id: z.uuid(),
+});
+
+/** One finding of a rule on one subject (added in S6). */
+export const FindingViewSchema = z.object({
+  id: z.uuid(),
+  companyId: z.uuid(),
+  /** Spec code, e.g. R5. */
+  code: z.string(),
+  rule: z.object({ id: z.string(), version: z.number().int() }),
+  paramVersionId: z.uuid().nullable(),
+  severity: SeveritySchema,
+  subject: FindingSubjectSchema,
+  key: z.string(),
+  detail: z.record(z.string(), z.unknown()),
+  status: FindingStatusSchema,
+  firstSeenAt: z.iso.datetime(),
+  lastSeenAt: z.iso.datetime(),
+  resolvedAt: z.iso.datetime().nullable(),
+  accepted: z.object({ by: z.string(), at: z.iso.datetime(), reason: z.string() }).nullable(),
+});
+export type FindingView = z.infer<typeof FindingViewSchema>;
+
+/** One run of the rules over a company on a date (nightly or on request). */
+export const RuleRunViewSchema = z.object({
+  id: z.uuid(),
+  companyId: z.uuid(),
+  asOf: BusinessDateSchema,
+  trigger: z.enum(['nightly', 'manual']),
+  rules: z.array(
+    z.object({
+      code: z.string(),
+      rule: z.object({ id: z.string(), version: z.number().int() }),
+      paramVersionId: z.uuid().nullable(),
+      paramsHash: z.string(),
+      violations: z.number().int(),
+    }),
+  ),
+  opened: z.number().int(),
+  resolved: z.number().int(),
+  stillOpen: z.number().int(),
+  accepted: z.number().int(),
+  startedAt: z.iso.datetime(),
+  finishedAt: z.iso.datetime(),
+});
+export type RuleRunView = z.infer<typeof RuleRunViewSchema>;
+
 const AsOf = { asOf: BusinessDateSchema.optional() };
 
 /** One read service = one agent tool: name, description, input and output (spec §7). */
@@ -218,6 +274,21 @@ export const OrgTools = {
     },
     input: z.object({ companyId: z.uuid(), from: BusinessDateSchema, to: BusinessDateSchema }),
     output: StructureDiffSchema,
+  }),
+  listFindings: tool({
+    name: 'org_list_findings',
+    description: {
+      fa: 'هشدارهای کنترل تناقض یک شرکت',
+      en: "A company's consistency findings",
+    },
+    input: z.object({
+      companyId: z.uuid(),
+      status: FindingStatusSchema.optional(),
+      severity: SeveritySchema.optional(),
+      code: z.string().optional(),
+      limit: z.number().int().min(1).max(5000).optional(),
+    }),
+    output: z.array(FindingViewSchema),
   }),
 } as const;
 

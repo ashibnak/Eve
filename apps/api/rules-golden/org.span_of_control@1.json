@@ -1,0 +1,139 @@
+{
+  "rule": {
+    "id": "org.span_of_control",
+    "version": 1
+  },
+  "cases": [
+    {
+      "name": "two filled reports (a vacant third does not count)",
+      "input": {
+        "positions": [
+          {
+            "id": "m",
+            "supervisory": true,
+            "filled": true
+          },
+          {
+            "id": "a",
+            "supervisory": false,
+            "filled": true
+          },
+          {
+            "id": "b",
+            "supervisory": false,
+            "filled": true
+          },
+          {
+            "id": "c",
+            "supervisory": false,
+            "filled": false
+          }
+        ],
+        "directLines": [
+          {
+            "from": "a",
+            "to": "m"
+          },
+          {
+            "from": "b",
+            "to": "m"
+          },
+          {
+            "from": "c",
+            "to": "m"
+          }
+        ]
+      },
+      "params": {
+        "minReports": 2,
+        "maxReports": 12
+      },
+      "output": {
+        "violations": []
+      }
+    },
+    {
+      "name": "one filled report, and three over a maximum of two",
+      "input": {
+        "positions": [
+          {
+            "id": "m1",
+            "supervisory": true,
+            "filled": true
+          },
+          {
+            "id": "m2",
+            "supervisory": true,
+            "filled": true
+          },
+          {
+            "id": "a",
+            "supervisory": false,
+            "filled": true
+          },
+          {
+            "id": "b",
+            "supervisory": false,
+            "filled": true
+          },
+          {
+            "id": "c",
+            "supervisory": false,
+            "filled": true
+          },
+          {
+            "id": "d",
+            "supervisory": false,
+            "filled": true
+          }
+        ],
+        "directLines": [
+          {
+            "from": "a",
+            "to": "m1"
+          },
+          {
+            "from": "b",
+            "to": "m2"
+          },
+          {
+            "from": "c",
+            "to": "m2"
+          },
+          {
+            "from": "d",
+            "to": "m2"
+          }
+        ]
+      },
+      "params": {
+        "minReports": 2,
+        "maxReports": 2
+      },
+      "output": {
+        "violations": [
+          {
+            "subject": {
+              "type": "position",
+              "id": "m1"
+            },
+            "key": "too_few_reports",
+            "detail": {
+              "reports": 1
+            }
+          },
+          {
+            "subject": {
+              "type": "position",
+              "id": "m2"
+            },
+            "key": "too_many_reports",
+            "detail": {
+              "reports": 3
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

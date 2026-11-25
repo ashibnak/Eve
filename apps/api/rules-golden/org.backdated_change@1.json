@@ -1,0 +1,49 @@
+{
+  "rule": {
+    "id": "org.backdated_change",
+    "version": 1
+  },
+  "cases": [
+    {
+      "name": "exactly 30 days back is allowed",
+      "input": {
+        "changeId": "c1",
+        "effectiveDate": "2026-10-23",
+        "today": "2026-11-22"
+      },
+      "params": {
+        "days": 30
+      },
+      "output": {
+        "violations": []
+      }
+    },
+    {
+      "name": "31 days back",
+      "input": {
+        "changeId": "c1",
+        "effectiveDate": "2026-10-22",
+        "today": "2026-11-22"
+      },
+      "params": {
+        "days": 30
+      },
+      "output": {
+        "violations": [
+          {
+            "subject": {
+              "type": "change",
+              "id": "c1"
+            },
+            "key": "backdated",
+            "detail": {
+              "effectiveDate": "2026-10-22",
+              "daysBack": 31,
+              "needs": "special_approval"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

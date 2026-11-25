@@ -54,6 +54,13 @@ export class OrgFixture {
     return id;
   }
 
+  /** Sets a unit's supervisor position (R6). */
+  supervise(unitId: string, positionId: string): void {
+    const version = this.rows.unitVersions.find((v) => v.unitId === unitId);
+    if (!version) throw new Error('Unknown unit');
+    version.supervisorPositionId = positionId;
+  }
+
   position(
     unitId: string,
     title: string,
@@ -61,6 +68,8 @@ export class OrgFixture {
       supervisory?: boolean;
       reportsTo?: string | null;
       status?: orgV1.PositionView['status'];
+      source?: orgV1.PositionView['source'];
+      titleEn?: string;
     } & Period = {},
   ): string {
     const id = randomUUID();
@@ -73,12 +82,13 @@ export class OrgFixture {
       positionId: id,
       companyId: this.companyId,
       titleFa: title,
+      titleEn: options.titleEn ?? null,
       unitId,
       type: 'approved',
       fte: '1',
       supervisory: options.supervisory ?? false,
       status: options.status ?? 'active',
-      source: 'official',
+      source: options.source ?? 'official',
       ...period(options),
     });
     if (options.reportsTo) this.line(id, options.reportsTo, 'direct', options);
@@ -197,6 +207,7 @@ export function largeCompany(fixture: OrgFixture, target = 6000, seed = 7) {
   const staff: string[] = [];
   const root = fixture.unit('مدیرعامل');
   const ceo = fixture.position(root, 'مدیرعامل', { supervisory: true });
+  fixture.supervise(root, ceo);
   heads.push(ceo);
   let frontier = [{ unit: root, head: ceo }];
   let count = 1;
@@ -210,6 +221,7 @@ export function largeCompany(fixture: OrgFixture, target = 6000, seed = 7) {
           supervisory: true,
           reportsTo: parent.head,
         });
+        fixture.supervise(unit, head);
         heads.push(head);
         count += 1;
         const staffCount = level >= 6 ? 3 : 1;

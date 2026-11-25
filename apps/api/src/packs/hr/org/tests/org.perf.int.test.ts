@@ -182,4 +182,29 @@ describe('org read performance (6,000 positions)', () => {
       }),
     );
   });
+
+  it('the nightly rule run produces findings on the 6,000-position fixture (S6 done-when 2)', async () => {
+    const started = performance.now();
+    const { result: first } = await asUser(() => hr.rules.runner.run(companyId, ON, 'nightly'), {
+      actor: { kind: 'system', id: 'org:rules' },
+      source: 'workflow',
+    });
+    timings.rule_run_first = `${Math.round(performance.now() - started)}`;
+    expect(first.opened).toBeGreaterThan(0);
+    const counted = Object.fromEntries(first.rules.map((r) => [r.code, r.violations]));
+    // The generator makes vacancies (R12) and terminated incumbents (R7); the tree itself is sound.
+    expect(counted.R7).toBeGreaterThan(0);
+    expect(counted.R12).toBeGreaterThan(0);
+    expect([counted.R1, counted.R2, counted.R3, counted.R15, counted.R5, counted.R6]).toEqual([
+      0, 0, 0, 0, 0, 0,
+    ]);
+    // A second night with nothing changed opens nothing new.
+    const again = performance.now();
+    const { result: second } = await asUser(() => hr.rules.runner.run(companyId, ON, 'nightly'), {
+      actor: { kind: 'system', id: 'org:rules' },
+      source: 'workflow',
+    });
+    timings.rule_run_again = `${Math.round(performance.now() - again)}`;
+    expect(second).toMatchObject({ opened: 0, resolved: 0, stillOpen: first.opened });
+  });
 });

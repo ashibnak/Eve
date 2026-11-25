@@ -1,0 +1,110 @@
+{
+  "rule": {
+    "id": "org.managerial_title",
+    "version": 1
+  },
+  "cases": [
+    {
+      "name": "managers that manage; a specialist in project management",
+      "input": {
+        "positions": [
+          {
+            "id": "p1",
+            "titleFa": "مدیر فروش",
+            "titleEn": null,
+            "supervisory": true
+          },
+          {
+            "id": "p2",
+            "titleFa": "کارشناس مدیریت پروژه",
+            "titleEn": null,
+            "supervisory": false
+          }
+        ],
+        "directLines": [
+          {
+            "from": "p2",
+            "to": "p1"
+          }
+        ]
+      },
+      "params": {
+        "words": [
+          "مدیر",
+          "مدیرعامل",
+          "رئیس",
+          "رییس",
+          "سرپرست",
+          "معاون",
+          "manager",
+          "head",
+          "director",
+          "supervisor",
+          "deputy"
+        ]
+      },
+      "output": {
+        "violations": []
+      }
+    },
+    {
+      "name": "a \"head\" without the supervisory flag; a supervisor with nobody below",
+      "input": {
+        "positions": [
+          {
+            "id": "p1",
+            "titleFa": "کارشناس ارشد",
+            "titleEn": "Head of Data",
+            "supervisory": false
+          },
+          {
+            "id": "p2",
+            "titleFa": "رئیس اداره",
+            "titleEn": null,
+            "supervisory": true
+          }
+        ],
+        "directLines": []
+      },
+      "params": {
+        "words": [
+          "مدیر",
+          "مدیرعامل",
+          "رئیس",
+          "رییس",
+          "سرپرست",
+          "معاون",
+          "manager",
+          "head",
+          "director",
+          "supervisor",
+          "deputy"
+        ]
+      },
+      "output": {
+        "violations": [
+          {
+            "subject": {
+              "type": "position",
+              "id": "p1"
+            },
+            "key": "title_not_supervisory",
+            "detail": {
+              "word": "head"
+            }
+          },
+          {
+            "subject": {
+              "type": "position",
+              "id": "p2"
+            },
+            "key": "title_without_reports",
+            "detail": {
+              "word": "رئیس"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

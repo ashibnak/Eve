@@ -1,0 +1,74 @@
+{
+  "rule": {
+    "id": "org.max_layers",
+    "version": 1
+  },
+  "cases": [
+    {
+      "name": "three layers within a limit of three",
+      "input": {
+        "companyId": "c1",
+        "positions": ["p1", "p2", "p3"],
+        "directLines": [
+          {
+            "from": "p2",
+            "to": "p1"
+          },
+          {
+            "from": "p3",
+            "to": "p2"
+          }
+        ]
+      },
+      "params": {
+        "layers": 3
+      },
+      "output": {
+        "violations": []
+      }
+    },
+    {
+      "name": "four layers over a limit of three",
+      "input": {
+        "companyId": "c1",
+        "positions": ["p1", "p2", "p3", "p4", "p5"],
+        "directLines": [
+          {
+            "from": "p2",
+            "to": "p1"
+          },
+          {
+            "from": "p3",
+            "to": "p2"
+          },
+          {
+            "from": "p4",
+            "to": "p3"
+          },
+          {
+            "from": "p5",
+            "to": "p1"
+          }
+        ]
+      },
+      "params": {
+        "layers": 3
+      },
+      "output": {
+        "violations": [
+          {
+            "subject": {
+              "type": "company",
+              "id": "c1"
+            },
+            "key": "too_many_layers",
+            "detail": {
+              "layers": 4,
+              "chain": ["p1", "p2", "p3", "p4"]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

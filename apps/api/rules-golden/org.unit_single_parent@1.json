@@ -1,0 +1,129 @@
+{
+  "rule": {
+    "id": "org.unit_single_parent",
+    "version": 1
+  },
+  "cases": [
+    {
+      "name": "one root, a proper tree",
+      "input": {
+        "units": [
+          {
+            "id": "u1",
+            "parentId": null
+          },
+          {
+            "id": "u2",
+            "parentId": "u1"
+          },
+          {
+            "id": "u3",
+            "parentId": "u2"
+          }
+        ]
+      },
+      "params": {},
+      "output": {
+        "violations": []
+      }
+    },
+    {
+      "name": "two roots and a cycle",
+      "input": {
+        "units": [
+          {
+            "id": "u1",
+            "parentId": null
+          },
+          {
+            "id": "u2",
+            "parentId": null
+          },
+          {
+            "id": "u3",
+            "parentId": "u4"
+          },
+          {
+            "id": "u4",
+            "parentId": "u3"
+          },
+          {
+            "id": "u5",
+            "parentId": "u3"
+          }
+        ]
+      },
+      "params": {},
+      "output": {
+        "violations": [
+          {
+            "subject": {
+              "type": "unit",
+              "id": "u1"
+            },
+            "key": "extra_root",
+            "detail": {
+              "roots": ["u1", "u2"]
+            }
+          },
+          {
+            "subject": {
+              "type": "unit",
+              "id": "u2"
+            },
+            "key": "extra_root",
+            "detail": {
+              "roots": ["u1", "u2"]
+            }
+          },
+          {
+            "subject": {
+              "type": "unit",
+              "id": "u3"
+            },
+            "key": "cycle",
+            "detail": {}
+          },
+          {
+            "subject": {
+              "type": "unit",
+              "id": "u4"
+            },
+            "key": "cycle",
+            "detail": {}
+          }
+        ]
+      }
+    },
+    {
+      "name": "parent outside the company",
+      "input": {
+        "units": [
+          {
+            "id": "u1",
+            "parentId": null
+          },
+          {
+            "id": "u2",
+            "parentId": "x9"
+          }
+        ]
+      },
+      "params": {},
+      "output": {
+        "violations": [
+          {
+            "subject": {
+              "type": "unit",
+              "id": "u2"
+            },
+            "key": "unknown_parent",
+            "detail": {
+              "parentId": "x9"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

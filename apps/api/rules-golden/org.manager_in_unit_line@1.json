@@ -1,0 +1,103 @@
+{
+  "rule": {
+    "id": "org.manager_in_unit_line",
+    "version": 1
+  },
+  "cases": [
+    {
+      "name": "manager in the same unit and in the parent unit",
+      "input": {
+        "units": [
+          {
+            "id": "u1",
+            "parentId": null
+          },
+          {
+            "id": "u2",
+            "parentId": "u1"
+          }
+        ],
+        "positions": [
+          {
+            "id": "p1",
+            "unitId": "u1"
+          },
+          {
+            "id": "p2",
+            "unitId": "u2"
+          },
+          {
+            "id": "p3",
+            "unitId": "u2"
+          }
+        ],
+        "directLines": [
+          {
+            "from": "p2",
+            "to": "p1"
+          },
+          {
+            "from": "p3",
+            "to": "p2"
+          }
+        ]
+      },
+      "params": {},
+      "output": {
+        "violations": []
+      }
+    },
+    {
+      "name": "manager in a sibling unit",
+      "input": {
+        "units": [
+          {
+            "id": "u1",
+            "parentId": null
+          },
+          {
+            "id": "u2",
+            "parentId": "u1"
+          },
+          {
+            "id": "u3",
+            "parentId": "u1"
+          }
+        ],
+        "positions": [
+          {
+            "id": "p2",
+            "unitId": "u2"
+          },
+          {
+            "id": "p3",
+            "unitId": "u3"
+          }
+        ],
+        "directLines": [
+          {
+            "from": "p3",
+            "to": "p2"
+          }
+        ]
+      },
+      "params": {},
+      "output": {
+        "violations": [
+          {
+            "subject": {
+              "type": "position",
+              "id": "p3"
+            },
+            "key": "manager_outside_unit_line",
+            "detail": {
+              "managerPositionId": "p2",
+              "unitId": "u3",
+              "managerUnitId": "u2"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

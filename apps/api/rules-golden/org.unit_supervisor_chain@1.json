@@ -1,0 +1,88 @@
+{
+  "rule": {
+    "id": "org.unit_supervisor_chain",
+    "version": 1
+  },
+  "cases": [
+    {
+      "name": "supervisors chained like the units",
+      "input": {
+        "units": [
+          {
+            "id": "u1",
+            "parentId": null,
+            "supervisorPositionId": "p1"
+          },
+          {
+            "id": "u2",
+            "parentId": "u1",
+            "supervisorPositionId": "p2"
+          }
+        ],
+        "directLines": [
+          {
+            "from": "p2",
+            "to": "p1"
+          }
+        ]
+      },
+      "params": {},
+      "output": {
+        "violations": []
+      }
+    },
+    {
+      "name": "a unit without supervisor and one whose supervisor reports elsewhere",
+      "input": {
+        "units": [
+          {
+            "id": "u1",
+            "parentId": null,
+            "supervisorPositionId": "p1"
+          },
+          {
+            "id": "u2",
+            "parentId": "u1",
+            "supervisorPositionId": null
+          },
+          {
+            "id": "u3",
+            "parentId": "u1",
+            "supervisorPositionId": "p3"
+          }
+        ],
+        "directLines": [
+          {
+            "from": "p3",
+            "to": "p9"
+          }
+        ]
+      },
+      "params": {},
+      "output": {
+        "violations": [
+          {
+            "subject": {
+              "type": "unit",
+              "id": "u2"
+            },
+            "key": "no_supervisor",
+            "detail": {}
+          },
+          {
+            "subject": {
+              "type": "unit",
+              "id": "u3"
+            },
+            "key": "supervisor_not_under_parent_supervisor",
+            "detail": {
+              "supervisorPositionId": "p3",
+              "expected": "p1",
+              "actual": "p9"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

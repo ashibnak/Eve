@@ -1,0 +1,60 @@
+{
+  "rule": {
+    "id": "org.incumbent_inactive",
+    "version": 1
+  },
+  "cases": [
+    {
+      "name": "every incumbent employed",
+      "input": {
+        "assignments": [
+          {
+            "personId": "a",
+            "positionId": "p1",
+            "kind": "primary"
+          }
+        ],
+        "employed": ["a"]
+      },
+      "params": {},
+      "output": {
+        "violations": []
+      }
+    },
+    {
+      "name": "a terminated person still acting on a position",
+      "input": {
+        "assignments": [
+          {
+            "personId": "a",
+            "positionId": "p1",
+            "kind": "primary"
+          },
+          {
+            "personId": "b",
+            "positionId": "p2",
+            "kind": "acting"
+          }
+        ],
+        "employed": ["a"]
+      },
+      "params": {},
+      "output": {
+        "violations": [
+          {
+            "subject": {
+              "type": "person",
+              "id": "b"
+            },
+            "key": "inactive_on:p2:acting",
+            "detail": {
+              "positionId": "p2",
+              "kind": "acting",
+              "suggestion": "end_assignment"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

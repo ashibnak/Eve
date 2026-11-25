@@ -147,4 +147,32 @@ describe('org over HTTP (real app wiring)', () => {
     expect(person.status).toBe(200);
     expect((await lead.call('GET', `/org/companies/${companyId}/structure`)).status).toBe(403);
   });
+
+  it('runs the rules and works the findings inbox over HTTP', async () => {
+    const owner = await signedIn('org_data_owner', null);
+    const run = await owner.call('POST', `/org/companies/${companyId}/rule-runs`);
+    expect(run.status).toBe(201);
+    expect(orgV1.RuleRunViewSchema.parse(run.body).trigger).toBe('manual');
+    expect((await owner.call('GET', `/org/companies/${companyId}/rule-runs/latest`)).status).toBe(
+      200,
+    );
+
+    // The tiny fixture has no supervisor set on its unit: R6, a warning.
+    const inbox = await owner.call('GET', `/org/findings?companyId=${companyId}`);
+    expect(inbox.status).toBe(200);
+    const findings = (inbox.body as unknown[]).map((f) => orgV1.FindingViewSchema.parse(f));
+    const r6 = findings.find((f) => f.code === 'R6');
+    expect(r6).toMatchObject({ severity: 'warning', subject: { type: 'unit', id: unitId } });
+    expect((await owner.call('POST', `/org/findings/${r6!.id}/accept`, {})).status).toBe(400);
+    const accepted = await owner.call('POST', `/org/findings/${r6!.id}/accept`, {
+      reason: 'one-person unit',
+    });
+    expect(accepted.status).toBe(201);
+    expect((accepted.body as { status: string }).status).toBe('accepted');
+    expect((await owner.call('GET', `/org/findings/${r6!.id}`)).status).toBe(200);
+
+    const outsider = await signedIn(null, null);
+    expect((await outsider.call('GET', `/org/findings?companyId=${companyId}`)).status).toBe(403);
+    expect((await outsider.call('POST', `/org/companies/${companyId}/rule-runs`)).status).toBe(403);
+  });
 });

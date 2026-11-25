@@ -1,0 +1,104 @@
+{
+  "rule": {
+    "id": "org.person_time_share",
+    "version": 1
+  },
+  "cases": [
+    {
+      "name": "full-time primary plus acting on the manager position",
+      "input": {
+        "assignments": [
+          {
+            "personId": "a",
+            "positionId": "p1",
+            "kind": "primary",
+            "timeShare": 1
+          },
+          {
+            "personId": "a",
+            "positionId": "p2",
+            "kind": "acting",
+            "timeShare": 1
+          },
+          {
+            "personId": "b",
+            "positionId": "p3",
+            "kind": "primary",
+            "timeShare": 0.6
+          },
+          {
+            "personId": "b",
+            "positionId": "p4",
+            "kind": "project",
+            "timeShare": 0.4
+          }
+        ]
+      },
+      "params": {
+        "maxShare": 1
+      },
+      "output": {
+        "violations": []
+      }
+    },
+    {
+      "name": "primary plus project above 1, and two primaries",
+      "input": {
+        "assignments": [
+          {
+            "personId": "a",
+            "positionId": "p1",
+            "kind": "primary",
+            "timeShare": 1
+          },
+          {
+            "personId": "a",
+            "positionId": "p2",
+            "kind": "project",
+            "timeShare": 0.5
+          },
+          {
+            "personId": "b",
+            "positionId": "p3",
+            "kind": "primary",
+            "timeShare": 0.5
+          },
+          {
+            "personId": "b",
+            "positionId": "p4",
+            "kind": "primary",
+            "timeShare": 0.5
+          }
+        ]
+      },
+      "params": {
+        "maxShare": 1
+      },
+      "output": {
+        "violations": [
+          {
+            "subject": {
+              "type": "person",
+              "id": "a"
+            },
+            "key": "over_share",
+            "detail": {
+              "total": 1.5,
+              "maxShare": 1
+            }
+          },
+          {
+            "subject": {
+              "type": "person",
+              "id": "b"
+            },
+            "key": "two_primary",
+            "detail": {
+              "positionIds": ["p3", "p4"]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

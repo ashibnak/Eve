@@ -27,6 +27,7 @@ import { OrgRuleChecker } from '../src/packs/hr/org/rules/org-rule-checker';
 import { ORG_RULE_TEMPLATES } from '../src/packs/hr/org/rules/index';
 import { OrgService } from '../src/packs/hr/org/service/org.service';
 import { OrgWorkspace } from '../src/packs/hr/org/service/workspace.service';
+import { OrgAuditReplay } from '../src/packs/hr/org/audit/audit-replay';
 import type { INestApplicationContext } from '@nestjs/common';
 import { PrismaService } from '../src/platform/db/prisma.service';
 import type { Platform } from './platform';
@@ -138,10 +139,12 @@ export function createHr(platform: Platform) {
     platform.clock,
     directory,
   );
+  const auditReplay = new OrgAuditReplay(platform.scopedDb, org);
   return {
     people,
     org,
     workspace,
+    auditReplay,
     rules,
     eventSink,
     profiles,

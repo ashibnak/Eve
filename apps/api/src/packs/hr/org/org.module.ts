@@ -10,6 +10,7 @@ import { registerScopedModel } from '../../../platform/scope/scoped-prisma';
 import { UnitSubtreeRegistry } from '../../../platform/scope/unit-subtree.registry';
 import { peopleDirectoryProvider } from './adapters/people-directory.adapter';
 import { OrgUnitSubtreeAdapter } from './adapters/unit-subtree.adapter';
+import { OrgAuditReplay } from './audit/audit-replay';
 import { ApplyAssignment } from './commands/apply-assignment';
 import { ChangeRequests } from './commands/change-requests';
 import { ChangesController } from './commands/changes.controller';
@@ -76,6 +77,7 @@ export function registerOrgScopedModels(): void {
     OrgCorrections,
     ApplyAssignment,
     OrgWorkspace,
+    OrgAuditReplay,
   ],
   exports: [OrgService, ApplyAssignment],
 })

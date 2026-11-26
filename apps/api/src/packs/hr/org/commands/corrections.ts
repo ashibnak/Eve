@@ -55,7 +55,11 @@ export class OrgCorrections {
         entityId: unitId,
         companyId: version.companyId,
         before: { versionFrom: input.versionFrom, ...before },
-        after: { versionFrom: input.versionFrom, ...c },
+        after: {
+          versionFrom: input.versionFrom,
+          ...c,
+          state: { versionFrom: input.versionFrom, changes: c },
+        },
         reason: input.reason,
       });
     });
@@ -108,7 +112,11 @@ export class OrgCorrections {
         entityId: positionId,
         companyId: version.companyId,
         before: { versionFrom: input.versionFrom, ...previous },
-        after: { versionFrom: input.versionFrom, ...c },
+        after: {
+          versionFrom: input.versionFrom,
+          ...c,
+          state: { versionFrom: input.versionFrom, changes: c },
+        },
         reason: input.reason,
       });
     });

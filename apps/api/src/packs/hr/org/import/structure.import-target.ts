@@ -20,6 +20,7 @@ import {
   PositionChanged,
   PositionCreated,
 } from '../events/org.events';
+import { positionState, unitState } from '../audit/state';
 import { OrgEventSink } from '../events/org-event-sink';
 import { dateOf } from '../model/period';
 import { OrgChangeApproverRole, OrgPermissions } from '../org.permissions';
@@ -386,49 +387,46 @@ export class StructureImport {
       ...plan.units.added.map((u) => ({ file: u, current: null })),
       ...plan.units.changed,
     ];
-    await createInChunks(unitVersions, (batch) =>
-      tx.orgUnitVersion.createMany({
-        data: batch.map(({ file: u, current: c }) => ({
-          unitId: unitId(u.code)!,
-          companyId,
-          legacyCode: c && u.code === c.code ? c.legacyCode : u.code,
-          nameFa: u.nameFa,
-          nameEn: u.nameEn,
-          levelId: levelId(u.level),
-          parentUnitId: unitId(u.parentCode),
-          costCenter: u.costCenter,
-          location: u.location,
-          supervisorPositionId: positionId(u.supervisorCode),
-          status: 'active',
-          validFrom: from,
-          recordedAt: now,
-        })),
-      }),
-    );
+    const unitRows = unitVersions.map(({ file: u, current: c }) => ({
+      unitId: unitId(u.code)!,
+      companyId,
+      legacyCode: c && u.code === c.code ? c.legacyCode : u.code,
+      nameFa: u.nameFa,
+      nameEn: u.nameEn,
+      levelId: levelId(u.level),
+      parentUnitId: unitId(u.parentCode),
+      costCenter: u.costCenter,
+      location: u.location,
+      supervisorPositionId: positionId(u.supervisorCode),
+      status: 'active',
+      validFrom: from,
+      recordedAt: now,
+    }));
+    await createInChunks(unitRows, (data) => tx.orgUnitVersion.createMany({ data }));
+    const unitStateOf = new Map(unitRows.map((r) => [r.unitId, unitState(r)]));
     const positionVersions = [
       ...plan.positions.added.map((p) => ({ file: p, current: null })),
       ...plan.positions.changed,
     ];
-    await createInChunks(positionVersions, (batch) =>
-      tx.orgPositionVersion.createMany({
-        data: batch.map(({ file: p, current: c }) => ({
-          positionId: positionId(p.code)!,
-          companyId,
-          legacyCode: p.proposed ? null : c && p.code === c.code ? c.legacyCode : p.code,
-          titleFa: p.titleFa,
-          titleEn: p.titleEn,
-          unitId: unitId(p.unitCode)!,
-          jobId: c?.jobId ?? null,
-          type: p.type,
-          fte: String(p.fte),
-          supervisory: p.supervisory,
-          status: p.status,
-          source: p.proposed ? 'proposed' : 'official',
-          validFrom: from,
-          recordedAt: now,
-        })),
-      }),
-    );
+    const positionRows = positionVersions.map(({ file: p, current: c }) => ({
+      positionId: positionId(p.code)!,
+      companyId,
+      legacyCode: p.proposed ? null : c && p.code === c.code ? c.legacyCode : p.code,
+      titleFa: p.titleFa,
+      titleEn: p.titleEn,
+      unitId: unitId(p.unitCode)!,
+      jobId: c?.jobId ?? null,
+      type: p.type,
+      fte: String(p.fte),
+      supervisory: p.supervisory,
+      status: p.status,
+      source: p.proposed ? 'proposed' : 'official',
+      validFrom: from,
+      recordedAt: now,
+    }));
+    await createInChunks(positionRows, (data) => tx.orgPositionVersion.createMany({ data }));
+    const positionStateOf = new Map(positionRows.map((r) => [r.positionId, positionState(r)]));
+    const lineChangedIds = new Set(plan.positions.lineChanged.map((c) => c.current.id));
     const newLines = [
       ...plan.positions.added.filter((p) => p.reportsToCode !== null),
       ...plan.positions.lineChanged.map((c) => c.file).filter((p) => p.reportsToCode !== null),
@@ -473,6 +471,7 @@ export class StructureImport {
         code: unitCodes.get(u.code),
         validFrom: ctx.effectiveDate,
         ...(shown.get(`unit:${u.code}`)?.after as object),
+        state: { validFrom: ctx.effectiveDate, version: unitStateOf.get(unitId(u.code)!) },
       });
     }
     for (const c of plan.units.changed) {
@@ -480,6 +479,7 @@ export class StructureImport {
       await record('org.unit.change', 'org_unit', c.current.id, d?.before, {
         validFrom: ctx.effectiveDate,
         ...(d?.after as object),
+        state: { validFrom: ctx.effectiveDate, version: unitStateOf.get(c.current.id) },
       });
     }
     for (const u of plan.units.removed) {
@@ -488,9 +488,7 @@ export class StructureImport {
         'org_unit',
         u.id,
         shown.get(`unit:${u.legacyCode ?? u.code}`)?.before,
-        {
-          validTo: ctx.effectiveDate,
-        },
+        { validTo: ctx.effectiveDate, state: { validTo: ctx.effectiveDate } },
       );
     }
     for (const p of plan.positions.added) {
@@ -498,20 +496,30 @@ export class StructureImport {
         code: positionCodes.get(p.code),
         validFrom: ctx.effectiveDate,
         ...(shown.get(`position:${p.code}`)?.after as object),
+        state: {
+          validFrom: ctx.effectiveDate,
+          version: positionStateOf.get(positionId(p.code)!),
+          reportsToPositionId: positionId(p.reportsToCode),
+        },
       });
     }
     // A position whose version and line both change is one change.
     const changedPositions = new Map(
-      [...plan.positions.changed, ...plan.positions.lineChanged].map((c) => [
-        c.current.id,
-        c.file.code,
-      ]),
+      [...plan.positions.changed, ...plan.positions.lineChanged].map((c) => [c.current.id, c.file]),
     );
-    for (const [id, code] of changedPositions) {
-      const d = shown.get(`position:${code}`);
+    for (const [id, file] of changedPositions) {
+      const d = shown.get(`position:${file.code}`);
+      const version = positionStateOf.get(id);
       await record('org.position.change', 'org_position', id, d?.before, {
         validFrom: ctx.effectiveDate,
         ...(d?.after as object),
+        state: {
+          validFrom: ctx.effectiveDate,
+          ...(version ? { version } : {}),
+          ...(lineChangedIds.has(id)
+            ? { reportsToPositionId: positionId(file.reportsToCode) }
+            : {}),
+        },
       });
     }
     for (const p of plan.positions.removed) {
@@ -520,9 +528,7 @@ export class StructureImport {
         'org_position',
         p.id,
         shown.get(`position:${p.legacyCode ?? p.code}`)?.before,
-        {
-          validTo: ctx.effectiveDate,
-        },
+        { validTo: ctx.effectiveDate, state: { validTo: ctx.effectiveDate } },
       );
     }
     for (const a of assignments) {
@@ -532,6 +538,13 @@ export class StructureImport {
         kind: a.kind,
         timeShare: Number(a.timeShare),
         validFrom: ctx.effectiveDate,
+        state: {
+          personId: a.personId,
+          positionId: a.positionId,
+          kind: a.kind,
+          timeShare: Number(a.timeShare),
+          validFrom: ctx.effectiveDate,
+        },
       });
     }
 

@@ -13,10 +13,12 @@
     "src",
     "test",
     "scripts",
+    "acceptance",
     "prisma.config.ts",
     "vitest.config.mts",
     "vitest.int.config.mts",
     "vitest.perf.config.mts",
+    "vitest.acceptance.config.mts",
     "vitest.shared.mts"
   ]
 }

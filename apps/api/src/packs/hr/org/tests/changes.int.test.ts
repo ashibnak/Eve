@@ -231,7 +231,8 @@ describe('org writes: change requests, corrections, apply_assignment (S8)', () =
     expect(await outbox('org.change_request.approved')).toHaveLength(0);
     platform.clock.setTime(new Date(`${IN_TEN_DAYS}T08:00:00Z`));
     try {
-      expect(await hr.eventSink.publishDue()).toBe(5);
+      // Other test files may leave events due the same day; this company's five are checked below.
+      expect(await hr.eventSink.publishDue()).toBeGreaterThanOrEqual(5);
     } finally {
       platform.clock.setTime(NOW);
     }

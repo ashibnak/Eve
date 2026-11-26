@@ -181,7 +181,17 @@ export class ApplyAssignment {
             entityId: assignmentId,
             companyId: command.companyId,
             before: null,
-            after: { ...command, validFrom: effectiveDate },
+            after: {
+              ...command,
+              validFrom: effectiveDate,
+              state: {
+                personId: command.personId,
+                positionId: command.positionId,
+                kind: command.kind,
+                timeShare: command.timeShare,
+                validFrom: effectiveDate,
+              },
+            },
             reason,
           });
           await emit(AssignmentStarted, {
@@ -206,7 +216,11 @@ export class ApplyAssignment {
             entityId: assignmentId,
             companyId: command.companyId,
             before: { validTo: row.validTo },
-            after: { validTo: effectiveDate, actionId: command.actionId },
+            after: {
+              validTo: effectiveDate,
+              actionId: command.actionId,
+              state: { validTo: effectiveDate },
+            },
             reason,
           });
           await emit(AssignmentEnded, {

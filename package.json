@@ -19,6 +19,7 @@
     "format": "prettier --write .",
     "test:unit": "vitest run --project '!@eve/api:int'",
     "test:perf": "vitest run --config apps/api/vitest.perf.config.mts",
+    "acceptance": "vitest run --config apps/api/vitest.acceptance.config.mts",
     "db:dev:up": "docker compose -f deploy/docker-compose.dev.yml up -d --wait",
     "db:dev:down": "docker compose -f deploy/docker-compose.dev.yml down",
     "db:check-drift": "tsx apps/api/scripts/check-schema-drift.ts",

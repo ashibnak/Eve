@@ -8,6 +8,7 @@ import { type Tx } from '../../../../platform/context/tx-runner';
 import { type EventDefinition } from '../../../../platform/events/event-registry';
 import { ManagerChanged, PositionChanged, PositionCreated } from '../events/org.events';
 import { OrgEventSink } from '../events/org-event-sink';
+import { positionState, unitState } from '../audit/state';
 import type { Current } from '../import/structure-model';
 import { dateOf } from '../model/period';
 import type { OrgSnapshot } from '../rules/index';
@@ -150,6 +151,10 @@ export class StructureWriter {
           code: codes.get(id),
           validFrom: effectiveDate,
           ...data,
+          state: {
+            validFrom: effectiveDate,
+            version: unitState({ ...data, supervisorPositionId: null }),
+          },
         });
       } else if (op.op === 'unit.update' || op.op === 'unit.close') {
         const before = units.get(op.unitId)!;
@@ -168,7 +173,10 @@ export class StructureWriter {
           supervisorPositionId: before.supervisorPositionId,
         };
         if (op.op === 'unit.close') {
-          await audit('org.unit.close', 'org_unit', op.unitId, old, { validTo: effectiveDate });
+          await audit('org.unit.close', 'org_unit', op.unitId, old, {
+            validTo: effectiveDate,
+            state: { validTo: effectiveDate },
+          });
           continue;
         }
         const c = op.changes;
@@ -199,6 +207,7 @@ export class StructureWriter {
         await audit('org.unit.change', 'org_unit', op.unitId, old, {
           validFrom: effectiveDate,
           ...next,
+          state: { validFrom: effectiveDate, version: unitState(next) },
         });
       }
     }
@@ -231,6 +240,11 @@ export class StructureWriter {
           validFrom: effectiveDate,
           ...data,
           reportsTo: op.reportsTo ? positionId(op.reportsTo) : null,
+          state: {
+            validFrom: effectiveDate,
+            version: positionState({ ...data, jobId: null, status: 'active', source: 'official' }),
+            reportsToPositionId: op.reportsTo ? positionId(op.reportsTo) : null,
+          },
         });
         await emit(PositionCreated, {
           position_id: id,
@@ -261,6 +275,7 @@ export class StructureWriter {
           });
           await audit('org.position.close', 'org_position', op.positionId, old, {
             validTo: effectiveDate,
+            state: { validTo: effectiveDate },
           });
           continue;
         }
@@ -300,9 +315,15 @@ export class StructureWriter {
             },
           });
         }
+        const { reportsTo: nextReportsTo, ...nextVersion } = next;
         await audit('org.position.change', 'org_position', op.positionId, old, {
           validFrom: effectiveDate,
           ...next,
+          state: {
+            validFrom: effectiveDate,
+            ...(versionChanges ? { version: positionState(nextVersion) } : {}),
+            ...(c.reportsTo !== undefined ? { reportsToPositionId: nextReportsTo } : {}),
+          },
         });
         if (next.unitId !== old.unitId) {
           await emit(PositionChanged, {
@@ -328,13 +349,26 @@ export class StructureWriter {
       } else if (op.op === 'position.close') {
         await setLine(op.positionId, null);
       } else if (op.op === 'unit.create' && op.supervisor) {
-        await this.setSupervisor(tx, unitId({ ref: op.ref }), from, positionId(op.supervisor));
+        const unit = unitId({ ref: op.ref });
+        await this.setSupervisor(tx, unit, from, positionId(op.supervisor));
+        await audit('org.unit.supervisor', 'org_unit', unit, null, {
+          state: {
+            versionFrom: effectiveDate,
+            changes: { supervisorPositionId: positionId(op.supervisor) },
+          },
+        });
       } else if (
         op.op === 'unit.update' &&
         op.changes.supervisor &&
         'ref' in op.changes.supervisor
       ) {
         await this.setSupervisor(tx, op.unitId, from, positionId(op.changes.supervisor));
+        await audit('org.unit.supervisor', 'org_unit', op.unitId, null, {
+          state: {
+            versionFrom: effectiveDate,
+            changes: { supervisorPositionId: positionId(op.changes.supervisor) },
+          },
+        });
       }
     }
 

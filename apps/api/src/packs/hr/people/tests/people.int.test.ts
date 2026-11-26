@@ -287,6 +287,8 @@ describe('people core (S4 done-when: both companies import cleanly)', () => {
         type: 'people.person.status_changed',
         payload: { path: ['person_id'], equals: view.id },
       },
+      // Without an order the database may return them either way (it did, once the outbox grew).
+      orderBy: { seq: 'asc' },
     });
     expect(events.map((e) => e.effectiveAt.toISOString().slice(0, 10))).toEqual([d1, d2]);
   });

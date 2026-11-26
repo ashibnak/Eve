@@ -418,3 +418,202 @@ export const ManagerChangedPayload = z.object({
   from_manager_person_id: z.uuid().nullable(),
   to_manager_person_id: z.uuid().nullable(),
 });
+
+/** A unit or position in a change request: an existing one by id, or one the bundle creates. */
+export const UnitRefSchema = z.union([
+  z.object({ id: z.uuid() }),
+  z.object({ ref: z.string().min(1).max(50) }),
+]);
+export const PositionRefSchema = UnitRefSchema;
+export type EntityRef = z.infer<typeof UnitRefSchema>;
+
+const Text = z.string().trim().min(1).max(200);
+
+/** One operation of a structure change request (spec §8: units, positions, reporting lines). */
+export const ChangeOperationSchema = z.discriminatedUnion('op', [
+  z.object({
+    op: z.literal('unit.create'),
+    ref: z.string().min(1).max(50),
+    nameFa: Text,
+    nameEn: Text.nullable().optional(),
+    levelId: z.uuid(),
+    parent: UnitRefSchema,
+    supervisor: PositionRefSchema.nullable().optional(),
+    legacyCode: Text.nullable().optional(),
+    costCenter: Text.nullable().optional(),
+    location: Text.nullable().optional(),
+  }),
+  z.object({
+    op: z.literal('unit.update'),
+    unitId: z.uuid(),
+    changes: z
+      .object({
+        nameFa: Text,
+        nameEn: Text.nullable(),
+        levelId: z.uuid(),
+        /** A move: the unit and everything below it go under another unit. */
+        parent: UnitRefSchema,
+        supervisor: PositionRefSchema.nullable(),
+        costCenter: Text.nullable(),
+        location: Text.nullable(),
+      })
+      .partial()
+      .strict()
+      .refine((c) => Object.keys(c).length > 0, 'Nothing to change'),
+  }),
+  z.object({ op: z.literal('unit.close'), unitId: z.uuid() }),
+  z.object({
+    op: z.literal('position.create'),
+    ref: z.string().min(1).max(50),
+    titleFa: Text,
+    titleEn: Text.nullable().optional(),
+    unit: UnitRefSchema,
+    type: PositionTypeSchema,
+    fte: z.number().positive().max(1),
+    supervisory: z.boolean(),
+    reportsTo: PositionRefSchema.nullable(),
+    legacyCode: Text.nullable().optional(),
+  }),
+  z.object({
+    op: z.literal('position.update'),
+    positionId: z.uuid(),
+    changes: z
+      .object({
+        titleFa: Text,
+        titleEn: Text.nullable(),
+        /** A move: the position (and its people) go to another unit. */
+        unit: UnitRefSchema,
+        type: PositionTypeSchema,
+        fte: z.number().positive().max(1),
+        supervisory: z.boolean(),
+        status: z.enum(['active', 'frozen']),
+        reportsTo: PositionRefSchema.nullable(),
+      })
+      .partial()
+      .strict()
+      .refine((c) => Object.keys(c).length > 0, 'Nothing to change'),
+  }),
+  z.object({ op: z.literal('position.close'), positionId: z.uuid() }),
+]);
+export type ChangeOperation = z.infer<typeof ChangeOperationSchema>;
+
+export const ChangeRequestInputSchema = z.object({
+  companyId: z.uuid(),
+  effectiveDate: BusinessDateSchema,
+  reason: z.string().trim().min(1).max(2000),
+  operations: z.array(ChangeOperationSchema).min(1).max(500),
+});
+export type ChangeRequestInput = z.infer<typeof ChangeRequestInputSchema>;
+
+/** What the approver sees before deciding (spec §8). */
+export const ImpactSchema = z.object({
+  /** People whose position moves to another unit: each needs an order (حکم). */
+  movedPeople: z.array(
+    z.object({
+      personId: z.uuid(),
+      positionId: z.uuid(),
+      fromUnitId: z.uuid(),
+      toUnit: z.string(),
+    }),
+  ),
+  managerChanges: z.array(
+    z.object({ personId: z.uuid(), from: z.uuid().nullable(), to: z.uuid().nullable() }),
+  ),
+  ordersNeeded: z.number().int(),
+  /** Positions left without their incumbents (none: a filled position cannot be closed). */
+  vacatedPositions: z.array(z.uuid()),
+  warnings: z.object({
+    opened: z.array(z.object({ code: z.string(), subject: z.string(), key: z.string() })),
+    resolved: z.array(z.object({ code: z.string(), subject: z.string(), key: z.string() })),
+  }),
+  /** Grades come from jobs (Module 2); unknown until grading exists. */
+  gradeChanges: z.literal('unknown_until_grading'),
+});
+export type Impact = z.infer<typeof ImpactSchema>;
+
+export const ChangeRequestViewSchema = z.object({
+  id: z.uuid(),
+  companyId: z.uuid(),
+  effectiveDate: BusinessDateSchema,
+  reason: z.string(),
+  operations: z.array(ChangeOperationSchema),
+  impact: ImpactSchema,
+  status: z.enum(['submitted', 'applied']),
+  approvalRequestId: z.uuid(),
+  requestedBy: z.string(),
+  createdAt: z.iso.datetime(),
+  appliedAt: z.iso.datetime().nullable(),
+});
+export type ChangeRequestView = z.infer<typeof ChangeRequestViewSchema>;
+
+/** Event `org.change_request.approved@1`, published on the effective date (spec §7). */
+export const ChangeRequestApprovedPayload = z.object({
+  change_request_id: z.uuid(),
+  effective_date: BusinessDateSchema,
+  operations: z.number().int(),
+});
+
+/**
+ * Command `apply_assignment` (spec §7, ADR-007): only the personnel-action workflow calls it, with
+ * its action id and the id of its approved request. Replaying the same action id changes nothing.
+ */
+export const ApplyAssignmentCommandSchema = z.object({
+  actionId: z.string().min(1).max(100),
+  approvalId: z.uuid(),
+  companyId: z.uuid(),
+  operation: z.enum(['start', 'end']),
+  personId: z.uuid(),
+  positionId: z.uuid(),
+  kind: AssignmentKindSchema,
+  timeShare: z.number().positive().max(1).default(1),
+  effectiveDate: BusinessDateSchema,
+  orderNumber: z.string().min(1).max(50).nullable().optional(),
+});
+export type ApplyAssignmentCommand = z.input<typeof ApplyAssignmentCommandSchema>;
+
+export const ApplyAssignmentResultSchema = z.object({
+  assignmentId: z.uuid(),
+  /** True when the action id was applied before: nothing was written again. */
+  replayed: z.boolean(),
+});
+export type ApplyAssignmentResult = z.infer<typeof ApplyAssignmentResultSchema>;
+
+/**
+ * A data correction (spec §8): a wrong entry fixed in place for its version's whole period
+ * (product-owner decision 2026-11-25). Descriptive fields only; structure goes through a change
+ * request. `versionFrom` names the version: the date it starts.
+ */
+export const UnitCorrectionSchema = z.object({
+  versionFrom: BusinessDateSchema,
+  changes: z
+    .object({
+      legacyCode: Text.nullable(),
+      nameFa: Text,
+      nameEn: Text.nullable(),
+      levelId: z.uuid(),
+      costCenter: Text.nullable(),
+      location: Text.nullable(),
+      supervisorPositionId: z.uuid().nullable(),
+    })
+    .partial()
+    .strict()
+    .refine((c) => Object.keys(c).length > 0, 'Nothing to correct'),
+  reason: z.string().trim().min(1).max(1000),
+});
+
+export const PositionCorrectionSchema = z.object({
+  versionFrom: BusinessDateSchema,
+  changes: z
+    .object({
+      legacyCode: Text.nullable(),
+      titleFa: Text,
+      titleEn: Text.nullable(),
+      type: PositionTypeSchema,
+      fte: z.number().positive().max(1),
+      supervisory: z.boolean(),
+    })
+    .partial()
+    .strict()
+    .refine((c) => Object.keys(c).length > 0, 'Nothing to correct'),
+  reason: z.string().trim().min(1).max(1000),
+});

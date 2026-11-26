@@ -32,10 +32,18 @@ export const ManagerChanged = defineEvent({
   payload: orgV1.ManagerChangedPayload,
 });
 
+/** Published on the effective date of an approved change request (spec §7). */
+export const ChangeRequestApproved = defineEvent({
+  type: 'org.change_request.approved',
+  schemaVersion: 1,
+  payload: orgV1.ChangeRequestApprovedPayload,
+});
+
 export const ORG_EVENTS = [
   PositionCreated,
   PositionChanged,
   AssignmentStarted,
   AssignmentEnded,
   ManagerChanged,
+  ChangeRequestApproved,
 ] as const;

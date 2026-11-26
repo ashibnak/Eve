@@ -3,6 +3,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -78,6 +79,8 @@ type Decision = 'approve' | 'reject' | 'return';
  */
 @Injectable()
 export class ApprovalService {
+  private readonly logger = new Logger(ApprovalService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly txRunner: TxRunner,
@@ -102,7 +105,10 @@ export class ApprovalService {
     const today = await this.today();
     await definition.check?.(payload, { companyId: request.companyId, today });
 
-    const chain = await this.config.get(this.types.chainSetting(request.type), request.companyId);
+    const chain = [
+      ...(await this.config.get(this.types.chainSetting(request.type), request.companyId)),
+      ...(definition.extraSteps?.(payload, { companyId: request.companyId, today }) ?? []),
+    ];
     for (const role of chain) {
       if (!this.roles.has(role))
         throw new ConflictException(`Approval chain names unknown role ${role}`);
@@ -150,6 +156,20 @@ export class ApprovalService {
       );
       return this.view(created);
     });
+  }
+
+  /**
+   * Type, status and company of a request, without its payload: for a module that acts on another
+   * module's approved request (e.g. org's `apply_assignment` checks the personnel action's).
+   */
+  async statusOf(
+    id: string,
+  ): Promise<{ type: string; status: string; companyId: string | null } | null> {
+    const row = await this.prisma.approvalsRequest.findUnique({
+      where: { id },
+      select: { type: true, status: true, companyId: true },
+    });
+    return row;
   }
 
   approve(id: string, note: string | null): Promise<ApprovalRequestView> {
@@ -319,6 +339,12 @@ export class ApprovalService {
   private async expireIfDue(id: string, today: platformV1.BusinessDate): Promise<boolean> {
     const row = await this.prisma.approvalsRequest.findUnique({ where: { id } });
     if (!row || (row.status !== 'pending' && row.status !== 'returned')) return false;
+    // A request whose type this deployment does not know (removed from the code) must not stop
+    // the nightly run for everyone else; it stays as it is and is reported.
+    if (!this.types.has(row.type)) {
+      this.logger.warn(`Request ${id} has unknown type ${row.type}; not checked for expiry`);
+      return false;
+    }
     const definition = this.types.get(row.type);
     if (!definition.expiresOn) return false;
     const parsed = definition.payload.safeParse(row.payload);
@@ -435,6 +461,7 @@ export class ApprovalService {
           payload,
           pinnedRules: row.pinned_rules,
           requestedBy: row.requested_by,
+          chain: row.chain,
         });
         next = { status: 'approved', currentStep: step, decidedAt: now };
         await this.events.publish(tx, {

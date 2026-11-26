@@ -175,4 +175,49 @@ describe('org over HTTP (real app wiring)', () => {
     expect((await outsider.call('GET', `/org/findings?companyId=${companyId}`)).status).toBe(403);
     expect((await outsider.call('POST', `/org/companies/${companyId}/rule-runs`)).status).toBe(403);
   });
+
+  it('changes the structure over HTTP: change request, approval, correction', async () => {
+    const owner = await signedIn('org_data_owner', null);
+    const approver = await signedIn('org_change_approver', null);
+    const submitted = await owner.call('POST', '/org/change-requests', {
+      companyId,
+      effectiveDate: '2026-12-20',
+      reason: 'rename the root unit',
+      operations: [{ op: 'unit.update', unitId, changes: { nameFa: 'ستاد' } }],
+    });
+    expect(submitted.status).toBe(201);
+    const request = orgV1.ChangeRequestViewSchema.parse(submitted.body);
+    expect(
+      (
+        await owner.call('POST', '/org/change-requests', {
+          companyId,
+          effectiveDate: '2026-12-20',
+          reason: 'x',
+          operations: [],
+        })
+      ).status,
+    ).toBe(400);
+    expect(
+      (await approver.call('POST', `/platform/approvals/${request.approvalRequestId}/approve`, {}))
+        .status,
+    ).toBe(201);
+    const applied = await owner.call('GET', `/org/change-requests/${request.id}`);
+    expect((applied.body as { status: string }).status).toBe('applied');
+
+    const corrected = await owner.call('POST', `/org/positions/${pos.staff}/corrections`, {
+      versionFrom: '2020-01-01',
+      changes: { titleEn: 'Specialist' },
+      reason: 'English title was missing',
+    });
+    expect(corrected.status).toBe(201);
+    expect(
+      (
+        await owner.call('POST', `/org/positions/${pos.staff}/corrections`, {
+          versionFrom: '2020-01-01',
+          changes: { unitId },
+          reason: 'structure is not a correction',
+        })
+      ).status,
+    ).toBe(400);
+  });
 });

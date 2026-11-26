@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { ConflictException, ForbiddenException } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, inject, it } from 'vitest';
 import type { platformV1 } from '@eve/contracts';
@@ -314,6 +315,21 @@ describe('approvals: chains, four-eyes, return/resubmit, concurrency', () => {
   it('expires waiting requests nightly and informs requester, admins and the next approvers', async () => {
     const request = await submit(16);
     const other = await submit(17, null, addDays(today, 30)); // not due yet
+    // A waiting request of a type this deployment no longer knows must not stop the run.
+    const orphan = await platform.prisma.approvalsRequest.create({
+      data: {
+        type: 'gone.module.request',
+        companyId: null,
+        payload: {},
+        status: 'pending',
+        chain: ['rule_approver'],
+        pinnedRules: {},
+        requestedBy: people.admin,
+        correlationId: randomUUID(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
     platform.clock.advance(2 * 86_400_000);
     try {
       expect(await platform.approvals.expireDue()).toBeGreaterThanOrEqual(1);
@@ -326,6 +342,10 @@ describe('approvals: chains, four-eyes, return/resubmit, concurrency', () => {
     ).toBe('expired');
     expect(
       (await platform.prisma.approvalsRequest.findUniqueOrThrow({ where: { id: other.id } }))
+        .status,
+    ).toBe('pending');
+    expect(
+      (await platform.prisma.approvalsRequest.findUniqueOrThrow({ where: { id: orphan.id } }))
         .status,
     ).toBe('pending');
 

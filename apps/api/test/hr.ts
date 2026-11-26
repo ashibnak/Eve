@@ -7,6 +7,10 @@ import { OrgTeamAdapter } from '../src/packs/hr/people/adapters/org-team.adapter
 import { PeopleDirectoryAdapter } from '../src/packs/hr/org/adapters/people-directory.adapter';
 import { OrgUnitSubtreeAdapter } from '../src/packs/hr/org/adapters/unit-subtree.adapter';
 import { registerOrgScopedModels } from '../src/packs/hr/org/org.module';
+import { ApplyAssignment } from '../src/packs/hr/org/commands/apply-assignment';
+import { ChangeRequests } from '../src/packs/hr/org/commands/change-requests';
+import { OrgCorrections } from '../src/packs/hr/org/commands/corrections';
+import { StructureWriter } from '../src/packs/hr/org/commands/structure-writer';
 import { OrgEventSink } from '../src/packs/hr/org/events/org-event-sink';
 import { ORG_EVENTS } from '../src/packs/hr/org/events/org.events';
 import { StructureImport } from '../src/packs/hr/org/import/structure.import-target';
@@ -92,7 +96,49 @@ export function createHr(platform: Platform) {
     platform.jurisdictions,
     platform.clock,
   );
-  return { people, org, rules, eventSink, profiles };
+  const writer = new StructureWriter(platform.audit, eventSink, platform.clock);
+  const changeRequests = new ChangeRequests(
+    platform.scopedDb,
+    platform.access,
+    platform.txRunner,
+    platform.audit,
+    platform.approvals,
+    platform.ruleRuntime,
+    rules.checker,
+    writer,
+    eventSink,
+    platform.clock,
+    directory,
+  );
+  platform.approvalTypes.register(changeRequests.requestType());
+  const corrections = new OrgCorrections(
+    platform.scopedDb,
+    platform.access,
+    platform.txRunner,
+    platform.audit,
+    rules.checker,
+    directory,
+  );
+  const applyAssignment = new ApplyAssignment(
+    platform.scopedDb,
+    platform.txRunner,
+    platform.audit,
+    platform.approvals,
+    rules.checker,
+    eventSink,
+    platform.clock,
+    directory,
+  );
+  return {
+    people,
+    org,
+    rules,
+    eventSink,
+    profiles,
+    changeRequests,
+    corrections,
+    applyAssignment,
+  };
 }
 
 /** The real app's database client, for seeding fixtures in HTTP tests (packs cannot import it). */

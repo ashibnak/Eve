@@ -183,6 +183,17 @@ export class OrgFixture {
     await chunks(stamp(this.rows.assignments, 'recordedAt'), (data) =>
       db.orgAssignment.createMany({ data: data as never }),
     );
+    // Leave the company's code counters past the codes used here, like a real write would.
+    const counters = await db.orgCompany.findUniqueOrThrow({
+      where: { companyId: this.companyId },
+    });
+    await db.orgCompany.update({
+      where: { companyId: this.companyId },
+      data: {
+        nextUnitNo: Math.max(counters.nextUnitNo, this.units + 1),
+        nextPositionNo: Math.max(counters.nextPositionNo, this.positions + 1),
+      },
+    });
     for (const key of Object.keys(this.rows) as (keyof typeof this.rows)[]) this.rows[key] = [];
   }
 }

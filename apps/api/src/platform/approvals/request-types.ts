@@ -12,6 +12,8 @@ export interface ApprovalContext<TPayload> {
   /** Rule template versions fixed at submission: `{ "<rule id>": <version> }`. */
   pinnedRules: Readonly<Record<string, number>>;
   requestedBy: string;
+  /** The approval steps (role names) the request went through, fixed at submission. */
+  chain: readonly string[];
 }
 
 /**
@@ -35,6 +37,14 @@ export interface ApprovalRequestType<TPayload extends z.ZodType = z.ZodType> {
     payload: z.output<TPayload>,
     context: { companyId: string | null; today: platformV1.BusinessDate },
   ): Promise<void> | void;
+  /**
+   * Steps (role names) added after the configured chain for this payload, fixed at submission,
+   * e.g. a special approval for a change effective far in the past.
+   */
+  extraSteps?(
+    payload: z.output<TPayload>,
+    context: { companyId: string | null; today: platformV1.BusinessDate },
+  ): readonly string[];
   apply(tx: Tx, request: ApprovalContext<z.output<TPayload>>): Promise<void>;
   /**
    * The last day the request can still be applied (e.g. a parameter change's effective date).
@@ -79,6 +89,10 @@ export class ApprovalTypeRegistry {
     this.settings.register(chain);
     this.types.set(definition.type, definition);
     this.chains.set(definition.type, chain);
+  }
+
+  has(type: string): boolean {
+    return this.types.has(type);
   }
 
   get(type: string): ApprovalRequestType {

@@ -8,6 +8,10 @@ export const OrgPermissions = {
   importStructure: 'org.structure.import',
   /** Register a company's org profile and unit levels (spec §2: the system administrator). */
   manageCompany: 'org.company.manage',
+  /** Request a structure change (S8). */
+  requestChange: 'org.structure.change',
+  /** Correct a wrong entry in place (S8). */
+  correct: 'org.structure.correct',
 } as const;
 
 /**
@@ -21,6 +25,8 @@ export const OrgDataOwnerRole: RoleDefinition = {
     OrgPermissions.read,
     OrgPermissions.manageFindings,
     OrgPermissions.importStructure,
+    OrgPermissions.requestChange,
+    OrgPermissions.correct,
     'people.person.read',
   ],
   allowedScopes: ['customer', 'company'],

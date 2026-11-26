@@ -1,4 +1,5 @@
 import { Module, type OnModuleInit } from '@nestjs/common';
+import { ApprovalTypeRegistry } from '../../../platform/approvals/request-types';
 import { RoleRegistry, SystemAdminRole } from '../../../platform/auth/roles';
 import { ImportService } from '../../../platform/connectors/import.service';
 import { EventRegistry } from '../../../platform/events/event-registry';
@@ -9,6 +10,11 @@ import { registerScopedModel } from '../../../platform/scope/scoped-prisma';
 import { UnitSubtreeRegistry } from '../../../platform/scope/unit-subtree.registry';
 import { peopleDirectoryProvider } from './adapters/people-directory.adapter';
 import { OrgUnitSubtreeAdapter } from './adapters/unit-subtree.adapter';
+import { ApplyAssignment } from './commands/apply-assignment';
+import { ChangeRequests } from './commands/change-requests';
+import { ChangesController } from './commands/changes.controller';
+import { OrgCorrections } from './commands/corrections';
+import { StructureWriter } from './commands/structure-writer';
 import { OrgEventSink } from './events/org-event-sink';
 import { ORG_EVENTS } from './events/org.events';
 import { FindingsCommands } from './findings/findings.commands';
@@ -37,6 +43,8 @@ export function registerOrgScopedModels(): void {
   registerScopedModel('OrgRuleRun', { companyField: 'companyId' });
   registerScopedModel('OrgFinding', { companyField: 'companyId' });
   registerScopedModel('OrgPendingEvent', { companyField: 'companyId' });
+  registerScopedModel('OrgChangeRequest', { companyField: 'companyId' });
+  registerScopedModel('OrgAppliedAction', { companyField: 'companyId' });
 }
 
 /**
@@ -44,7 +52,7 @@ export function registerOrgScopedModels(): void {
  * findings inbox. Owns the org_* tables.
  */
 @Module({
-  controllers: [OrgController, FindingsController, OrgProfileController],
+  controllers: [OrgController, FindingsController, OrgProfileController, ChangesController],
   providers: [
     OrgService,
     peopleDirectoryProvider,
@@ -55,8 +63,12 @@ export function registerOrgScopedModels(): void {
     OrgEventSink,
     OrgProfileService,
     StructureImport,
+    StructureWriter,
+    ChangeRequests,
+    OrgCorrections,
+    ApplyAssignment,
   ],
-  exports: [OrgService],
+  exports: [OrgService, ApplyAssignment],
 })
 export class OrgModule implements OnModuleInit {
   constructor(
@@ -70,6 +82,8 @@ export class OrgModule implements OnModuleInit {
     private readonly eventSink: OrgEventSink,
     private readonly imports: ImportService,
     private readonly structureImport: StructureImport,
+    private readonly approvalTypes: ApprovalTypeRegistry,
+    private readonly changeRequests: ChangeRequests,
   ) {}
 
   onModuleInit(): void {
@@ -79,6 +93,7 @@ export class OrgModule implements OnModuleInit {
     this.roles.extend(SystemAdminRole.name, [OrgPermissions.manageCompany]);
     this.eventRegistry.register(...ORG_EVENTS);
     this.imports.registerTarget(this.structureImport.target());
+    this.approvalTypes.register(this.changeRequests.requestType());
     // Spec §2: auditors read everything, the structure included.
     this.roles.extend('auditor', [OrgPermissions.read]);
     this.unitSubtree.use(new OrgUnitSubtreeAdapter(this.db));

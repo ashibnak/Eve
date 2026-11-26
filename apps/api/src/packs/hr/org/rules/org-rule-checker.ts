@@ -21,10 +21,10 @@ export interface BlockingResult {
 export class OrgRuleChecker {
   constructor(private readonly runtime: RuleRuntime) {}
 
-  async checkBlocking(snapshot: OrgSnapshot): Promise<BlockingResult> {
+  async checkBlocking(snapshot: OrgSnapshot, codes?: readonly string[]): Promise<BlockingResult> {
     const records: platformV1.RuleEvaluationRecord[] = [];
     const violations: BlockingResult['violations'] = [];
-    for (const rule of BLOCKING_STRUCTURE_RULES) {
+    for (const rule of BLOCKING_STRUCTURE_RULES.filter((r) => !codes || codes.includes(r.code))) {
       const record = await this.runtime.evaluate(
         { id: rule.template.id, version: rule.template.version },
         rule.input(snapshot),
@@ -35,6 +35,26 @@ export class OrgRuleChecker {
         violations.push({ ...v, code: rule.code });
     }
     return { ok: violations.length === 0, violations, records };
+  }
+
+  /**
+   * The blocking violations a write would introduce: those in `after` that `before` did not have.
+   * A problem already in the data (it has its own finding) does not stop an unrelated change.
+   */
+  async checkChange(
+    before: OrgSnapshot,
+    after: OrgSnapshot,
+    codes?: readonly string[],
+  ): Promise<BlockingResult> {
+    const [was, will] = await Promise.all([
+      this.checkBlocking(before, codes),
+      this.checkBlocking(after, codes),
+    ]);
+    const key = (v: BlockingResult['violations'][number]) =>
+      `${v.code}|${v.subject.type}|${v.subject.id}|${v.key}`;
+    const existing = new Set(was.violations.map(key));
+    const introduced = will.violations.filter((v) => !existing.has(key(v)));
+    return { ok: introduced.length === 0, violations: introduced, records: will.records };
   }
 
   /** R4: a change effective more than the allowed days in the past needs a special approval. */

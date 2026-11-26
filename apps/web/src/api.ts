@@ -24,6 +24,29 @@ export async function api<T>(method: string, path: string, body?: unknown): Prom
   return data as T;
 }
 
+/** Multipart upload (a file plus text fields) to /api/v1. */
+export async function upload<T>(
+  path: string,
+  fields: Record<string, string>,
+  file: File,
+): Promise<T> {
+  const form = new FormData();
+  for (const [k, v] of Object.entries(fields)) form.append(k, v);
+  form.append('file', file);
+  const res = await fetch(`/api/v1${path}`, {
+    method: 'POST',
+    credentials: 'same-origin',
+    body: form,
+  });
+  const text = await res.text();
+  const data: unknown = text ? JSON.parse(text) : null;
+  if (!res.ok) {
+    const code = (data as { error?: unknown } | null)?.error;
+    throw new ApiError(res.status, typeof code === 'string' ? code : undefined);
+  }
+  return data as T;
+}
+
 export interface Me {
   id: string;
   username: string;

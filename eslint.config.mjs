@@ -58,6 +58,10 @@ export default tseslint.config(
               'autoComplete',
               'inputMode',
               'data-testid',
+              // Accessibility states and in-app routes, never shown to people.
+              'aria-hidden',
+              'aria-current',
+              'to',
             ],
           },
         },

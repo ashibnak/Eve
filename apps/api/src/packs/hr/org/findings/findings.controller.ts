@@ -20,6 +20,7 @@ const ListQuery = z.object({
   status: orgV1.FindingStatusSchema.optional(),
   severity: orgV1.SeveritySchema.optional(),
   code: z.string().min(1).optional(),
+  subjectId: z.uuid().optional(),
   limit: z.coerce.number().int().min(1).max(5000).optional(),
 });
 const ReasonBody = z.object({ reason: z.string().trim().min(1).max(1000) });

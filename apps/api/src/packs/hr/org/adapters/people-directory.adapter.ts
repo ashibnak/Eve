@@ -10,7 +10,7 @@ import {
 
 type People = Pick<
   PeopleService,
-  'getMany' | 'employedAmong' | 'myPersonId' | 'companyOf' | 'idsByPersonnelCode'
+  'getMany' | 'employedAmong' | 'myPersonId' | 'companyOf' | 'idsByPersonnelCode' | 'myCompanies'
 >;
 
 /** PeopleDirectoryPort over people's public service (resolved lazily: people also reads org). */
@@ -49,6 +49,10 @@ export class PeopleDirectoryAdapter implements PeopleDirectoryPort {
 
   companyOf(personId: string): Promise<string | null> {
     return this.people().companyOf(personId);
+  }
+
+  myCompanies(): Promise<string[]> {
+    return this.people().myCompanies();
   }
 
   idsByPersonnelCode(companyId: string): Promise<ReadonlyMap<string, string>> {

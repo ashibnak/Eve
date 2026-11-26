@@ -20,6 +20,7 @@ export class FindingsService {
         status: input.status ?? 'open',
         severity: input.severity ?? { in: ['blocking', 'warning'] },
         ...(input.code ? { code: input.code } : {}),
+        ...(input.subjectId ? { subjectId: input.subjectId } : {}),
       },
       // Blocking before warning before info, then the oldest first.
       orderBy: [{ severity: 'asc' }, { firstSeenAt: 'asc' }, { id: 'asc' }],

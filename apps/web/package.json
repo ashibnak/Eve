@@ -8,11 +8,14 @@
     "build": "tsc -p tsconfig.json --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "e2e": "playwright test"
+    "e2e": "pnpm --filter @eve/contracts --filter @eve/jurisdiction-ir build && playwright test"
   },
   "dependencies": {
     "@eve/contracts": "workspace:*",
+    "@eve/jurisdiction-ir": "workspace:*",
     "@fontsource-variable/vazirmatn": "5.3.0",
+    "@xyflow/react": "12.12.1",
+    "lucide-react": "1.72.0",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },

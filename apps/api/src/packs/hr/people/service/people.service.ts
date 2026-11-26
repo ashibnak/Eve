@@ -155,6 +155,19 @@ export class PeopleService implements peopleV1.PeopleReadService, peopleV1.Peopl
     return new Map(rows.map((r) => [r.personnelCode, r.id]));
   }
 
+  /** Companies where the signed-in user's login is linked to a person (ids only). */
+  async myCompanies(): Promise<string[]> {
+    const actor = currentActor();
+    const userId =
+      actor?.kind === 'user' ? actor.id : actor?.kind === 'agent' ? actor.onBehalfOf : null;
+    if (!userId) return [];
+    const links = await this.db.afterOwnCheck().peopleUserLink.findMany({
+      where: { userId, endedAt: null },
+      select: { companyId: true },
+    });
+    return [...new Set(links.map((l) => l.companyId))];
+  }
+
   /** The company a person record belongs to, or null (an id only, no personal data). */
   async companyOf(personId: string): Promise<string | null> {
     const row = await this.db.afterOwnCheck().peoplePerson.findUnique({

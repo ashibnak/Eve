@@ -27,3 +27,8 @@ export function t(
     (match, name: string) => params[name] ?? match,
   );
 }
+
+/** Whether a key built at run time (e.g. from an API value) has a message. */
+export function hasMessage(key: string): key is MessageKey {
+  return key in fa;
+}

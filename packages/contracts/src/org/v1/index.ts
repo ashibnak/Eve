@@ -286,6 +286,8 @@ export const OrgTools = {
       status: FindingStatusSchema.optional(),
       severity: SeveritySchema.optional(),
       code: z.string().optional(),
+      /** Findings on one unit, position or person (S9 position card). */
+      subjectId: z.uuid().optional(),
       limit: z.number().int().min(1).max(5000).optional(),
     }),
     output: z.array(FindingViewSchema),
@@ -617,3 +619,70 @@ export const PositionCorrectionSchema = z.object({
     .refine((c) => Object.keys(c).length > 0, 'Nothing to correct'),
   reason: z.string().trim().min(1).max(1000),
 });
+
+// ── Workspace reads for the web UI (S9) ───────────────────────────────────────
+
+/** A company the caller may work in, and what they may do there (the UI shows only that). */
+export const CompanyWorkspaceSchema = z.object({
+  companyId: z.uuid(),
+  nameFa: z.string(),
+  nameEn: z.string().nullable(),
+  codePrefix: z.string(),
+  /** The caller's own person in the company (login link), for "my position" and team views. */
+  myPersonId: z.uuid().nullable(),
+  can: z.object({
+    readStructure: z.boolean(),
+    manageFindings: z.boolean(),
+    importStructure: z.boolean(),
+    requestChange: z.boolean(),
+    correct: z.boolean(),
+    approveChange: z.boolean(),
+    manageCompany: z.boolean(),
+  }),
+});
+export type CompanyWorkspace = z.infer<typeof CompanyWorkspaceSchema>;
+
+/** A position's whole dated history (spec §9 position card). */
+export const PositionHistorySchema = z.object({
+  positionId: z.uuid(),
+  code: z.string(),
+  versions: z.array(
+    z.object({
+      validFrom: BusinessDateSchema,
+      validTo: BusinessDateSchema.nullable(),
+      legacyCode: z.string().nullable(),
+      title: Localized,
+      unitId: z.uuid(),
+      unitName: z.string().nullable(),
+      type: PositionTypeSchema,
+      fte: z.number(),
+      supervisory: z.boolean(),
+      status: PositionStatusSchema,
+      source: PositionSourceSchema,
+    }),
+  ),
+  lines: z.array(
+    z.object({
+      kind: LineKindSchema,
+      toPositionId: z.uuid(),
+      toCode: z.string(),
+      validFrom: BusinessDateSchema,
+      validTo: BusinessDateSchema.nullable(),
+    }),
+  ),
+  assignments: z.array(
+    z.object({
+      personId: z.uuid(),
+      /** Only when the caller may read the person. */
+      personnelCode: z.string().nullable(),
+      name: z.object({ first: z.string(), last: z.string() }).nullable(),
+      kind: AssignmentKindSchema,
+      timeShare: z.number(),
+      source: z.string(),
+      orderNumber: z.string().nullable(),
+      validFrom: BusinessDateSchema,
+      validTo: BusinessDateSchema.nullable(),
+    }),
+  ),
+});
+export type PositionHistory = z.infer<typeof PositionHistorySchema>;

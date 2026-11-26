@@ -27,6 +27,8 @@ export interface PeopleDirectoryPort {
   /** The caller's own person in a company, through their login link; null when unlinked. */
   me(companyId: string): Promise<string | null>;
   companyOf(personId: string): Promise<string | null>;
+  /** Companies where the caller's login is linked to a person. */
+  myCompanies(): Promise<string[]>;
   /** Person ids by personnel code in a company (structure import). */
   idsByPersonnelCode(companyId: string): Promise<ReadonlyMap<string, string>>;
 }

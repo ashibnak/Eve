@@ -112,3 +112,23 @@
     outline-offset: 2px;
   }
 }
+
+/* Printing the chart ("Print → Save as PDF", decision 2026-11-26): the page without the menu and
+ * tools, the chart frame over the whole sheet. A real PDF service comes with document generation. */
+@media print {
+  @page {
+    size: A3 landscape;
+    margin: 12mm;
+  }
+  body {
+    background: var(--surface);
+  }
+  .org-chart {
+    block-size: 180mm;
+    border: 0;
+  }
+  .react-flow__controls,
+  .react-flow__minimap {
+    display: none;
+  }
+}

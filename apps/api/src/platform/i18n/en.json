@@ -1,4 +1,21 @@
 {
   "auth.otp": "Your HR Ops sign-in code: {code}. It is valid for {minutes} minutes.",
-  "approvals.expired": "Request \"{requestType}\" ({requestId}) expired: its effective date ({date}) has passed."
+  "approvals.expired": "Request \"{requestType}\" ({requestId}) expired: its effective date ({date}) has passed.",
+  "org.export.positions.code": "Position code",
+  "org.export.positions.legacy": "Legacy code",
+  "org.export.positions.title": "Title",
+  "org.export.positions.unit_code": "Unit code",
+  "org.export.positions.unit": "Unit",
+  "org.export.positions.type": "Type",
+  "org.export.positions.fte": "FTE",
+  "org.export.positions.supervisory": "Supervisory",
+  "org.export.positions.status": "Status",
+  "org.export.positions.source": "Source",
+  "org.export.positions.occupancy": "Occupancy",
+  "org.export.positions.incumbents": "Incumbents",
+  "org.export.positions.reports_to": "Reports to",
+  "org.export.positions.as_of": "As of",
+  "org.export.positions.sheet": "Positions",
+  "org.export.positions.yes": "yes",
+  "org.export.positions.no": "no"
 }

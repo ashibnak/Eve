@@ -29,6 +29,8 @@ import { OrgProfileService } from './profile/profile.service';
 import { OrgRuleChecker } from './rules/org-rule-checker';
 import { ORG_RULE_TEMPLATES } from './rules/index';
 import { OrgService } from './service/org.service';
+import { OrgWorkspace } from './service/workspace.service';
+import { WorkspaceController } from './workspace.controller';
 
 /** Registers org's tables with the scope layer (version tables also by unit, for unit grants). */
 export function registerOrgScopedModels(): void {
@@ -52,7 +54,13 @@ export function registerOrgScopedModels(): void {
  * findings inbox. Owns the org_* tables.
  */
 @Module({
-  controllers: [OrgController, FindingsController, OrgProfileController, ChangesController],
+  controllers: [
+    OrgController,
+    FindingsController,
+    OrgProfileController,
+    ChangesController,
+    WorkspaceController,
+  ],
   providers: [
     OrgService,
     peopleDirectoryProvider,
@@ -67,6 +75,7 @@ export function registerOrgScopedModels(): void {
     ChangeRequests,
     OrgCorrections,
     ApplyAssignment,
+    OrgWorkspace,
   ],
   exports: [OrgService, ApplyAssignment],
 })

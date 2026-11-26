@@ -77,6 +77,8 @@ export interface PeopleDirectoryService {
     asOf: z.infer<typeof BusinessDateSchema>,
   ): Promise<ReadonlySet<string>>;
   companyOf(personId: string): Promise<string | null>;
+  /** Companies where the caller's login is linked to a person (S9 company picker). */
+  myCompanies(): Promise<string[]>;
   /** Person ids of a company by personnel code (for imports that refer to people; S7). */
   idsByPersonnelCode(companyId: string): Promise<ReadonlyMap<string, string>>;
 }

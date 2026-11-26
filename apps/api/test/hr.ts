@@ -26,6 +26,7 @@ import { OrgRuleRunner } from '../src/packs/hr/org/findings/rule-runner';
 import { OrgRuleChecker } from '../src/packs/hr/org/rules/org-rule-checker';
 import { ORG_RULE_TEMPLATES } from '../src/packs/hr/org/rules/index';
 import { OrgService } from '../src/packs/hr/org/service/org.service';
+import { OrgWorkspace } from '../src/packs/hr/org/service/workspace.service';
 import type { INestApplicationContext } from '@nestjs/common';
 import { PrismaService } from '../src/platform/db/prisma.service';
 import type { Platform } from './platform';
@@ -129,9 +130,18 @@ export function createHr(platform: Platform) {
     platform.clock,
     directory,
   );
+  const workspace = new OrgWorkspace(
+    platform.scopedDb,
+    platform.access,
+    org,
+    platform.config,
+    platform.clock,
+    directory,
+  );
   return {
     people,
     org,
+    workspace,
     rules,
     eventSink,
     profiles,

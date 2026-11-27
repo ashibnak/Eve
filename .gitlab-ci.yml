@@ -39,6 +39,8 @@ test:
     POSTGRES_PASSWORD: postgres
     TEST_DATABASE_ADMIN_URL: postgresql://postgres:postgres@postgres:5432/postgres
   script:
+    # Pinned headless Chromium for document rendering (S11), with its system libraries.
+    - pnpm --filter @eve/api exec playwright-core install --with-deps chromium-headless-shell
     - pnpm test
     - pnpm test:perf
     - pnpm db:check-drift

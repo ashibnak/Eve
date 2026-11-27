@@ -25,7 +25,7 @@ import { defineEvent, EventRegistry } from '../events/event-registry';
 import { EventPublisher } from '../events/event-publisher';
 import { JurisdictionRegistry } from '../jurisdiction/jurisdiction.registry';
 import { AccessService } from '../scope/access.service';
-import { FileStore } from './file-store';
+import { FileStore } from '../files/file-store';
 import {
   convertCell,
   type DiffEntry,

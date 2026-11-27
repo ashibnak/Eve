@@ -2,6 +2,7 @@ export * from './actor.js';
 export * from './approvals.js';
 export * from './audit-source.js';
 export * from './dates.js';
+export * from './documents.js';
 export * from './event-envelope.js';
 export * from './jurisdiction.js';
 export * from './money.js';

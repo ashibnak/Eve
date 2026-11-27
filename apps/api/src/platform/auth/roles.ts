@@ -20,6 +20,7 @@ export const Permissions = {
   usageRead: 'platform.usage.read',
   rulesRead: 'platform.rules.read',
   rulesPropose: 'platform.rules.propose',
+  documentsRead: 'platform.documents.read',
 } as const;
 
 /**
@@ -44,7 +45,12 @@ export const SystemAdminRole: RoleDefinition = {
 /** Auditor: read-only, including the audit log, customer-wide or for chosen companies. */
 export const AuditorRole: RoleDefinition = {
   name: 'auditor',
-  permissions: [Permissions.auditRead, Permissions.configRead, Permissions.companyRead],
+  permissions: [
+    Permissions.auditRead,
+    Permissions.configRead,
+    Permissions.companyRead,
+    Permissions.documentsRead,
+  ],
   allowedScopes: ['customer', 'company'],
 };
 

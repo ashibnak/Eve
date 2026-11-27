@@ -27,6 +27,7 @@ model CoreCompany {
   usageEntries    UsageLedger[]
   ruleParams      RulesParamVersion[]
   approvals       ApprovalsRequest[]
+  documents       DocDocument[]
   imports         ConnectorsImport[]
   importMappings  ConnectorsMapping[]
   people          PeoplePerson[]
@@ -686,4 +687,29 @@ model OrgAppliedAction {
   appliedAt  DateTime         @map("applied_at") @db.Timestamptz(6)
 
   @@map("org_applied_action")
+}
+
+/// Issued documents (S11, platform/documents). Insert-only (migration 0020).
+model DocDocument {
+  id              String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId       String      @map("company_id") @db.Uuid
+  company         CoreCompany @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  templateId      String      @map("template_id")
+  templateVersion Int         @map("template_version")
+  layoutId        String      @map("layout_id")
+  layoutVersion   Int         @map("layout_version")
+  language        String
+  number          String?
+  issuedOn        DateTime    @map("issued_on") @db.Date
+  inputsHash      String      @map("inputs_hash") @db.Char(64)
+  fileRef         String      @map("file_ref") @db.Char(64)
+  fileSize        Int         @map("file_size")
+  issuedAt        DateTime    @map("issued_at") @db.Timestamptz(6)
+  actorKind       String      @map("actor_kind")
+  actorId         String      @map("actor_id")
+  source          String
+  correlationId   String      @map("correlation_id") @db.Uuid
+
+  @@index([companyId, issuedAt(sort: Desc)], map: "doc_document_company_idx")
+  @@map("doc_document")
 }

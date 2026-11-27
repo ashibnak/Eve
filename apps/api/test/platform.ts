@@ -10,8 +10,11 @@ import { AuthService } from '../src/platform/auth/auth.service';
 import { RoleRegistry } from '../src/platform/auth/roles';
 import { UserService } from '../src/platform/auth/user.service';
 import { ChannelRegistry } from '../src/platform/channels/channel';
-import { LocalDiskFileStore } from '../src/platform/connectors/file-store';
+import { LocalDiskFileStore } from '../src/platform/files/file-store';
 import { ImportService } from '../src/platform/connectors/import.service';
+import { DocumentService } from '../src/platform/documents/document.service';
+import { ChromiumPdfRenderer } from '../src/platform/documents/pdf';
+import { DocumentTemplateRegistry } from '../src/platform/documents/template';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -142,6 +145,22 @@ export function createPlatform(db: TestDatabase) {
     settings,
     eventRegistry,
   );
+  const pdf = new ChromiumPdfRenderer();
+  const documentTemplates = new DocumentTemplateRegistry();
+  const documents = new DocumentService(
+    prisma,
+    txRunner,
+    audit,
+    events,
+    config,
+    clock,
+    access,
+    jurisdictions,
+    files,
+    pdf,
+    settings,
+    eventRegistry,
+  );
   return {
     prisma,
     clock,
@@ -171,11 +190,15 @@ export function createPlatform(db: TestDatabase) {
     notifier,
     files,
     imports,
+    pdf,
+    documentTemplates,
+    documents,
     scopedDb,
     unitSubtree,
     async close() {
       await jobs.onApplicationShutdown();
       relay.onApplicationShutdown();
+      await pdf.onApplicationShutdown();
       await prisma.$disconnect();
     },
   };

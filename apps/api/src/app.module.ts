@@ -9,7 +9,9 @@ import { ConnectorsModule } from './platform/connectors/connectors.module';
 import { PlatformConfigModule } from './platform/config/config.module';
 import { ContextModule } from './platform/context/context.module';
 import { DbModule } from './platform/db/db.module';
+import { DocumentsModule } from './platform/documents/documents.module';
 import { EventsModule } from './platform/events/events.module';
+import { FilesModule } from './platform/files/files.module';
 import { HealthModule } from './platform/health/health.module';
 import { JobsModule } from './platform/jobs/jobs.module';
 import { JurisdictionModule } from './platform/jurisdiction/jurisdiction.module';
@@ -37,7 +39,9 @@ import { PeopleModule } from './packs/hr/people/people.module';
     AuthModule,
     ApprovalsModule,
     RulesModule,
+    FilesModule,
     ConnectorsModule,
+    DocumentsModule,
     UsageModule,
     HealthModule,
     // HR Ops pack (ADR-001): domain modules on top of the platform.

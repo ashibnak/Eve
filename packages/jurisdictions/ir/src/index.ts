@@ -4,6 +4,7 @@
  */
 import type { platformV1 } from '@eve/contracts';
 import { persianCalendar } from './calendar.js';
+import { iranDocumentLayout } from './document-layout.js';
 import { IranCompanyLegalFields } from './legal-fields.js';
 
 export {
@@ -14,6 +15,7 @@ export {
   toBusinessDate,
 } from './calendar.js';
 export { IranCompanyLegalFields, isValidLegalNationalId } from './legal-fields.js';
+export { iranDocumentLayout } from './document-layout.js';
 
 export const jurisdiction: platformV1.JurisdictionPack = {
   code: 'ir',
@@ -22,4 +24,5 @@ export const jurisdiction: platformV1.JurisdictionPack = {
   defaultCurrency: 'IRR' as platformV1.CurrencyCode,
   calendar: persianCalendar,
   companyLegalFields: IranCompanyLegalFields,
+  documentLayout: iranDocumentLayout,
 };

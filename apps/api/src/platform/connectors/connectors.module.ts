@@ -1,6 +1,5 @@
 import { Global, Module, type OnModuleInit } from '@nestjs/common';
 import { JobsService } from '../jobs/jobs.service';
-import { FileStore, LocalDiskFileStore } from './file-store';
 import { ImportService } from './import.service';
 import { ImportsController } from './imports.controller';
 
@@ -8,9 +7,8 @@ import { ImportsController } from './imports.controller';
 @Global()
 @Module({
   controllers: [ImportsController],
-  // The folder comes from EVE_FILES_DIR; built by a factory so Nest does not try to inject it.
-  providers: [{ provide: FileStore, useFactory: () => new LocalDiskFileStore() }, ImportService],
-  exports: [FileStore, ImportService],
+  providers: [ImportService],
+  exports: [ImportService],
 })
 export class ConnectorsModule implements OnModuleInit {
   constructor(

@@ -51,6 +51,8 @@ jobs:
           node-version-file: .nvmrc
       - run: corepack enable pnpm
       - run: pnpm install --frozen-lockfile
+      # Pinned headless Chromium for document rendering (S11), with its system libraries.
+      - run: pnpm --filter @eve/api exec playwright-core install --with-deps chromium-headless-shell
       - run: pnpm test
       - run: pnpm test:perf
       - run: pnpm db:check-drift

@@ -15,6 +15,7 @@ export const SCOPED_MODELS: Record<string, ScopedModel> = {
   CoreCompany: { companyField: 'id' },
   ConfigSetting: { companyField: 'companyId' },
   AuditLog: { companyField: 'companyId' },
+  DocDocument: { companyField: 'companyId' },
 };
 
 /**

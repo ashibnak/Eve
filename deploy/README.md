@@ -28,6 +28,12 @@ R1 delivers one-time login codes only through the stub channel. To see codes in 
 
 Import files live on the `eve_files` volume (`/var/lib/eve/files`), named by their SHA-256. Files of committed imports are kept permanently as audit evidence; those of discarded or abandoned imports are deleted after 30 days (setting `platform.import_retention_days`). Back up this volume together with the database.
 
+## Issued documents
+
+Issued PDFs (letters, certificates) are stored on the same `eve_files` volume and never deleted. They are rendered by a headless Chromium baked into the `api` image at build time, so no internet access is needed at run time. Before a company can be issued documents, a system administrator sets its letterhead: upload a PNG or JPEG logo (optional) with `POST /api/v1/platform/documents/letterhead-logo`, then set `platform.documents.letterhead` (`nameFa` required; `nameEn`, `addressFa`, `phone`, `footerFa`, `logoFileRef` optional) customer-wide or per company.
+
+For local development, install the same browser once: `pnpm --filter @eve/api exec playwright-core install chromium-headless-shell`.
+
 ## Platform roles
 
 | Role                  | Scope               | Can                                                                                                                               |

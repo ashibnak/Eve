@@ -1,5 +1,6 @@
 import type { z } from 'zod';
 import type { BusinessDate } from './dates.js';
+import type { DocumentLayout } from './documents.js';
 import type { CurrencyCode } from './money.js';
 
 /** A date in a jurisdiction's official calendar (e.g. Persian/Jalali for `ir`). */
@@ -37,4 +38,6 @@ export interface JurisdictionPack {
   readonly calendar: JurisdictionCalendar;
   /** Legal identity fields of a company in this jurisdiction, validated on input. */
   readonly companyLegalFields: z.ZodType;
+  /** The frame issued documents are printed in (S11). Optional: added in v1, additively. */
+  readonly documentLayout?: DocumentLayout;
 }

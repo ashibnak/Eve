@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common';
-import { type Channel, maskAddress, type OutboundMessage } from './channel';
+import { type Channel, maskAddress, type OutboundDocument, type OutboundMessage } from './channel';
 
 export interface StubDelivery {
   address: string;
@@ -34,6 +34,20 @@ export class StubChannel implements Channel {
       `Stub message "${message.template}" to ${maskAddress(address)} ${JSON.stringify(shown)}`,
     );
     return Promise.resolve();
+  }
+
+  private readonly documents: { address: string; document: OutboundDocument }[] = [];
+
+  sendDocument(address: string, document: OutboundDocument): Promise<void> {
+    this.documents.push({ address, document });
+    if (this.documents.length > 20) this.documents.shift();
+    this.logger.log(`Stub document "${document.fileName}" to ${maskAddress(address)}`);
+    return Promise.resolve();
+  }
+
+  /** The most recent document sent to an address (tests). */
+  lastDocumentTo(address: string): OutboundDocument | undefined {
+    return this.documents.findLast((d) => d.address === address)?.document;
   }
 
   /** The most recent message sent to an address (tests and local development). */

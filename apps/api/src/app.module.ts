@@ -3,6 +3,7 @@ import { jurisdiction as ir } from '@eve/jurisdiction-ir';
 import { ApprovalsModule } from './platform/approvals/approvals.module';
 import { AuditModule } from './platform/audit/audit.module';
 import { AuthModule } from './platform/auth/auth.module';
+import { ChannelLinkingModule } from './platform/channels/channel-linking.module';
 import { ChannelsModule } from './platform/channels/channels.module';
 import { CompanyModule } from './platform/company/company.module';
 import { ConnectorsModule } from './platform/connectors/connectors.module';
@@ -37,6 +38,7 @@ import { PeopleModule } from './packs/hr/people/people.module';
     ChannelsModule,
     ScopeModule,
     AuthModule,
+    ChannelLinkingModule,
     ApprovalsModule,
     RulesModule,
     FilesModule,

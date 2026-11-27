@@ -17,5 +17,13 @@
   "org.export.positions.as_of": "As of",
   "org.export.positions.sheet": "Positions",
   "org.export.positions.yes": "yes",
-  "org.export.positions.no": "no"
+  "org.export.positions.no": "no",
+  "channels.link.welcome": "Welcome to HR Ops. To link your account, tap \"Share my number\".",
+  "channels.link.share_button": "Share my number",
+  "channels.link.own_only": "Please send your own number, using the \"Share my number\" button.",
+  "channels.link.not_found": "This number was not found in the employee records. Please contact HR.",
+  "channels.link.too_many": "Too many attempts. Please try again tomorrow or contact HR.",
+  "channels.link.linked": "Your account is linked. HR Ops messages and login codes will now come to this chat.",
+  "channels.link.already": "Your account is already linked.",
+  "channels.services_coming": "Your account is linked. Letters, certificates and leave will soon be available here."
 }

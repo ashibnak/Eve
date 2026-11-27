@@ -10,13 +10,23 @@ export interface OutboundMessage {
   secretParams?: readonly string[];
 }
 
+/** A file for a person, e.g. an issued PDF (S11). */
+export interface OutboundDocument {
+  content: Buffer;
+  fileName: string;
+  /** Message key for a short caption, rendered like a message. */
+  caption?: Omit<OutboundMessage, 'secretParams'>;
+}
+
 /**
- * A way to reach a person (ADR-010): Bale and web chat are the first real adapters; Slack, Teams
- * or WhatsApp later only add an adapter. R1 ships only the stub.
+ * A way to reach a person (ADR-010): Bale (S12) and web chat are the first real adapters; Slack,
+ * Teams or WhatsApp later only add an adapter. Channels that cannot carry files omit
+ * `sendDocument`.
  */
 export interface Channel {
   readonly kind: string;
   send(address: string, message: OutboundMessage): Promise<void>;
+  sendDocument?(address: string, document: OutboundDocument): Promise<void>;
 }
 
 /** Keeps the last four characters only, e.g. `…4567`, for logs and UI hints. */

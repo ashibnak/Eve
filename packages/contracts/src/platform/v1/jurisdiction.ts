@@ -40,4 +40,6 @@ export interface JurisdictionPack {
   readonly companyLegalFields: z.ZodType;
   /** The frame issued documents are printed in (S11). Optional: added in v1, additively. */
   readonly documentLayout?: DocumentLayout;
+  /** International calling code without `+` (e.g. `98`), for matching phone numbers (S12). */
+  readonly phoneCountryCode?: string;
 }

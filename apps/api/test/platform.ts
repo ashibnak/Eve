@@ -20,6 +20,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { StubChannel } from '../src/platform/channels/stub.channel';
 import { UserNotifier } from '../src/platform/channels/user-notifier';
+import { ChannelIdentities } from '../src/platform/channels/identity';
+import { InboundHandlers } from '../src/platform/channels/inbound';
+import { ChannelLinking } from '../src/platform/channels/linking';
 import { CompanyService } from '../src/platform/company/company.service';
 import { ConfigService } from '../src/platform/config/config.service';
 import { SettingsRegistry, TimeZoneSetting } from '../src/platform/config/settings';
@@ -145,6 +148,18 @@ export function createPlatform(db: TestDatabase) {
     settings,
     eventRegistry,
   );
+  const identities = new ChannelIdentities();
+  const inboundHandlers = new InboundHandlers();
+  const linking = new ChannelLinking(
+    prisma,
+    txRunner,
+    audit,
+    users,
+    config,
+    jurisdictions,
+    identities,
+    clock,
+  );
   const pdf = new ChromiumPdfRenderer();
   const documentTemplates = new DocumentTemplateRegistry();
   const documents = new DocumentService(
@@ -190,6 +205,9 @@ export function createPlatform(db: TestDatabase) {
     notifier,
     files,
     imports,
+    identities,
+    inboundHandlers,
+    linking,
     pdf,
     documentTemplates,
     documents,

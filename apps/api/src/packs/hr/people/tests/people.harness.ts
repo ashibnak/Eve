@@ -2,6 +2,7 @@
  * Test wiring for the people module on top of the hand-built test platform (same wiring as
  * PeopleModule, without Nest), plus an anonymized people-file generator.
  */
+import { PeopleChannelIdentity } from '../adapters/channel-identity.adapter';
 import ExcelJS from 'exceljs';
 import type { Platform } from '../../../../../test/platform';
 import { registerScopedModel } from '../../../../platform/scope/scoped-prisma';
@@ -31,7 +32,16 @@ export function createPeople(platform: Platform, team: TeamPort = new NoTeamAdap
   );
   const commands = new PeopleCommands(platform.scopedDb, platform.txRunner, writer, platform.users);
   platform.imports.registerTarget(personImportTarget({ db: platform.scopedDb, writer }));
-  return { writer, service, commands };
+  const channelIdentity = new PeopleChannelIdentity(
+    platform.scopedDb,
+    service,
+    writer,
+    platform.jurisdictions,
+    platform.config,
+    platform.clock,
+  );
+  platform.identities.use(channelIdentity);
+  return { writer, service, commands, channelIdentity };
 }
 
 /** Deterministic pseudo-random numbers, so a fixture is the same on every run. */

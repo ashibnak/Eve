@@ -17,5 +17,13 @@
   "org.export.positions.as_of": "در تاریخ",
   "org.export.positions.sheet": "پست‌ها",
   "org.export.positions.yes": "بله",
-  "org.export.positions.no": "خیر"
+  "org.export.positions.no": "خیر",
+  "channels.link.welcome": "به HR Ops خوش آمدید. برای وصل کردن حساب، دکمهٔ «ارسال شمارهٔ من» را بزنید.",
+  "channels.link.share_button": "ارسال شمارهٔ من",
+  "channels.link.own_only": "فقط شمارهٔ خودتان را با همان دکمهٔ «ارسال شمارهٔ من» بفرستید.",
+  "channels.link.not_found": "این شماره در پروندهٔ کارکنان پیدا نشد. لطفاً با واحد منابع انسانی تماس بگیرید.",
+  "channels.link.too_many": "تلاش‌ها بیش از حد مجاز بود. لطفاً فردا دوباره امتحان کنید یا با منابع انسانی تماس بگیرید.",
+  "channels.link.linked": "حساب شما وصل شد. از این پس پیام‌ها و کد ورود HR Ops به همین گفت‌وگو می‌آید.",
+  "channels.link.already": "حساب شما قبلاً وصل شده است.",
+  "channels.services_coming": "حساب شما وصل است. خدمات نامه، گواهی و مرخصی به‌زودی از همین‌جا در دسترس خواهد بود."
 }

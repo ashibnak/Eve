@@ -25,4 +25,5 @@ export const jurisdiction: platformV1.JurisdictionPack = {
   calendar: persianCalendar,
   companyLegalFields: IranCompanyLegalFields,
   documentLayout: iranDocumentLayout,
+  phoneCountryCode: '98',
 };

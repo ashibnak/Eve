@@ -28,6 +28,17 @@ R1 delivers one-time login codes only through the stub channel. To see codes in 
 
 Import files live on the `eve_files` volume (`/var/lib/eve/files`), named by their SHA-256. Files of committed imports are kept permanently as audit evidence; those of discarded or abandoned imports are deleted after 30 days (setting `platform.import_retention_days`). Back up this volume together with the database.
 
+## Bale bot
+
+Employees use HR Ops from Bale (R2). To enable it, set two environment variables on the `api` service:
+
+- `EVE_BALE_BOT_TOKEN`: the bot token from Bale's BotFather. A secret: keep it out of the repository and logs.
+- `EVE_BALE_API_URL`: optional, default `https://tapi.bale.ai`.
+
+The server only calls out to the Bale API (long polling); no inbound port is opened. Allow outbound HTTPS from the server to the Bale API. Only one `api` instance polls at a time (a database lock); others wait and take over if it stops. Without a token the bot is off and messages go to the stub channel.
+
+An employee links their account by opening the bot and tapping "Share my number". The number must be the sender's own (Bale vouches for it) and must match the contact number of a person employed today in the people file (`contactAddress`, any common Iranian format). After linking, their messages and web login codes go to that Bale chat. Bale chat ids are stored; phone numbers and message texts are not.
+
 ## Issued documents
 
 Issued PDFs (letters, certificates) are stored on the same `eve_files` volume and never deleted. They are rendered by a headless Chromium baked into the `api` image at build time, so no internet access is needed at run time. Before a company can be issued documents, a system administrator sets its letterhead: upload a PNG or JPEG logo (optional) with `POST /api/v1/platform/documents/letterhead-logo`, then set `platform.documents.letterhead` (`nameFa` required; `nameEn`, `addressFa`, `phone`, `footerFa`, `logoFileRef` optional) customer-wide or per company.

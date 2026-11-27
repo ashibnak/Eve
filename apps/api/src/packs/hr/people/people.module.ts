@@ -1,5 +1,6 @@
 import { Module, type OnModuleInit } from '@nestjs/common';
 import { RoleRegistry } from '../../../platform/auth/roles';
+import { ChannelIdentities } from '../../../platform/channels/identity';
 import { ImportService } from '../../../platform/connectors/import.service';
 import { EventRegistry } from '../../../platform/events/event-registry';
 import { ScopedDb } from '../../../platform/scope/scoped-db';
@@ -12,11 +13,12 @@ import { PeopleController } from './people.controller';
 import { PeopleDataOwnerRole, PeoplePermissions } from './people.permissions';
 import { PeopleService } from './service/people.service';
 import { orgTeamProvider } from './adapters/org-team.adapter';
+import { PeopleChannelIdentity } from './adapters/channel-identity.adapter';
 
 /** people core (ADR-008): the person register org refers to. Owns the people_* tables. */
 @Module({
   controllers: [PeopleController],
-  providers: [PeopleService, PeopleWriter, PeopleCommands, orgTeamProvider],
+  providers: [PeopleService, PeopleWriter, PeopleCommands, PeopleChannelIdentity, orgTeamProvider],
   exports: [PeopleService],
 })
 export class PeopleModule implements OnModuleInit {
@@ -26,6 +28,8 @@ export class PeopleModule implements OnModuleInit {
     private readonly imports: ImportService,
     private readonly db: ScopedDb,
     private readonly writer: PeopleWriter,
+    private readonly identities: ChannelIdentities,
+    private readonly channelIdentity: PeopleChannelIdentity,
   ) {}
 
   onModuleInit(): void {
@@ -37,5 +41,7 @@ export class PeopleModule implements OnModuleInit {
     this.roles.extend('auditor', [PeoplePermissions.read]);
     this.events.register(PersonCreated, PersonStatusChanged);
     this.imports.registerTarget(personImportTarget({ db: this.db, writer: this.writer }));
+    // S12: people find and link employees who link a Bale account.
+    this.identities.use(this.channelIdentity);
   }
 }

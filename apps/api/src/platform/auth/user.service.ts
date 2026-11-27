@@ -11,6 +11,7 @@ import { Clock } from '../context/clock';
 import { type Tx, TxRunner } from '../context/tx-runner';
 import { PrismaService } from '../db/prisma.service';
 import { AuthSettings } from './auth.settings';
+import { randomBytes } from 'node:crypto';
 import { hashPassword } from './crypto';
 import { RoleRegistry, type ScopeKind, SystemAdminRole } from './roles';
 
@@ -91,6 +92,75 @@ export class UserService {
         reason: request.reason,
       });
       return user;
+    });
+  }
+
+  /**
+   * An account created by a channel's self-service linking (S12), inside the caller's transaction.
+   * It has no usable password (a random one nobody knows); it signs in through its channel.
+   */
+  async createChannelUser(
+    tx: Tx,
+    request: { username: string; contactChannel: string; contactAddress: string; reason: string },
+  ): Promise<{ id: string }> {
+    if (!this.channels.has(request.contactChannel))
+      throw new BadRequestException(`Unknown contact channel ${request.contactChannel}`);
+    const now = this.clock.now();
+    const user = await tx.authUser.create({
+      data: {
+        username: request.username,
+        passwordHash: await hashPassword(randomBytes(32).toString('base64url')),
+        status: 'active',
+        contactChannel: request.contactChannel,
+        contactAddress: request.contactAddress,
+        createdAt: now,
+        updatedAt: now,
+      },
+      select: { id: true, username: true, status: true, contactChannel: true },
+    });
+    await this.audit.record(tx, {
+      action: 'platform.auth.user.create',
+      entityType: 'auth_user',
+      entityId: user.id,
+      companyId: null,
+      before: null,
+      after: user,
+      reason: request.reason,
+    });
+    return { id: user.id };
+  }
+
+  /** Points a user's one-time codes and messages to another channel address (S12 linking). */
+  async setContact(
+    tx: Tx,
+    userId: string,
+    contact: { channel: string; address: string },
+    reason: string,
+  ): Promise<void> {
+    if (!this.channels.has(contact.channel))
+      throw new BadRequestException(`Unknown contact channel ${contact.channel}`);
+    const before = await tx.authUser.findUnique({
+      where: { id: userId },
+      select: { contactChannel: true },
+    });
+    if (!before) throw new NotFoundException('User not found');
+    await tx.authUser.update({
+      where: { id: userId },
+      data: {
+        contactChannel: contact.channel,
+        contactAddress: contact.address,
+        updatedAt: this.clock.now(),
+      },
+    });
+    // Addresses are contact data: the audit names the channel, not the address.
+    await this.audit.record(tx, {
+      action: 'platform.auth.user.contact',
+      entityType: 'auth_user',
+      entityId: userId,
+      companyId: null,
+      before: { contactChannel: before.contactChannel },
+      after: { contactChannel: contact.channel },
+      reason,
     });
   }
 
